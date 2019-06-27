@@ -1,0 +1,172 @@
+language "C++"
+cppdialect "C++17"
+files 
+{
+  "src/**.h",
+  "src/**.cpp",
+}
+
+vpaths
+{
+  ["Misc"] = 
+  {
+    "src/Dg_Assert.h",
+    "src/DgParser_INI.h",
+    "src/DgStringFunctions.h",
+    "src/DgTimer.h",
+    "src/DgTypes.h",
+    "src/DgIDManager.h",
+  },
+  ["Misc/impl"] = 
+  {
+    "src/Dg_Assert.cpp",
+    "src/DgParser_INI.cpp",
+    "src/DgTimer.cpp",
+  },
+  ["Math"] = 
+  { 
+    "src/DgFixedPoint.h",
+    "src/DgMath.h",
+    "src/DgMatrix.h",
+    "src/DgRNG.h",
+    "src/DgBoundedSND.h",
+  },
+  ["Math/impl"] = 
+  {
+    "src/Dgmath.cpp",
+    "src/DgMath_impl.h",
+    "src/DgMatrix_generic.h",
+    "src/DgRNG.cpp",
+    "src/DgAABB_generic.h",
+    "src/DgCPQuery.h",
+    "src/DgFIQuery.h",
+    "src/DgFPCQuery.h",
+    "src/DgFPCQueryHypersphereHypersphere.h",
+    "src/DgFPCQueryHypersphereLine.h",
+    "src/DgFPCQueryPointHypersphere.h",
+    "src/DgHyperSphere_generic.h",
+    "src/DgLine_generic.h",
+    "src/DgQueryCommon.h",
+    "src/DgQueryFrustumSphere.h",
+    "src/DgQueryLineHypersphere.h",
+    "src/DgQueryLineLine.h",
+    "src/DgQueryLinePlane.h",
+    "src/DgQueryPointLine.h",
+    "src/DgQueryPointPlane.h",
+    "src/DgQueryPointRay.h",
+    "src/DgQueryPointSegment.h",
+    "src/DgQueryRayLine.h",
+    "src/DgQueryRayPlane.h",
+    "src/DgQueryRayRay.h",
+    "src/DgQueryRayTriangle.h",
+    "src/DgQuerySegmentHypersphere.h",
+    "src/DgQuerySegmentLine.h",
+    "src/DgQuerySegmentPlane.h",
+    "src/DgQuerySegmentRay.h",
+    "src/DgQuerySegmentSegment.h",
+    "src/DgRay_generic.h",
+    "src/DgSegment_generic.h",
+    "src/DgTriangle_generic.h",
+    "src/DgVector_generic.h",
+    "src/DgTIQuery.h",
+  },
+  ["Math/R2"] = 
+  {
+    "src/DgR2AABB.h",
+    "src/DgR2Disk.h",
+    "src/DgR2Line.h",
+    "src/DgR2Matrix.h",
+    "src/DgR2Matrix_generic.h",
+    "src/DgR2Polygon.h",
+    "src/DgR2Ray.h",
+    "src/DgR2Regression.h",
+    "src/DgR2Segment.h",
+    "src/DgR2Triangle.h",
+    "src/DgR2Vector.h",
+    "src/DgR2Vector_ancillary.h",
+    "src/DgR2Vector_generic.h"
+  },
+  ["Math/R3"] = 
+  {
+    "src/DgR3AABB.h",
+    "src/DgR3Frustum.h",
+    "src/DgR3Line.h",
+    "src/DgR3Matrix.h",
+    "src/DgR3Matrix_generic.h",
+    "src/DgR3OBB.h",
+    "src/DgR3Plane.h",
+    "src/DgR3Quaternion.h",
+    "src/DgR3Ray.h",
+    "src/DgR3Rectangle.h",
+    "src/DgR3Segment.h",
+    "src/DgR3Sphere.h",
+    "src/DgR3Triangle.h",
+    "src/DgR3Vector.h",
+    "src/DgR3Vector_ancillary.h",
+    "src/DgR3Vector_generic.h",
+    "src/DgR3VQS.h",
+    "src/DgR3ZCylinder.h"
+  },
+  ["Math/R2/Queries"] = 
+  {
+    "src/DgR2QueryDiskDisk.h",
+    "src/DgR2QueryDiskLine.h",
+    "src/DgR2QueryLineLine.h",
+    "src/DgR2QueryPointDisk.h",
+    "src/DgR2QueryPointLine.h",
+    "src/DgR2QueryPointRay.h",
+    "src/DgR2QueryPointSegment.h",
+    "src/DgR2QueryRayLine.h",
+    "src/DgR2QueryRayRay.h",
+    "src/DgR2QuerySegmentLine.h",
+    "src/DgR2QuerySegmentRay.h",
+    "src/DgR2QuerySegmentSegment.h"
+  },
+  ["Math/R3/Queries"] = 
+  {
+    "src/DgR3QueryFrustumSphere.h",
+    "src/DgR3QueryLineLine.h",
+    "src/DgR3QueryLinePlane.h",
+    "src/DgR3QueryLineSphere.h",
+    "src/DgR3QueryPointLine.h",
+    "src/DgR3QueryPointPlane.h",
+    "src/DgR3QueryPointRay.h",
+    "src/DgR3QueryPointSegment.h",
+    "src/DgR3QueryPointSphere.h",
+    "src/DgR3QueryPointZCylinder.h",
+    "src/DgR3QueryRayLine.h",
+    "src/DgR3QueryRayPlane.h",
+    "src/DgR3QueryRayRay.h",
+    "src/DgR3QueryRayTriangle.h",
+    "src/DgR3QueryRectangleLine.h",
+    "src/DgR3QueryRectanglePoint.h",
+    "src/DgR3QueryRectangleRay.h",
+    "src/DgR3QueryRectangleSegment.h",
+    "src/DgR3QueryRectangleSphere.h",
+    "src/DgR3QuerySegmentLine.h",
+    "src/DgR3QuerySegmentPlane.h",
+    "src/DgR3QuerySegmentRay.h",
+    "src/DgR3QuerySegmentSegment.h",
+    "src/DgR3QuerySegmentSphere.h",
+    "src/DgR3QuerySphereSphere.h"
+  },
+  ["Collections"] = 
+  {
+    "src/DgAVLTreeMap.h",
+    "src/DgCircularDoublyLinkedList.h",
+    "src/DgDoublyLinkedList.h",
+    "src/DgDynamicArray.h",
+    "src/DgHyperArray.h",
+    "src/DgOpenHashTable.h",
+    "src/DgPair.h",
+    "src/DgStaticArray.h",
+    "src/DgVariableArray2D.h"
+  },
+  ["Collections/impl"] = 
+  {
+    "src/DgAVLTreeMap.cpp",
+    "src/DgContainerBase.cpp",
+    "src/DgContainerBase.h",
+    "src/DgHashTable.cpp",
+  }
+}
