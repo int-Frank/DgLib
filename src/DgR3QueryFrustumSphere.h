@@ -8,7 +8,7 @@
 #ifndef DGR3QUERYFRUSTUMSPHERE_H
 #define DGR3QUERYFRUSTUMSPHERE_H
 
-#include "..\impl\DgQueryFrustumSphere.h"
+#include "impl\DgQueryFrustumSphere.h"
 
 namespace Dg
 {

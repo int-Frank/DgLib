@@ -5,7 +5,7 @@
 //! 
 //! Definitions from dgmath.cpp
 
-#include "dgmath.h"
+#include "../dgmath.h"
 
 namespace Dg
 {

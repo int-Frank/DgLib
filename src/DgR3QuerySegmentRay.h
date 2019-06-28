@@ -6,7 +6,7 @@
 #ifndef DGR3QUERYSEGMENTRAY_H
 #define DGR3QUERYSEGMENTRAY_H
 
-#include "..\impl\DgQuerySegmentRay.h"
+#include "impl\DgQuerySegmentRay.h"
 
 namespace Dg
 {

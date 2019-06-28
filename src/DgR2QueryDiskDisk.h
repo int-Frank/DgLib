@@ -8,7 +8,7 @@
 #ifndef DGR3QUERYDISKDISK_H
 #define DGR3QUERYDISKDISK_H
 
-#include "..\impl\DgFPCQueryHypersphereHypersphere.h"
+#include "impl\DgFPCQueryHypersphereHypersphere.h"
 
 namespace Dg
 {

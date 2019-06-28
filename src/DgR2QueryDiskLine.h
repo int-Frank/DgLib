@@ -8,7 +8,7 @@
 #ifndef DGR3QUERYDISKLINE_H
 #define DGR3QUERYDISKLINE_H
 
-#include "..\impl\DgFPCQueryHypersphereLine.h"
+#include "impl\DgFPCQueryHypersphereLine.h"
 
 namespace Dg
 {

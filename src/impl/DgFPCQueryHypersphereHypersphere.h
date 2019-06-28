@@ -1,22 +1,22 @@
-#ifndef DGFPCQUERYPOINTHYPERSPHERE_H
-#define DGFPCQUERYPOINTHYPERSPHERE_H
+#ifndef DGFPCQUERYHYPERSPHEREHYPERSPHERE_H
+#define DGFPCQUERYHYPERSPHEREHYPERSPHERE_H
 
 #include <cmath>
 #include "DgMath.h"
 #include "DgFPCQuery.h"
 #include "DgHypersphere_generic.h"
 #include "DgVector_generic.h"
-#include "../query/DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 
 namespace Dg
 {
   namespace impl
   {
-    //Assumes point lies outside of the sphere
+    //Assumes spheres are not already intersecting
     template <typename Real, int R>
     class FPCQuery<Real, R,
                    Hypersphere_generic<Real, R>,
-                   Vector_generic<Real, R>>
+                   Hypersphere_generic<Real, R>>
     {
     public:
 
@@ -32,41 +32,17 @@ namespace Dg
       };
 
       //! Perform query
-      Result operator()(Hypersphere_generic<Real, R> const & a_sphere, 
-                        Vector_generic<Real, R> const & a_trajSphere,
-                        Vector_generic<Real, R> const & a_point,
-                        Vector_generic<Real, R> const & a_trajPoint)
+      Result operator()(Hypersphere_generic<Real, R> const & a_sphere_0, 
+                        Vector_generic<Real, R> const & a_traj_0,
+                        Hypersphere_generic<Real, R> const & a_sphere_1,
+                        Vector_generic<Real, R> const & a_traj_1)
       {
         Result result;
 
-        Vector_generic<Real, R> v_sp = a_trajPoint - a_trajSphere;
-
-        /*
-          Because our equation will always be in the form
-
-              at^2 + bt + c = 0
-
-            where a = v_sp.v_sp
-                  b = 2(v_sp . p_sp)
-                  c = p_sp.p_sp - r^2
-
-          we see (v_sp . p_sp) == b/2
-
-          our solution becomes:
-
-           -2(b/2) +- sqrt((2 * b/2)^2 - 4ac)
-           ----------------------------------
-                         2a
-
-        which reduces to
-
-           -(b/2) +- sqrt((b/2)^2 - ac)
-           ----------------------------
-                       a
-        */
+        Vector_generic<Real, R> v_01 = a_traj_1 - a_traj_0;
 
         //Find coefficient 'a' of the quadratic
-        Real a = v_sp.LengthSquared();
+        Real a = v_01.LengthSquared();
 
         //If disk is stationary
         if (IsZero(a))
@@ -76,9 +52,11 @@ namespace Dg
         }
 
         //Find value 'b/2' of the quadratic
-        Vector_generic<Real, R> p_sp = a_point - a_sphere.Center();
-        Real half_b = p_sp.Dot(v_sp);
+        Vector_generic<Real, R> p_01 = a_sphere_1.Center() - a_sphere_0.Center();
+        Real half_b = p_01.Dot(v_01);
 
+        //TODO Maybe we want to know negative values of t.
+        //     Add this as a template option
         //Disk is moving away
         if (half_b >= Real(0))
         {
@@ -87,8 +65,10 @@ namespace Dg
         }
 
         //Find coefficient 'c' of the quadratic
-        Real r_squared = a_sphere.Radius() * a_sphere.Radius();
-        Real c = p_sp.Dot(p_sp) - r_squared;
+        Real r_squared = a_sphere_0.Radius() + a_sphere_1.Radius();
+        r_squared *= r_squared;
+
+        Real c = p_01.Dot(p_01) - r_squared;
         Real discriminite = half_b*half_b - a*c;
 
         //Disk will come closer, but not collide

@@ -7,7 +7,7 @@
 #define DGQUERYRAYTRIANGLE_H
 
 #include "DgTIQuery.h"
-#include "../query/DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 #include "../DgR3Ray.h"
 #include "../DgR3Triangle.h"
 

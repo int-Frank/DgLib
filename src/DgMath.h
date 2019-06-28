@@ -12,7 +12,7 @@
 #include <limits>
 
 #include "DgTypes.h"
-#include "DgMath_impl.h"
+#include "impl/DgMath_impl.h"
 
 namespace Dg
 {

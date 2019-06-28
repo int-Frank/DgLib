@@ -7,7 +7,7 @@
 #include "DgR3Rectangle.h"
 #include "DgR3Line.h"
 #include "DgR3Segment.h"
-#include "../query/DgQueryCommon.h"
+#include "DgQueryCommon.h"
 #include "DgR3Vector_ancillary.h"
 #include "DgR3QuerySegmentLine.h"
 

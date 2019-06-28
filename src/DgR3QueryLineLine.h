@@ -6,7 +6,7 @@
 #ifndef DGR3QUERYLINELINE_H
 #define DGR3QUERYLINELINE_H
 
-#include "..\impl\DgQueryLineLine.h"
+#include "impl\DgQueryLineLine.h"
 
 namespace Dg
 {

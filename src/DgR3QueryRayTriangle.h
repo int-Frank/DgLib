@@ -8,9 +8,9 @@
 #ifndef DGR3QUERYRAYTRIANGLE_H
 #define DGR3QUERYRAYTRIANGLE_H
 
-#include "../impl/DgQueryRayTriangle.h"
-#include "../DgR3Ray.h"
-#include "../DgR3Triangle.h"
+#include "impl/DgQueryRayTriangle.h"
+#include "DgR3Ray.h"
+#include "DgR3Triangle.h"
 
 namespace Dg
 {

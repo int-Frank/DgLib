@@ -6,7 +6,7 @@
 #ifndef DGQUERYSEGMENTPLANE_H
 #define DGQUERYSEGMENTPLANE_H
 
-#include "../query/DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 #include "DgTIQuery.h"
 #include "DgFIQuery.h"
 #include "..\DgR3Segment.h"

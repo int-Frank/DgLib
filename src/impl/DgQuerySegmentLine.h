@@ -6,7 +6,7 @@
 #ifndef DGQUERYSEGMENTLINE_H
 #define DGQUERYSEGMENTLINE_H
 
-#include "../query/DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 #include "DgCPQuery.h"
 #include "DgFIQuery.h"
 #include "DgLine_generic.h"

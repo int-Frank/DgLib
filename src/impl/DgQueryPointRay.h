@@ -9,7 +9,7 @@
 #include "DgCPQuery.h"
 #include "DgVector_generic.h"
 #include "DgRay_generic.h"
-#include "../query/DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 
 namespace Dg
 {

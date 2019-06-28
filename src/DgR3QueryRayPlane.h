@@ -8,9 +8,9 @@
 #ifndef DGR3QUERYRAYPLANE_H
 #define DGR3QUERYRAYPLANE_H
 
-#include "../impl/DgQueryRayPlane.h"
-#include "../DgR3Ray.h"
-#include "../DgR3Plane.h"
+#include "impl/DgQueryRayPlane.h"
+#include "DgR3Ray.h"
+#include "DgR3Plane.h"
 
 namespace Dg
 {

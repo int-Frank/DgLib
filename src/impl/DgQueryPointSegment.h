@@ -8,7 +8,7 @@
 
 #include "DgCPQuery.h"
 #include "DgTIQuery.h"
-#include "..\query\DgQueryCommon.h"
+#include "..\DgQueryCommon.h"
 #include "DgSegment_generic.h"
 
 namespace Dg

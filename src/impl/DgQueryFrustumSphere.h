@@ -9,7 +9,7 @@
 #define DGQUERYFRUSTUMSPHERE_H
 
 #include "DgTIQuery.h"
-#include "../query/DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 #include "../DgR3Frustum.h"
 #include "../DgR3Sphere.h"
 

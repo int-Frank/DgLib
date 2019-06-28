@@ -2,7 +2,7 @@
 #include <Windows.h>
 #include <stdint.h>
 
-#include "DgTimer.h"
+#include "../DgTimer.h"
 
 typedef  LONGLONG timer_int;
 

@@ -6,7 +6,7 @@
 #ifndef DGQUERYRAYLINE_H
 #define DGQUERYRAYLINE_H
 
-#include "../query/DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 #include "DgCPQuery.h"
 #include "DgLine_generic.h"
 #include "DgRay_generic.h"

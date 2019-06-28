@@ -5,7 +5,7 @@
 //!
 //! Class definitions: RNG
 
-#include "DgRNG.h"
+#include "../DgRNG.h"
 
 namespace Dg
 {

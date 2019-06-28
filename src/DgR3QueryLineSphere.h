@@ -8,7 +8,7 @@
 #ifndef DGR3QUERYLINESPHERE_H
 #define DGR3QUERYLINESPHERE_H
 
-#include "..\impl\DgQueryLineHypersphere.h"
+#include "impl\DgQueryLineHypersphere.h"
 
 namespace Dg
 {

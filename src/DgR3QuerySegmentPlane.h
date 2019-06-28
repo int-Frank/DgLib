@@ -8,9 +8,9 @@
 #ifndef DGR3QUERYSEGMENTPLANE_H
 #define DGR3QUERYSEGMENTPLANE_H
 
-#include "../impl/DgQuerySegmentPlane.h"
-#include "../DgR3Segment.h"
-#include "../DgR3Plane.h"
+#include "impl/DgQuerySegmentPlane.h"
+#include "DgR3Segment.h"
+#include "DgR3Plane.h"
 
 namespace Dg
 {

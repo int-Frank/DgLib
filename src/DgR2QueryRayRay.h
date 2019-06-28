@@ -6,7 +6,7 @@
 #ifndef DGR2QUERYRAYRAY_H
 #define DGR2QUERYRAYRAY_H
 
-#include "..\impl\DgQueryRayRay.h"
+#include "impl\DgQueryRayRay.h"
 
 namespace Dg
 {

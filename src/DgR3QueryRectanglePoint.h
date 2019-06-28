@@ -4,7 +4,7 @@
 #include "impl/DgCPQuery.h"
 #include "DgR3Rectangle.h"
 #include "DgR3Vector.h"
-#include "../query/DgQueryCommon.h"
+#include "DgQueryCommon.h"
 
 namespace Dg
 {

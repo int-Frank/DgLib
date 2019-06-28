@@ -7,7 +7,7 @@
 #define DGQUERYLINELINE_H
 
 #include "DgCPQuery.h"
-#include "..\query\DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 #include "DgLine_generic.h"
 #include "DgVector_generic.h"
 

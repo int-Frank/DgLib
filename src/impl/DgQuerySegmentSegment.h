@@ -9,7 +9,7 @@
 #include "DgCPQuery.h"
 #include "DgTIQuery.h"
 #include "DgQueryPointSegment.h"
-#include "..\query\DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 #include "DgVector_generic.h"
 #include "DgSegment_generic.h"
 

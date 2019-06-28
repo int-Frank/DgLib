@@ -6,7 +6,7 @@
 #ifndef DGR2QUERYSEGMENTSEGMENT_H
 #define DGR2QUERYSEGMENTSEGMENT_H
 
-#include "..\impl\DgQuerySegmentSegment.h"
+#include "impl\DgQuerySegmentSegment.h"
 
 namespace Dg
 {

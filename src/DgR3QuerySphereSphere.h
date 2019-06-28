@@ -8,7 +8,7 @@
 #ifndef DGR3QUERYSPHERESPHERE_H
 #define DGR3QUERYSPHERESPHERE_H
 
-#include "..\impl\DgFPCQueryHypersphereHypersphere.h"
+#include "impl\DgFPCQueryHypersphereHypersphere.h"
 
 namespace Dg
 {

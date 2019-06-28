@@ -7,7 +7,7 @@
 #include "DgHypersphere_generic.h"
 #include "DgLine_generic.h"
 #include "DgVector_generic.h"
-#include "../query/DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 
 namespace Dg
 {

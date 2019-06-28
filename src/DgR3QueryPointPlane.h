@@ -6,7 +6,7 @@
 #ifndef DGR3QUERYPOINTPLANE_H
 #define DGR3QUERYPOINTPLANE_H
 
-#include "..\impl\DgQueryPointPlane.h"
+#include "impl\DgQueryPointPlane.h"
 
 namespace Dg
 {

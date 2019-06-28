@@ -1,8 +1,8 @@
 
 #include <fstream>
 
-#include "DgParser_INI.h"
-#include "DgStringFunctions.h"
+#include "../DgParser_INI.h"
+#include "../DgStringFunctions.h"
 
 static char const g_commentChars[] = "#;";
 static char const g_delim = '=';

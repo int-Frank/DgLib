@@ -8,7 +8,7 @@
 
 #include "DgTIQuery.h"
 #include "DgFIQuery.h"
-#include "../query/DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 #include "../DgR3Line.h"
 #include "../DgR3Plane.h"
 

@@ -6,7 +6,7 @@
 #ifndef DGR3QUERYPOINTLINE_H
 #define DGR3QUERYPOINTLINE_H
 
-#include "..\impl\DgQueryPointLine.h"
+#include "impl\DgQueryPointLine.h"
 
 namespace Dg
 {

@@ -7,7 +7,7 @@
 #include <exception>
 
 #include "DgPair.h"
-#include "DgContainerBase.h"
+#include "impl/DgContainerBase.h"
 
 #ifdef DEBUG
 #include <sstream>

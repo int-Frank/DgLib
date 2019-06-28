@@ -6,10 +6,10 @@
 #ifndef DGQUERYPOINTZCYLINDER_H
 #define DGQUERYPOINTZCYLINDER_H
 
-#include "../impl/DgCPQuery.h"
+#include "impl/DgCPQuery.h"
 #include "DgQueryCommon.h"
 #include "impl/DgSegment_generic.h"
-#include "../DgR3ZCylinder.h"
+#include "DgR3ZCylinder.h"
 
 namespace Dg
 {

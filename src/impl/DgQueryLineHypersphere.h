@@ -8,7 +8,7 @@
 
 #include "DgTIQuery.h"
 #include "DgFIQuery.h"
-#include "../query/DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 #include "DgLine_generic.h"
 #include "DgHypersphere_generic.h"
 
