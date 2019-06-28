@@ -52,6 +52,7 @@ namespace Dg
   struct Constants<float>
   {
     static float const PI;
+    static float const SQRTPI;
     static float const INVPI;
     static float const EPSILON;
     static float const SQRT2;
@@ -62,13 +63,12 @@ namespace Dg
   struct Constants<double>
   {
     static double const PI;
+    static double const SQRTPI;
     static double const INVPI;
     static double const EPSILON;
     static double const SQRT2;
     static double const INVSQRT2;
   };
-
-  unsigned const N_C_INVERF   = 512;
 
   //! @}
   
@@ -85,12 +85,8 @@ namespace Dg
 
     T maxi = (T(1) << ((CHAR_BIT * sizeof(T)) / 2)) - 1; //Root of the highest square T can hold before overflow.
     for (T i = 5; i*i <= a_val && i <= maxi; i += 6)
-    {
       if (a_val % i == 0 || a_val % (i + 2) == 0)
-      {
         return false;
-      }
-    }
     return true;
   }
 
@@ -105,9 +101,7 @@ namespace Dg
   T FloorPower2(T val)
   {
     for (size_t i = 0; i <= sizeof(T); i++)
-    {
       val |= (val >> (1 << i));
-    }
     val ^= (val >> 1);
     return val;
   }
@@ -118,9 +112,7 @@ namespace Dg
   {
     val--;
     for (size_t i = 0; i <= sizeof(T); i++)
-    {
       val |= (val >> (1 << i));
-    }
     val++;
     return val;
   }
@@ -153,31 +145,67 @@ namespace Dg
       upper = lower + 1;
   }
 
-  //! Inverse error function. Uses Mclaurin series expansion approximation.
-  //! The template param nTerms represents the number of terms in the series expansion to use.
-  //!
-  //! @return Result
-  //!
-  //! @param a_x Input: -1 < x < 1
-  template<typename Real, unsigned nTerms = 16>
-  Real inverf(Real a_x)
+  //! Inverse error function
+  template<typename Real>
+  Real erfinv(Real a_x)
   {
-	  static_assert(nTerms <= N_C_INVERF, "Max terms for the inverf is 512");
+    Real const erfinv_a3 = static_cast<Real>(-0.140543331);
+    Real const erfinv_a2 = static_cast<Real>(0.914624893);
+    Real const erfinv_a1 = static_cast<Real>(-1.645349621);
+    Real const erfinv_a0 = static_cast<Real>(0.886226899);
 
-	  if (a_x < static_cast<Real>(-1.0) || a_x > static_cast<Real>(1.0))
-		  return static_cast<Real>(0.0);
+    Real const erfinv_b4 = static_cast<Real>(0.012229801);
+    Real const erfinv_b3 = static_cast<Real>(-0.329097515);
+    Real const erfinv_b2 = static_cast<Real>(1.442710462);
+    Real const erfinv_b1 = static_cast<Real>(-2.118377725);
+    Real const erfinv_b0 = static_cast<Real>(1);
 
-	  Real x0Sq = a_x * a_x;
-	  Real x = a_x;
-	  Real result = static_cast<Real>(0.0);
-	  
-	  for (unsigned i = 0; i < nTerms; i++)
-	  {
-		  result += x * static_cast<Real>(impl::C_INVERF[i]);
-		  x *= x0Sq;
-	  }
+    Real const erfinv_c3 = static_cast<Real>(1.641345311);
+    Real const erfinv_c2 = static_cast<Real>(3.429567803);
+    Real const erfinv_c1 = static_cast<Real>(-1.62490649);
+    Real const erfinv_c0 = static_cast<Real>(-1.970840454);
 
-	  return result;
+    Real const erfinv_d2 = static_cast<Real>(1.637067800);
+    Real const erfinv_d1 = static_cast<Real>(3.543889200);
+    Real const erfinv_d0 = static_cast<Real>(1);
+
+    Real x2, r, y;
+    Real sign_x;
+
+    if (a_x < static_cast<Real>(-1) || a_x > static_cast<Real>(1))
+      return std::numeric_limits<Real>::quiet_NaN();
+  
+    if (a_x == static_cast<Real>(0))
+      return static_cast<Real>(0);
+  
+    if (a_x > static_cast<Real>(0))
+      sign_x = static_cast<Real>(1);
+    else 
+    {
+      sign_x = static_cast<Real>(-1);
+      a_x = -a_x;
+    }
+    
+    if (a_x <= static_cast<Real>(0.7)) 
+    {
+      x2 = a_x * a_x;
+      r = a_x * (((erfinv_a3 * x2 + erfinv_a2) * x2 + erfinv_a1) * x2 + erfinv_a0);
+      r /= (((erfinv_b4 * x2 + erfinv_b3) * x2 + erfinv_b2) * x2 + erfinv_b1) * x2 + erfinv_b0;
+    }
+    else 
+    {
+      y = sqrt (-log ((static_cast<Real>(1) - a_x) / static_cast<Real>(2)));
+      r = (((erfinv_c3 * y + erfinv_c2) * y + erfinv_c1) * y + erfinv_c0);
+      r /= ((erfinv_d2 * y + erfinv_d1) * y + erfinv_d0);
+    }
+    
+    r = r * sign_x;
+    a_x = a_x * sign_x;
+    
+    r -= (erf (r) - a_x) / (2 / Constants<Real>::SQRTPI * exp (-r * r));
+    r -= (erf (r) - a_x) / (2 / Constants<Real>::SQRTPI * exp (-r * r));
+    
+    return r;
   }
 
   //! Set bits within an integer type.

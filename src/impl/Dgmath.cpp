@@ -11,12 +11,14 @@ namespace Dg
 {
   float const Constants<float>::PI          = 3.141592653589793238462643383279f;
   float const Constants<float>::INVPI       = 0.31830988618379067153776752674503f;
+  float const Constants<float>::SQRTPI      = 1.7724538509055160272981674833411f;
   float const Constants<float>::EPSILON     = 0.0001f;
   float const Constants<float>::SQRT2       = 1.4142135623730950488016887242097f;
   float const Constants<float>::INVSQRT2    = 0.70710678118654752440084436210485f;
 
   double const Constants<double>::PI        = 3.141592653589793238462643383279;
   double const Constants<double>::INVPI     = 0.31830988618379067153776752674503;
+  double const Constants<double>::SQRTPI    = 1.7724538509055160272981674833411;
   double const Constants<double>::EPSILON   = 0.00001;
   double const Constants<double>::SQRT2     = 1.4142135623730950488016887242097;
   double const Constants<double>::INVSQRT2  = 0.70710678118654752440084436210485;
