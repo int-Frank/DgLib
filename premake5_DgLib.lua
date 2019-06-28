@@ -152,7 +152,7 @@ vpaths
   },
   ["Collections"] = 
   {
-    "src/DgAVLTreeMap.h",
+    "src/DgMap_AVL.h",
     "src/DgCircularDoublyLinkedList.h",
     "src/DgDoublyLinkedList.h",
     "src/DgDynamicArray.h",
@@ -164,7 +164,7 @@ vpaths
   },
   ["Collections/impl"] = 
   {
-    "src/DgAVLTreeMap.cpp",
+    "src/DgMap_AVL.cpp",
     "src/DgContainerBase.cpp",
     "src/DgContainerBase.h",
     "src/DgHashTable.cpp",
