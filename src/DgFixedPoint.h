@@ -1,10 +1,3 @@
-//! @file DgFixedPoint.h
-//!
-//! @author: Frank B. Hart
-//! @date 21/05/2016
-//!
-//! Class declaration: FixedPoint
-
 /*******************************************************************************/
 /*                                                                             */
 /*  Copyright (c) 2007-2009: Peter Schregle,                                   */

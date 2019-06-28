@@ -1,12 +1,9 @@
-//! @file DgR3QuerySegmentBall.h
-//!
-//! @author: Adapted from http://www.geometrictools.com
-//! @date 29/05/2016
+
 
 #ifndef DGR3QUERYSEGMENTHYPERSPHERE_H
 #define DGR3QUERYSEGMENTHYPERSPHERE_H
 
-#include "../query/DgQueryCommon.h"
+#include "../DgQueryCommon.h"
 #include "DgTIQuery.h"
 #include "DgFIQuery.h"
 #include "DgSegment_generic.h"

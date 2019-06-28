@@ -22,15 +22,6 @@ namespace Dg
     Err_FailedToOpenFile,
     Err_BadInput
   };
-
-  enum LogLevel
-  {
-    LL_Debug,
-    LL_Info,
-    LL_Warning,
-    LL_Error,
-    LL_Critical
-  };
 }
 
 #endif
