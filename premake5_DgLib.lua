@@ -29,16 +29,18 @@ vpaths
     "src/DgFixedPoint.h",
     "src/DgMath.h",
     "src/DgMatrix.h",
-    "src/DgRNG.h",
+    "src/DgRNG_Local.h",
+    "src/DgRNG_Global.h",
     "src/DgBoundedSND.h",
     "src/DgQueryCommon.h"
   },
   ["Math/impl"] = 
   {
     "src/impl/Dgmath.cpp",
+    "src/impl/DgRNG.cpp",
+    "src/impl/DgRNG_Base.h",
     "src/impl/DgMath_impl.h",
     "src/impl/DgMatrix_generic.h",
-    "src/impl/DgRNG.cpp",
     "src/impl/DgAABB_generic.h",
     "src/impl/DgCPQuery.h",
     "src/impl/DgFIQuery.h",

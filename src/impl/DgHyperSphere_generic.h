@@ -10,7 +10,7 @@
 
 #include "DgVector_generic.h"
 #include "dgmath.h"
-#include "DgRNG.h"
+#include "impl/DgRNG_Base.h"
 
 //TODO Queries
 namespace Dg
@@ -77,7 +77,7 @@ namespace Dg
       void Set(Vector_generic<Real, R> const & n, Real);
 
       //! Get a random point inside the sphere
-      Vector_generic<Real, R> GetRandomPointInside() const;
+      Vector_generic<Real, R> GetRandomPointInside(RNG_Base &) const;
 
     private:
       Vector_generic<Real, R>   m_origin;
@@ -189,7 +189,7 @@ namespace Dg
     //	@	Hypersphere_generic::GetRandomPointInside()
     //--------------------------------------------------------------------------------
     template<typename Real, int R>
-    Vector_generic<Real, R> Hypersphere_generic<Real, R>::GetRandomPointInside() const
+    Vector_generic<Real, R> Hypersphere_generic<Real, R>::GetRandomPointInside(RNG_Base & a_rRNG) const
     {
       Vector_generic<Real, R> result(m_origin);
       if (!Dg::IsZero(m_radius))
@@ -197,9 +197,7 @@ namespace Dg
         do
         {
           for (int i = 0; i < R; i++)
-          {
-            result[i] = RNG::GetUniform(m_origin[i] - m_radius, m_origin[i] + m_radius);
-          }
+            result[i] = a_rRNG.GetUniform(m_origin[i] - m_radius, m_origin[i] + m_radius);
         } while (Vector_generic<Real, R>(result - m_origin).LengthSquared() > m_radius * m_radius);
       }
       return result;

@@ -9,7 +9,7 @@
 #define DGR2VECTOR3_ANCILLARY_H
 
 #include "DgR2Vector.h"
-#include "DgRNG.h"
+#include "impl/DgRNG_Base.h"
 
 namespace Dg
 {
@@ -19,9 +19,9 @@ namespace Dg
     //		@	GetRandomVector()
     //-------------------------------------------------------------------------------
     template<typename Real>
-    Vector<Real> GetRandomVector()
+    Vector<Real> GetRandomVector(RNG_Base & a_rRNG)
     {
-      Real theta = RNG::GetUniform<Real>(static_cast<Real>(0.0), static_cast<Real>(2.0) * Dg::Constants<Real>::PI);
+      Real theta = a_rRNG.GetUniform<Real>(static_cast<Real>(0.0), static_cast<Real>(2.0) * Dg::Constants<Real>::PI);
 
       Real x = cos(theta);
       Real y = sin(theta);

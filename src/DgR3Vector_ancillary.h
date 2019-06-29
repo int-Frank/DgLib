@@ -9,7 +9,7 @@
 #include <cmath>
 
 #include "DgR3Vector.h"
-#include "DgRNG.h"
+#include "impl/DgRNG_Base.h"
 
 namespace Dg
 {
@@ -19,10 +19,10 @@ namespace Dg
     //		@	GetRandomVector()
     //-------------------------------------------------------------------------------
     template<typename Real>
-    Vector<Real> GetRandomVector()
+    Vector<Real> GetRandomVector(RNG_Base & a_rRNG)
     {
-      Real theta = RNG::GetUniform<Real>(static_cast<Real>(0.0), static_cast<Real>(2.0) * Dg::Constants<Real>::PI);
-      Real rho = RNG::GetUniform<Real>(static_cast<Real>(-1.0), static_cast<Real>(1.0));
+      Real theta = a_rRNG.GetUniform<Real>(static_cast<Real>(0.0), static_cast<Real>(2.0) * Dg::Constants<Real>::PI);
+      Real rho = a_rRNG.GetUniform<Real>(static_cast<Real>(-1.0), static_cast<Real>(1.0));
 
       Real val = sqrt(static_cast<Real>(1.0) - rho * rho);
 
@@ -38,11 +38,11 @@ namespace Dg
     //		@ GetRandomOrthonormalVector()
     //-------------------------------------------------------------------------------
     template<typename Real>
-    Vector<Real> GetRandomOrthonormalVector(Vector<Real> const & a_axis)
+    Vector<Real> GetRandomOrthonormalVector(Vector<Real> const & a_axis, RNG_Base & a_rRNG)
     {
       Vector<Real> perp = a_axis.Perpendicular();
       Vector<Real> crs = a_axis.Cross(perp);
-      Real phi = RNG::GetUniform(static_cast<Real>(0.0)
+      Real phi = a_rRNG.GetUniform(static_cast<Real>(0.0)
         , Dg::Constants<Real>::PI * static_cast<Real>(2.0));
 
       return (cos(phi) * perp + sin(phi) * crs);
@@ -53,16 +53,16 @@ namespace Dg
     //		@ GetRandomVector()
     //-------------------------------------------------------------------------------
     template<typename Real>
-    Vector<Real> GetRandomVector(Vector<Real> const & a_axis, Real theta)
+    Vector<Real> GetRandomVector(Vector<Real> const & a_axis, Real theta, RNG_Base & a_rRNG)
     {
       Dg::WrapNumber(static_cast<Real>(0.0)
         , Dg::Constants<Real>::PI
         , theta);
 
       Real bound = cos(Dg::Constants<Real>::PI - theta);
-      Real x = RNG::GetUniform(static_cast<Real>(-1.0), bound);
+      Real x = a_rRNG.GetUniform(static_cast<Real>(-1.0), bound);
       Real phi = Dg::Constants<Real>::PI - acos(x);
-      return (cos(phi) * a_axis + sin(phi) * GetRandomOrthonormalVector(a_axis));
+      return (cos(phi) * a_axis + sin(phi) * GetRandomOrthonormalVector(a_axis, a_rRNG));
     }	//End: GetRandomVector()
 
     // Gram-Schmidt orthonormalization to generate orthonormal vectors from the
@@ -89,9 +89,7 @@ namespace Dg
           Real length = a_v[i].Length();
           a_v[i] /= length;
           if (length < minLength)
-          {
             minLength = length;
-          }
         }
         return minLength;
       }
@@ -111,13 +109,9 @@ namespace Dg
       if (a_numInputs == 1)
       {
         if (abs(a_v[0][0]) > abs(a_v[0][1]))
-        {
           a_v[1].Set(-a_v[0][2], static_cast<Real>(0), +a_v[0][0], static_cast<Real>(0));
-        }
         else
-        {
           a_v[1].Set(static_cast<Real>(0), +a_v[0][2], -a_v[0][1], static_cast<Real>(0));
-        }
         a_numInputs = 2;
       }
 
