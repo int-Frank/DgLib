@@ -39,6 +39,7 @@ namespace Dg
 	  {
 		  Node* pNext;
 		  Node* pPrev;
+      T data;
 	  };
 
   public:
@@ -56,7 +57,7 @@ namespace Dg
 		
 	  private:
 		  //! Special constructor, not for external use
-		  const_iterator(Node const * pNode, Node const * pOffset, T const * pData);
+		  const_iterator(Node const * pNode);
 
 	  public:
 
@@ -69,6 +70,12 @@ namespace Dg
 		  bool operator==(const_iterator const & a_it) const;
 		  bool operator!=(const_iterator const & a_it) const;
 
+      const_iterator operator+(size_t) const;
+      const_iterator operator-(size_t) const;
+
+      const_iterator & operator+=(size_t);
+      const_iterator & operator-=(size_t);
+
 		  const_iterator& operator++();
 		  const_iterator operator++(int);
 		  const_iterator& operator--();
@@ -79,8 +86,6 @@ namespace Dg
 
 	  private:
       Node const * m_pNode;
-      Node const * m_pOffset;
-      T const * m_pData;
 	  };
 
 
@@ -97,7 +102,7 @@ namespace Dg
 
     private:
       //! Special constructor, not for external use
-      iterator(Node * pNode, Node * pNodeBegin, T * pData);
+      iterator(Node * pNode);
 
     public:
 
@@ -109,6 +114,12 @@ namespace Dg
 
       bool operator==(iterator const & a_it) const;
       bool operator!=(iterator const & a_it) const;
+
+      iterator operator+(size_t) const;
+      iterator operator-(size_t) const;
+
+      iterator & operator+=(size_t);
+      iterator & operator-=(size_t);
 
       iterator& operator++();
       iterator operator++(int);
@@ -122,8 +133,6 @@ namespace Dg
 
     private:
       Node * m_pNode;
-      Node * m_pOffset;
-      T * m_pData;
     };
 
   public:
@@ -136,8 +145,8 @@ namespace Dg
 	  DoublyLinkedList(DoublyLinkedList const &);
 	  DoublyLinkedList & operator=(DoublyLinkedList const &);
 
-    DoublyLinkedList(DoublyLinkedList &&);
-    DoublyLinkedList & operator=(DoublyLinkedList &&);
+    DoublyLinkedList(DoublyLinkedList &&)  noexcept;
+    DoublyLinkedList & operator=(DoublyLinkedList &&)  noexcept;
 
 	  //! Returns an iterator pointing to the first data in the DoublyLinkedList container.
     //! If the container is empty, the returned iterator value shall not be dereferenced.
@@ -241,7 +250,6 @@ namespace Dg
   private:
 
 	  Node *    m_pNodes;      //Pre-allocated block of memory to hold items
-    T    *    m_pData;
 	  size_t    m_nItems;     //Number of items currently in the DoublyLinkedList
   };
 
@@ -249,12 +257,8 @@ namespace Dg
   //		const_iterator
   //--------------------------------------------------------------------------------
   template<typename T>
-  DoublyLinkedList<T>::const_iterator::const_iterator(Node const * a_pNode, 
-                                                      Node const * a_pNodeBegin, 
-                                                      T const * a_pData)
+  DoublyLinkedList<T>::const_iterator::const_iterator(Node const * a_pNode)
   : m_pNode(a_pNode)
-    , m_pOffset(a_pNodeBegin)
-    , m_pData(a_pData)
   {
 
   }
@@ -262,8 +266,6 @@ namespace Dg
   template<typename T>
   DoublyLinkedList<T>::const_iterator::const_iterator()
     : m_pNode(nullptr) 
-    , m_pOffset(nullptr)
-    , m_pData(nullptr)
   {
 
   }
@@ -277,8 +279,6 @@ namespace Dg
   template<typename T>
   DoublyLinkedList<T>::const_iterator::const_iterator(const_iterator const & a_it)
     : m_pNode(a_it.m_pNode)
-    , m_pData(a_it.m_pData)
-    , m_pOffset(a_it.m_pOffset)
   {
 
   }
@@ -288,8 +288,6 @@ namespace Dg
     DoublyLinkedList<T>::const_iterator::operator=(const_iterator const & a_other)
   {
     m_pNode = a_other.m_pNode;
-    m_pOffset = a_other.m_pOffset;
-    m_pData = a_other.m_pData;
     return *this;
   }
 
@@ -303,6 +301,50 @@ namespace Dg
   bool DoublyLinkedList<T>::const_iterator::operator!=(const_iterator const & a_it) const 
   {
     return m_pNode != a_it.m_pNode;
+  }
+
+  template<typename T>
+  typename DoublyLinkedList<T>::const_iterator
+    DoublyLinkedList<T>::const_iterator::operator+(size_t a_val) const
+  {
+    Node const * pNode = m_pNode;
+
+    for (size_t i = 0; i < a_val; i++)
+      pNode = pNode->pNext;
+
+    return const_iterator(pNode);
+  }
+
+  template<typename T>
+  typename DoublyLinkedList<T>::const_iterator
+    DoublyLinkedList<T>::const_iterator::operator-(size_t a_val) const
+  {
+    Node const * pNode = m_pNode;
+
+    for (size_t i = 0; i < a_val; i++)
+      pNode = pNode->pPrev;
+
+    return const_iterator(pNode);
+  }
+
+  template<typename T>
+  typename DoublyLinkedList<T>::const_iterator &
+    DoublyLinkedList<T>::const_iterator::operator+=(size_t a_val)
+  {
+    for (size_t i = 0; i < a_val; i++)
+      m_pNode = m_pNode->pNext;
+
+    return *this;
+  }
+
+  template<typename T>
+  typename DoublyLinkedList<T>::const_iterator &
+    DoublyLinkedList<T>::const_iterator::operator-=(size_t a_val)
+  {
+    for (size_t i = 0; i < a_val; i++)
+      m_pNode = m_pNode->pPrev;
+
+    return *this;
   }
 
   template<typename T>
@@ -343,26 +385,22 @@ namespace Dg
   T const *
     DoublyLinkedList<T>::const_iterator::operator->() const 
   {
-    return m_pData + (m_pNode - m_pOffset);
+    return &(m_pNode->data);
   }
 
   template<typename T>
   T const &
     DoublyLinkedList<T>::const_iterator::operator*() const 
   {
-    return *(m_pData + (m_pNode - m_pOffset));
+    return m_pNode->data;
   }
 
   //--------------------------------------------------------------------------------
   //		iterator
   //--------------------------------------------------------------------------------
   template<typename T>
-  DoublyLinkedList<T>::iterator::iterator(Node * a_pNode, 
-                                          Node* a_pOffset, 
-                                          T * a_pData)
+  DoublyLinkedList<T>::iterator::iterator(Node * a_pNode)
     : m_pNode(a_pNode)
-    , m_pOffset(a_pOffset)
-    , m_pData(a_pData)
   {
 
   }
@@ -370,8 +408,6 @@ namespace Dg
   template<typename T>
   DoublyLinkedList<T>::iterator::iterator()
     : m_pNode(nullptr) 
-    , m_pOffset(nullptr)
-    , m_pData(nullptr)
   {
 
   }
@@ -385,8 +421,6 @@ namespace Dg
   template<typename T>
   DoublyLinkedList<T>::iterator::iterator(iterator const & a_it)
     : m_pNode(a_it.m_pNode)
-    , m_pData(a_it.m_pData)
-    , m_pOffset(a_it.m_pOffset)
   {
 
   }
@@ -396,8 +430,6 @@ namespace Dg
     DoublyLinkedList<T>::iterator::operator=(iterator const & a_other)
   {
     m_pNode = a_other.m_pNode;
-    m_pOffset = a_other.m_pOffset;
-    m_pData = a_other.m_pData;
     return *this;
   }
 
@@ -411,6 +443,50 @@ namespace Dg
   bool DoublyLinkedList<T>::iterator::operator!=(iterator const & a_it) const 
   {
     return m_pNode != a_it.m_pNode;
+  }
+
+  template<typename T>
+  typename DoublyLinkedList<T>::iterator
+    DoublyLinkedList<T>::iterator::operator+(size_t a_val) const
+  {
+    Node * pNode = m_pNode;
+
+    for (size_t i = 0; i < a_val; i++)
+      pNode = pNode->pNext;
+
+    return iterator(pNode);
+  }
+
+  template<typename T>
+  typename DoublyLinkedList<T>::iterator
+    DoublyLinkedList<T>::iterator::operator-(size_t a_val) const
+  {
+    Node * pNode = m_pNode;
+
+    for (size_t i = 0; i < a_val; i++)
+      pNode = pNode->pPrev;
+
+    return iterator(pNode);
+  }
+
+  template<typename T>
+  typename DoublyLinkedList<T>::iterator &
+    DoublyLinkedList<T>::iterator::operator+=(size_t a_val)
+  {
+    for (size_t i = 0; i < a_val; i++)
+      m_pNode = m_pNode->pNext;
+
+    return *this;
+  }
+
+  template<typename T>
+  typename DoublyLinkedList<T>::iterator &
+    DoublyLinkedList<T>::iterator::operator-=(size_t a_val)
+  {
+    for (size_t i = 0; i < a_val; i++)
+      m_pNode = m_pNode->pPrev;
+
+    return *this;
   }
 
   template<typename T>
@@ -451,14 +527,14 @@ namespace Dg
   T *
     DoublyLinkedList<T>::iterator::operator->()
   {
-    return m_pData + (m_pNode - m_pOffset);
+    return &(m_pNode->data);
   }
 
   template<typename T>
   T &
     DoublyLinkedList<T>::iterator::operator*()
   {
-    return *(m_pData + (m_pNode - m_pOffset));
+    return m_pNode->data;
   }
 
   template<typename T>
@@ -476,7 +552,6 @@ namespace Dg
     : ContainerBase()
     , m_nItems(0)
     , m_pNodes(nullptr)
-    , m_pData(nullptr)
   {
     InitMemory();
     InitEndNode();
@@ -487,7 +562,6 @@ namespace Dg
      : ContainerBase(a_size)
      , m_nItems(0)
      , m_pNodes(nullptr)
-     , m_pData(nullptr)
    {
      InitMemory();
      InitEndNode();
@@ -497,7 +571,6 @@ namespace Dg
    DoublyLinkedList<T>::~DoublyLinkedList()
    {
      DestructAll();
-     free(m_pData);
      free(m_pNodes);
    }
 
@@ -506,7 +579,6 @@ namespace Dg
      : ContainerBase(a_other)
      , m_nItems(0)
      , m_pNodes(nullptr)
-     , m_pData(nullptr)
    {
      InitMemory();
      Init(a_other);
@@ -517,13 +589,19 @@ namespace Dg
    {
      if (this != &a_other)
      {
-       DestructAll();
-
        if (pool_size() < a_other.pool_size())
        {
+         Node * pMem = static_cast<Node*>(malloc(a_other.pool_size() * sizeof(Node)));
+         if (pMem == nullptr)
+           throw std::bad_alloc();
+
+         DestructAll();
+         free(m_pNodes);
+         m_pNodes = pMem;
          pool_size(a_other.pool_size());
-         InitMemory();
        }
+       else
+         DestructAll();
 
        Init(a_other);
      }
@@ -531,29 +609,26 @@ namespace Dg
    }
 
    template<typename T>
-   DoublyLinkedList<T>::DoublyLinkedList(DoublyLinkedList && a_other)
+   DoublyLinkedList<T>::DoublyLinkedList(DoublyLinkedList && a_other) noexcept
      : ContainerBase(a_other)
      , m_nItems(a_other.m_nItems)
      , m_pNodes(a_other.m_pNodes)
-     , m_pData(a_other.m_pData)
    {
      a_other.m_pNodes = nullptr;
-     a_other.m_pData = nullptr;
      a_other.m_nItems = 0;
    }
 
    template<typename T>
-   DoublyLinkedList<T> & DoublyLinkedList<T>::operator=(DoublyLinkedList && a_other)
+   DoublyLinkedList<T> & 
+     DoublyLinkedList<T>::operator=(DoublyLinkedList && a_other) noexcept
    {
      if (this != &a_other)
      {
        ContainerBase::operator=(a_other);
-       m_pData = a_other.m_pData;
        m_pNodes = a_other.m_pNodes;
        m_nItems = a_other.m_nItems;
 
        a_other.m_pNodes = nullptr;
-       a_other.m_pData = nullptr;
        a_other.m_nItems = 0;
      }
      return *this;
@@ -563,28 +638,28 @@ namespace Dg
    typename DoublyLinkedList<T>::iterator 
      DoublyLinkedList<T>::begin() 
    {
-     return iterator(m_pNodes[0].pNext, m_pNodes + 1, m_pData);
+     return iterator(m_pNodes[0].pNext);
    }
 
    template<typename T>
    typename DoublyLinkedList<T>::iterator
      DoublyLinkedList<T>::end() 
    {
-     return iterator(&m_pNodes[0], m_pNodes + 1, m_pData); 
+     return iterator(&m_pNodes[0]); 
    }
 
    template<typename T>
    typename DoublyLinkedList<T>::const_iterator
      DoublyLinkedList<T>::cbegin() const 
    {
-     return const_iterator(m_pNodes[0].pNext, m_pNodes + 1, m_pData);
+     return const_iterator(m_pNodes[0].pNext);
    }
 
    template<typename T>
    typename DoublyLinkedList<T>::const_iterator
      DoublyLinkedList<T>::cend() const 
    {
-     return const_iterator(&m_pNodes[0], m_pNodes + 1, m_pData); 
+     return const_iterator(&m_pNodes[0]); 
    }
 
    template<typename T>
@@ -602,25 +677,25 @@ namespace Dg
    template<typename T>
    T & DoublyLinkedList<T>::back() 
    { 
-     return *GetDataFromNode(m_pNodes[0].pPrev);
+     return m_pNodes[0].pPrev->data;
    }
 
    template<typename T>
    T & DoublyLinkedList<T>::front() 
    { 
-     return *GetDataFromNode(m_pNodes[0].pNext); 
+     return m_pNodes[0].pNext->data;
    }
 
    template<typename T>
    T const & DoublyLinkedList<T>::back() const 
    { 
-     return GetDataFromNode(m_pNodes[0].pPrev);
+     return m_pNodes[0].pPrev->data;
    }
 
    template<typename T>
    T const & DoublyLinkedList<T>::front() const 
    { 
-     return GetDataFromNode(m_pNodes[0].pNext); 
+     return m_pNodes[0].pNext->data; 
    }
 
    template<typename T>
@@ -640,7 +715,7 @@ namespace Dg
      DoublyLinkedList<T>::insert(iterator const & a_position, T const & a_item)
    {
      Node * pNode = InsertNewAfter(a_position.m_pNode->pPrev, a_item);
-     return iterator(pNode, m_pNodes + 1, m_pData);
+     return iterator(pNode);
    }
 
    template<typename T>
@@ -660,7 +735,7 @@ namespace Dg
      DoublyLinkedList<T>::erase(iterator const & a_position)
    {
      Node * pNode = Remove(a_position.m_pNode);
-     return iterator(pNode, m_pNodes + 1, m_pData);
+     return iterator(pNode);
    }
 
    template<typename T>
@@ -682,15 +757,17 @@ namespace Dg
    void DoublyLinkedList<T>::Extend()
    {
      Node * pOldNodes(m_pNodes);
+     size_t oldSize = pool_size();
      set_next_pool_size();
 
-     m_pNodes = static_cast<Node *>(realloc(m_pNodes, (pool_size()) * sizeof(Node)));
-     if (m_pNodes == nullptr)
+     Node * pNodesTemp = static_cast<Node *>(realloc(m_pNodes, (pool_size()) * sizeof(Node)));
+     if (pNodesTemp == nullptr)
+     {
+       pool_size(oldSize);
        throw std::bad_alloc();
+     }
 
-     m_pData = static_cast<T *>(realloc(m_pData, (pool_size()) * sizeof(T)));
-     if (m_pData == nullptr)
-       throw std::bad_alloc();
+     m_pNodes = pNodesTemp;
 
      if (pOldNodes != m_pNodes)
      {
@@ -714,8 +791,8 @@ namespace Dg
        a_pNode = &m_pNodes[index]; //Reset the pointer in case we have extended.
      }
 
-     new (&m_pData[m_nItems]) T(a_data);
      m_nItems++;
+     new (&m_pNodes[m_nItems].data) T(a_data);
 
      Node * newNode = &m_pNodes[m_nItems];
      newNode->pPrev = a_pNode;
@@ -729,8 +806,8 @@ namespace Dg
    template<typename T>
    void DoublyLinkedList<T>::DestructAll()
    {
-     for (size_t i = 0; i < m_nItems; i++)
-       m_pData[i].~T();
+     for (size_t i = 1; i <= m_nItems; i++)
+       m_pNodes[i].data.~T();
    }
 
    template<typename T>
@@ -738,10 +815,6 @@ namespace Dg
    {
      m_pNodes = static_cast<Node*> (realloc(m_pNodes, pool_size() * sizeof(Node)));
      if (m_pNodes == nullptr)
-       throw std::bad_alloc();
-
-     m_pData = static_cast<T*> (realloc(m_pData, pool_size() * sizeof(T)));
-     if (m_pData == nullptr)
        throw std::bad_alloc();
    }
 
@@ -753,11 +826,10 @@ namespace Dg
      //We might as well sort the data in list order as we copy.
      //It will cost us nothing.
      Node const * node = &a_other.m_pNodes[0];
-     for (size_t i = 0; i < m_nItems; i++)
+     for (size_t i = 1; i <= m_nItems; i++)
      {
        node = node->pNext;
-       size_t indOther = (node - a_other.m_pNodes);
-       new (&m_pData[i]) T(a_other.m_pData[indOther - 1]);
+       new (&m_pNodes[i].data) T(node->data);
      }
 
      for (size_t i = 1; i <= m_nItems; i++)
@@ -787,16 +859,16 @@ namespace Dg
      a_pNode->pPrev->pNext = a_pNode->pNext;
      a_pNode->pNext->pPrev = a_pNode->pPrev;
 
-     T * pData = GetDataFromNode(a_pNode);
-     pData->~T();
+     a_pNode->data.~T();
 
      if (&m_pNodes[m_nItems] != a_pNode)
      {
        //Move last node to fill gap
-       *a_pNode = m_pNodes[m_nItems];
+       a_pNode->pNext = m_pNodes[m_nItems].pNext;
+       a_pNode->pPrev = m_pNodes[m_nItems].pPrev;
        a_pNode->pPrev->pNext = a_pNode;
        a_pNode->pNext->pPrev = a_pNode;
-       memcpy(pData, &m_pData[m_nItems - 1], sizeof (T));
+       memcpy(&a_pNode->data, &m_pNodes[m_nItems].data, sizeof (T));
      }
 
      if (pNext == &m_pNodes[m_nItems])
@@ -804,18 +876,6 @@ namespace Dg
 
      m_nItems--;
      return pNext;
-   }
-
-   template<typename T>
-   T * DoublyLinkedList<T>::GetDataFromNode(Node * a_pNode)
-   {
-     return m_pData + (a_pNode - m_pNodes - 1);
-   }
-
-   template<typename T>
-   T const * DoublyLinkedList<T>::GetDataFromNode(Node * a_pNode) const
-   {
-     return m_pData + (a_pNode - m_pNodes - 1);
    }
 };
 #endif

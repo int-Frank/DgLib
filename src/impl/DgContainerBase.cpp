@@ -1,8 +1,6 @@
 #include "DgContainerBase.h"
 
-
 #define ARRAY_SIZE(a) sizeof(a) / sizeof(*a)
-
 
 namespace Dg
 {
@@ -23,10 +21,10 @@ namespace Dg
       0x1000000000ull, 0x16a09e667full, 0x2000000000ull, 0x2d413cccfeull, 0x4000000000ull, 0x5a827999fcull, 0x8000000000ull, 0xb504f333f9ull,
       0x10000000000ull, 0x16a09e667f3ull, 0x20000000000ull, 0x2d413cccfe7ull, 0x40000000000ull, 0x5a827999fceull, 0x80000000000ull, 0xb504f333f9dull,
       0x100000000000ull, 0x16a09e667f3bull, 0x200000000000ull, 0x2d413cccfe77ull, 0x400000000000ull, 0x5a827999fcefull, 0x800000000000ull, 0xb504f333f9dfull,
-      0x1000000000001ull, 0x16a09e667f3bfull, 0x2000000000003ull, 0x2d413cccfe77full, 0x4000000000007ull, 0x5a827999fcefeull, 0x800000000000full, 0xb504f333f9dfcull,
-      0x10000000000020ull, 0x16a09e667f3bfaull, 0x20000000000042ull, 0x2d413cccfe77f6ull, 0x40000000000084ull, 0x5a827999fceff0ull, 0x80000000000110ull, 0xb504f333f9dfe8ull,
-      0x100000000000220ull, 0x16a09e667f3bfe0ull, 0x200000000000460ull, 0x2d413cccfe77fe0ull, 0x400000000000900ull, 0x5a827999fcf0000ull, 0x800000000001200ull, 0xb504f333f9e0000ull,
-      0x1000000000002500ull, 0x16a09e667f3c0100ull, 0x2000000000004c00ull, 0x2d413cccfe780400ull, 0x4000000000009800ull, 0x5a827999fcf00c00ull, 0x8000000000013800ull, 0xb504f333f9e02000ull
+      0x1000000000000ull, 0x16a09e667f3bfull, 0x2000000000000ull, 0x2d413cccfe77full, 0x4000000000000ull, 0x5a827999fcefeull, 0x8000000000000ull, 0xb504f333f9dfcull,
+      0x10000000000000ull, 0x16a09e667f3bfaull, 0x20000000000000ull, 0x2d413cccfe77f6ull, 0x40000000000000ull, 0x5a827999fceff0ull, 0x80000000000000ull, 0xb504f333f9dfe8ull,
+      0x100000000000000ull, 0x16a09e667f3bfe0ull, 0x200000000000000ull, 0x2d413cccfe77fe0ull, 0x400000000000000ull, 0x5a827999fcf0000ull, 0x800000000000000ull, 0xb504f333f9e0000ull,
+      0x1000000000000000ull, 0x16a09e667f3c0100ull, 0x2000000000000000ull, 0x2d413cccfe780400ull, 0x4000000000000000ull, 0x5a827999fcf00c00ull, 0x8000000000000000ull, 0xb504f333f9e02000ull
     };
   }
 
@@ -72,7 +70,7 @@ namespace Dg
   //--------------------------------------------------------------------------------
   //	@	ContainerBase::ContainerBase()
   //--------------------------------------------------------------------------------
-  ContainerBase::ContainerBase(ContainerBase && a_other)
+  ContainerBase::ContainerBase(ContainerBase && a_other) noexcept
     : m_poolSizeIndex(a_other.m_poolSizeIndex)
   {
   }
@@ -80,7 +78,7 @@ namespace Dg
   //--------------------------------------------------------------------------------
   //	@	ContainerBase::operator=()
   //--------------------------------------------------------------------------------
-  ContainerBase & ContainerBase::operator=(ContainerBase && a_other)
+  ContainerBase & ContainerBase::operator=(ContainerBase && a_other) noexcept
   {
     m_poolSizeIndex = a_other.m_poolSizeIndex;
     return *this;

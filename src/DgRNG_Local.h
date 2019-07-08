@@ -12,8 +12,8 @@
 
 namespace Dg
 {
-  //Each instance of this RNG will be constructed with the same seeds.
-  //Use when thread safety is needed.
+  //Seeds belong to the object. You will need to seed every time a RNG_Local
+  //is created. Use when thread safety is needed.
   class RNG_Local : public RNG_Base
   {
   public:

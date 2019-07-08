@@ -24,6 +24,9 @@ namespace Dg
   class RNG_Base
   {
   public:
+
+    virtual ~RNG_Base();
+
     //! Seed the internal generator from one value.
     virtual void SetSeed(uint32_t seed) =0;
 

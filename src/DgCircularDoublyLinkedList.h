@@ -37,6 +37,7 @@ namespace Dg
     {
       Node* pNext;
       Node* pPrev;
+      T data;
     };
 
   public:
@@ -54,7 +55,7 @@ namespace Dg
 
     private:
       //! Special constructor, not for external use
-      const_iterator(Node const * pNode, Node const * pOffset, T const * pData);
+      const_iterator(Node const * pNode);
 
     public:
 
@@ -67,6 +68,12 @@ namespace Dg
       bool operator==(const_iterator const & a_it) const;
       bool operator!=(const_iterator const & a_it) const;
 
+      const_iterator operator+(size_t) const;
+      const_iterator operator-(size_t) const;
+
+      const_iterator & operator+=(size_t);
+      const_iterator & operator-=(size_t);
+
       const_iterator& operator++();
       const_iterator operator++(int);
       const_iterator& operator--();
@@ -77,8 +84,6 @@ namespace Dg
 
     private:
       Node const * m_pNode;
-      Node const * m_pOffset;
-      T const * m_pData;
     };
 
 
@@ -95,7 +100,7 @@ namespace Dg
 
     private:
       //! Special constructor, not for external use
-      iterator(Node * pNode, Node * pNodeBegin, T * pData);
+      iterator(Node * pNode);
 
     public:
 
@@ -107,6 +112,12 @@ namespace Dg
 
       bool operator==(iterator const & a_it) const;
       bool operator!=(iterator const & a_it) const;
+
+      iterator operator+(size_t) const;
+      iterator operator-(size_t) const;
+
+      iterator & operator+=(size_t);
+      iterator & operator-=(size_t);
 
       iterator& operator++();
       iterator operator++(int);
@@ -120,8 +131,6 @@ namespace Dg
 
     private:
       Node * m_pNode;
-      Node * m_pOffset;
-      T * m_pData;
     };
 
   public:
@@ -134,8 +143,8 @@ namespace Dg
     CircularDoublyLinkedList(CircularDoublyLinkedList const &);
     CircularDoublyLinkedList & operator=(CircularDoublyLinkedList const &);
 
-    CircularDoublyLinkedList(CircularDoublyLinkedList &&);
-    CircularDoublyLinkedList & operator=(CircularDoublyLinkedList &&);
+    CircularDoublyLinkedList(CircularDoublyLinkedList &&) noexcept;
+    CircularDoublyLinkedList & operator=(CircularDoublyLinkedList &&) noexcept;
 
     //! Returns an iterator pointing to the first data in the CircularDoublyLinkedList container.
     //! If the container is empty, the returned iterator value shall not be dereferenced.
@@ -188,13 +197,9 @@ namespace Dg
 
     Node * Remove(Node * a_pNode);
 
-    T * GetDataFromNode(Node * a_pNode);
-    T const * GetDataFromNode(Node * a_pNode) const;
-
   private:
 
     Node *    m_pNodes;      //Pre-allocated block of memory to hold items
-    T    *    m_pData;
     size_t    m_nItems;     //Number of items currently in the CircularDoublyLinkedList
   };
 
@@ -202,21 +207,15 @@ namespace Dg
   //		const_iterator
   //--------------------------------------------------------------------------------
   template<typename T>
-  CircularDoublyLinkedList<T>::const_iterator::const_iterator(Node const * a_pNode, 
-                                                              Node const * a_pOffset, 
-                                                              T const * a_pData)
+  CircularDoublyLinkedList<T>::const_iterator::const_iterator(Node const * a_pNode)
     : m_pNode(a_pNode)
-    , m_pOffset(a_pOffset)
-    , m_pData(a_pData)
   {
 
   }
 
   template<typename T>
   CircularDoublyLinkedList<T>::const_iterator::const_iterator()
-    : m_pNode(nullptr) 
-    , m_pOffset(nullptr)
-    , m_pData(nullptr)
+    : m_pNode(nullptr)
   {
 
   }
@@ -230,8 +229,6 @@ namespace Dg
   template<typename T>
   CircularDoublyLinkedList<T>::const_iterator::const_iterator(const_iterator const & a_it)
     : m_pNode(a_it.m_pNode)
-    , m_pData(a_it.m_pData)
-    , m_pOffset(a_it.m_pOffset)
   {
 
   }
@@ -241,8 +238,6 @@ namespace Dg
     CircularDoublyLinkedList<T>::const_iterator::operator=(const_iterator const & a_other)
   {
     m_pNode = a_other.m_pNode;
-    m_pOffset = a_other.m_pOffset;
-    m_pData = a_other.m_pData;
     return *this;
   }
 
@@ -258,6 +253,50 @@ namespace Dg
     return m_pNode != a_it.m_pNode;
   }
 
+  template<typename T>
+  typename CircularDoublyLinkedList<T>::const_iterator
+    CircularDoublyLinkedList<T>::const_iterator::operator+(size_t a_val) const
+  {
+    Node * pNode = m_pNode;
+
+    for (size_t i = 0; i < a_val; i++)
+      pNode = pNode->pNext;
+
+    return const_iterator(pNode);
+  }
+
+  template<typename T>
+  typename CircularDoublyLinkedList<T>::const_iterator
+    CircularDoublyLinkedList<T>::const_iterator::operator-(size_t a_val) const
+  {
+    Node * pNode = m_pNode;
+
+    for (size_t i = 0; i < a_val; i++)
+      pNode = pNode->pPrev;
+
+    return const_iterator(pNode);
+  }
+
+  template<typename T>
+  typename CircularDoublyLinkedList<T>::const_iterator &
+    CircularDoublyLinkedList<T>::const_iterator::operator+=(size_t a_val)
+  {
+    for (size_t i = 0; i < a_val; i++)
+      m_pNode = m_pNode->m_pNext;
+
+    return *this;
+  }
+
+  template<typename T>
+  typename CircularDoublyLinkedList<T>::const_iterator &
+    CircularDoublyLinkedList<T>::const_iterator::operator-=(size_t a_val)
+  {
+    for (size_t i = 0; i < a_val; i++)
+      m_pNode = m_pNode->m_pPrev;
+
+    return *this;
+  }
+  
   template<typename T>
   typename CircularDoublyLinkedList<T>::const_iterator &
     CircularDoublyLinkedList<T>::const_iterator::operator++()
@@ -296,35 +335,29 @@ namespace Dg
   T const *
     CircularDoublyLinkedList<T>::const_iterator::operator->() const 
   {
-    return m_pData + (m_pNode - m_pOffset);
+    return &m_pNode->data;
   }
 
   template<typename T>
   T const &
     CircularDoublyLinkedList<T>::const_iterator::operator*() const 
   {
-    return *(m_pData + (m_pNode - m_pOffset));
+    return m_pNode->data;
   }
 
   //--------------------------------------------------------------------------------
   //		iterator
   //--------------------------------------------------------------------------------
   template<typename T>
-  CircularDoublyLinkedList<T>::iterator::iterator(Node * a_pNode, 
-                                                  Node* a_pOffset, 
-                                                  T * a_pData)
+  CircularDoublyLinkedList<T>::iterator::iterator(Node * a_pNode)
     : m_pNode(a_pNode)
-    , m_pOffset(a_pOffset)
-    , m_pData(a_pData)
   {
 
   }
 
   template<typename T>
   CircularDoublyLinkedList<T>::iterator::iterator()
-    : m_pNode(nullptr) 
-    , m_pOffset(nullptr)
-    , m_pData(nullptr)
+    : m_pNode(nullptr)
   {
 
   }
@@ -338,8 +371,6 @@ namespace Dg
   template<typename T>
   CircularDoublyLinkedList<T>::iterator::iterator(iterator const & a_it)
     : m_pNode(a_it.m_pNode)
-    , m_pData(a_it.m_pData)
-    , m_pOffset(a_it.m_pOffset)
   {
 
   }
@@ -349,8 +380,6 @@ namespace Dg
     CircularDoublyLinkedList<T>::iterator::operator=(iterator const & a_other)
   {
     m_pNode = a_other.m_pNode;
-    m_pOffset = a_other.m_pOffset;
-    m_pData = a_other.m_pData;
     return *this;
   }
 
@@ -364,6 +393,50 @@ namespace Dg
   bool CircularDoublyLinkedList<T>::iterator::operator!=(iterator const & a_it) const 
   {
     return m_pNode != a_it.m_pNode;
+  }
+
+  template<typename T>
+  typename CircularDoublyLinkedList<T>::iterator
+    CircularDoublyLinkedList<T>::iterator::operator+(size_t a_val) const
+  {
+    Node * pNode = m_pNode;
+
+    for (size_t i = 0; i < a_val; i++)
+      pNode = pNode->pNext;
+
+    return iterator(pNode);
+  }
+
+  template<typename T>
+  typename CircularDoublyLinkedList<T>::iterator
+    CircularDoublyLinkedList<T>::iterator::operator-(size_t a_val) const
+  {
+    Node * pNode = m_pNode;
+
+    for (size_t i = 0; i < a_val; i++)
+      pNode = pNode->pPrev;
+
+    return iterator(pNode);
+  }
+
+  template<typename T>
+  typename CircularDoublyLinkedList<T>::iterator &
+    CircularDoublyLinkedList<T>::iterator::operator+=(size_t a_val)
+  {
+    for (size_t i = 0; i < a_val; i++)
+      m_pNode = m_pNode->m_pNext;
+
+    return *this;
+  }
+
+  template<typename T>
+  typename CircularDoublyLinkedList<T>::iterator &
+    CircularDoublyLinkedList<T>::iterator::operator-=(size_t a_val)
+  {
+    for (size_t i = 0; i < a_val; i++)
+      m_pNode = m_pNode->m_pPrev;
+
+    return *this;
   }
 
   template<typename T>
@@ -404,14 +477,14 @@ namespace Dg
   T *
     CircularDoublyLinkedList<T>::iterator::operator->()
   {
-    return m_pData + (m_pNode - m_pOffset);
+    return &(m_pNode->data);
   }
 
   template<typename T>
   T &
     CircularDoublyLinkedList<T>::iterator::operator*()
   {
-    return *(m_pData + (m_pNode - m_pOffset));
+    return m_pNode->data;
   }
 
   template<typename T>
@@ -429,7 +502,6 @@ namespace Dg
     : ContainerBase()
     , m_nItems(0)
     , m_pNodes(nullptr)
-    , m_pData(nullptr)
   {
     InitMemory();
     InitHead();
@@ -440,7 +512,6 @@ namespace Dg
     : ContainerBase(a_size)
     , m_nItems(0)
     , m_pNodes(nullptr)
-    , m_pData(nullptr)
   {
     InitMemory();
     InitHead();
@@ -450,7 +521,6 @@ namespace Dg
   CircularDoublyLinkedList<T>::~CircularDoublyLinkedList()
   {
     DestructAll();
-    free(m_pData);
     free(m_pNodes);
   }
 
@@ -459,24 +529,30 @@ namespace Dg
     : ContainerBase(a_other)
     , m_nItems(0)
     , m_pNodes(nullptr)
-    , m_pData(nullptr)
   {
     InitMemory();
     Init(a_other);
   }
 
   template<typename T>
-  CircularDoublyLinkedList<T> & CircularDoublyLinkedList<T>::operator=(CircularDoublyLinkedList const & a_other)
+  CircularDoublyLinkedList<T> & 
+    CircularDoublyLinkedList<T>::operator=(CircularDoublyLinkedList const & a_other)
   {
     if (this != &a_other)
     {
-      DestructAll();
-
       if (pool_size() < a_other.pool_size())
       {
+        Node * pMem = static_cast<Node*>(malloc(a_other.pool_size() * sizeof(Node)));
+        if (pMem == nullptr)
+          throw std::bad_alloc();
+
+        DestructAll();
+        free(m_pNodes);
+        m_pNodes = pMem;
         pool_size(a_other.pool_size());
-        InitMemory();
       }
+      else
+        DestructAll();
 
       Init(a_other);
     }
@@ -484,29 +560,26 @@ namespace Dg
   }
 
   template<typename T>
-  CircularDoublyLinkedList<T>::CircularDoublyLinkedList(CircularDoublyLinkedList && a_other)
+  CircularDoublyLinkedList<T>::CircularDoublyLinkedList(CircularDoublyLinkedList && a_other) noexcept
     : ContainerBase(a_other)
     , m_nItems(a_other.m_nItems)
     , m_pNodes(a_other.m_pNodes)
-    , m_pData(a_other.m_pData)
   {
     a_other.m_pNodes = nullptr;
-    a_other.m_pData = nullptr;
     a_other.m_nItems = 0;
   }
 
   template<typename T>
-  CircularDoublyLinkedList<T> & CircularDoublyLinkedList<T>::operator=(CircularDoublyLinkedList && a_other)
+  CircularDoublyLinkedList<T> & 
+    CircularDoublyLinkedList<T>::operator=(CircularDoublyLinkedList && a_other) noexcept
   {
     if (this != &a_other)
     {
       ContainerBase::operator=(a_other);
-      m_pData = a_other.m_pData;
       m_pNodes = a_other.m_pNodes;
       m_nItems = a_other.m_nItems;
 
       a_other.m_pNodes = nullptr;
-      a_other.m_pData = nullptr;
       a_other.m_nItems = 0;
     }
     return *this;
@@ -516,14 +589,14 @@ namespace Dg
   typename CircularDoublyLinkedList<T>::iterator 
     CircularDoublyLinkedList<T>::head() 
   {
-    return iterator(m_pNodes, m_pNodes, m_pData);
+    return iterator(m_pNodes);
   }
 
   template<typename T>
   typename CircularDoublyLinkedList<T>::const_iterator
     CircularDoublyLinkedList<T>::chead() const 
   {
-    return const_iterator(m_pNodes, m_pNodes, m_pData);
+    return const_iterator(m_pNodes);
   }
 
   template<typename T>
@@ -549,7 +622,7 @@ namespace Dg
     CircularDoublyLinkedList<T>::insert(iterator const & a_position, T const & a_item)
   {
     Node * pNode = InsertNewAfter(a_position.m_pNode->pPrev, a_item);
-    return iterator(pNode, m_pNodes, m_pData);
+    return iterator(pNode);
   }
 
   template<typename T>
@@ -557,7 +630,7 @@ namespace Dg
     CircularDoublyLinkedList<T>::erase(iterator const & a_position)
   {
     Node * pNode = Remove(a_position.m_pNode);
-    return iterator(pNode, m_pNodes, m_pData);
+    return iterator(pNode);
   }
 
   template<typename T>
@@ -579,15 +652,17 @@ namespace Dg
   void CircularDoublyLinkedList<T>::Extend()
   {
     Node * pOldNodes(m_pNodes);
+    size_t oldSize = pool_size();
     set_next_pool_size();
 
-    m_pNodes = static_cast<Node *>(realloc(m_pNodes, (pool_size()) * sizeof(Node)));
-    if (m_pNodes == nullptr)
+    Node * pNodesTemp = static_cast<Node *>(realloc(m_pNodes, (pool_size()) * sizeof(Node)));
+    if (pNodesTemp == nullptr)
+    {
+      pool_size(oldSize);
       throw std::bad_alloc();
+    }
 
-    m_pData = static_cast<T *>(realloc(m_pData, (pool_size()) * sizeof(T)));
-    if (m_pData == nullptr)
-      throw std::bad_alloc();
+    m_pNodes = pNodesTemp;
 
     if (pOldNodes != m_pNodes)
     {
@@ -611,7 +686,7 @@ namespace Dg
       a_pNode = &m_pNodes[index]; //Reset the pointer in case we have extended.
     }
 
-    new (&m_pData[m_nItems]) T(a_data);
+    new (&m_pNodes[m_nItems].data) T(a_data);
 
     Node * newNode = &m_pNodes[m_nItems];
     Node * pNext = a_pNode->pNext;
@@ -628,7 +703,7 @@ namespace Dg
   void CircularDoublyLinkedList<T>::DestructAll()
   {
     for (size_t i = 0; i < m_nItems; i++)
-      m_pData[i].~T();
+      m_pNodes[i].data.~T();
   }
 
   template<typename T>
@@ -636,10 +711,6 @@ namespace Dg
   {
     m_pNodes = static_cast<Node*> (realloc(m_pNodes, pool_size() * sizeof(Node)));
     if (m_pNodes == nullptr)
-      throw std::bad_alloc();
-
-    m_pData = static_cast<T*> (realloc(m_pData, pool_size() * sizeof(T)));
-    if (m_pData == nullptr)
       throw std::bad_alloc();
   }
 
@@ -653,8 +724,7 @@ namespace Dg
     Node const * node = &a_other.m_pNodes[0];
     for (size_t i = 0; i < m_nItems; i++)
     {
-      size_t indOther = (node - a_other.m_pNodes);
-      new (&m_pData[i]) T(a_other.m_pData[indOther]);
+      new (&m_pNodes[i].data) T(node->data);
       node = node->pNext;
     }
 
@@ -685,35 +755,23 @@ namespace Dg
     a_pNode->pPrev->pNext = a_pNode->pNext;
     a_pNode->pNext->pPrev = a_pNode->pPrev;
 
-    T * pData = GetDataFromNode(a_pNode);
-    pData->~T();
+    a_pNode->data.~T();
 
     if (&m_pNodes[m_nItems - 1] != a_pNode)
     {
       //Move last node to fill gap
-      *a_pNode = m_pNodes[m_nItems - 1];
+      a_pNode->pNext = m_pNodes[m_nItems - 1].pNext;
+      a_pNode->pPrev = m_pNodes[m_nItems - 1].pPrev;
       a_pNode->pPrev->pNext = a_pNode;
       a_pNode->pNext->pPrev = a_pNode;
-      memcpy(pData, &m_pData[m_nItems - 1], sizeof (T));
+      memcpy(&a_pNode->data, &m_pNodes[m_nItems - 1].data, sizeof (T));
     }
 
-    if (pNext == &m_pNodes[m_nItems])
+    if (pNext == &m_pNodes[m_nItems - 1])
       pNext = a_pNode;
 
     m_nItems--;
     return pNext;
-  }
-
-  template<typename T>
-  T * CircularDoublyLinkedList<T>::GetDataFromNode(Node * a_pNode)
-  {
-    return m_pData + (a_pNode - m_pNodes);
-  }
-
-  template<typename T>
-  T const * CircularDoublyLinkedList<T>::GetDataFromNode(Node * a_pNode) const
-  {
-    return m_pData + (a_pNode - m_pNodes);
   }
 };
 #endif

@@ -303,7 +303,7 @@ namespace Dg
     {
       Real sintheta = Real(sin(a_angle));
       Real costheta = Real(cos(a_angle));
-
+      
       m_V[0] = costheta;
       m_V[1] = sintheta;
       m_V[2] = static_cast<Real>(0.0);

@@ -40,10 +40,10 @@ namespace Dg
     ContainerBase & operator=(ContainerBase const &);
 
     //! Move constructor
-    ContainerBase(ContainerBase &&);
+    ContainerBase(ContainerBase &&) noexcept;
 
     //! Move assignment
-    ContainerBase & operator=(ContainerBase &&);
+    ContainerBase & operator=(ContainerBase &&) noexcept;
 
     //! Get the current size of the memory pool.
     //! The memory pool is derived from a table of valid memory pool sizes.
