@@ -156,6 +156,7 @@ vpaths
   ["Collections"] = 
   {
     "src/DgMap_AVL.h",
+    "src/DgSET_AVL.h",
     "src/DgCircularDoublyLinkedList.h",
     "src/DgDoublyLinkedList.h",
     "src/DgDynamicArray.h",

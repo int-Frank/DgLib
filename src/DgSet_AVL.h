@@ -1,5 +1,5 @@
-#ifndef DGMAP_AVL_H
-#define DGMAP_AVL_H
+#ifndef DGSET_AVL_H
+#define DGSET_AVL_H
 
 #include <exception>
 #include <new>
@@ -18,30 +18,30 @@ namespace Dg
 {
   namespace impl
   {
-    template<typename T>
-    bool Less(T const & t0, T const & t1)
+    template<typename ValueType>
+    bool Less(ValueType const & t0, ValueType const & t1)
     {
       return t0 < t1;
     }
 
-    template<typename T>
-    T Max(T a, T b)
+    template<typename ValueType>
+    ValueType Max(ValueType a, ValueType b)
     {
       return a > b ? a : b;
     }
 
-    template<typename T>
+    template<typename ValueType>
     struct Node
     {
       Node *       pParent;
       Node *       pLeft;
       Node *       pRight;
       int          height;
-      T            data;
+      ValueType    data;
     };
 
-    template<typename T>
-    Node<T> * GetNext(Node<T> const * a_pNode)
+    template<typename ValueType>
+    Node<ValueType> * GetNext(Node<ValueType> const * a_pNode)
     {
       //Try right
       if (a_pNode->pRight != nullptr)
@@ -50,21 +50,21 @@ namespace Dg
         a_pNode = a_pNode->pRight;
         while (a_pNode->pLeft != nullptr)
           a_pNode = a_pNode->pLeft;
-        return const_cast<Node<T>*>(a_pNode);
+        return const_cast<Node<ValueType>*>(a_pNode);
       }
 
       //If no right, go up
-      Node<T> const * pOldNode;
+      Node<ValueType> const * pOldNode;
       do
       {
         pOldNode = a_pNode;
         a_pNode = a_pNode->pParent;
       } while (pOldNode == a_pNode->pRight);
-      return const_cast<Node<T>*>(a_pNode);
+      return const_cast<Node<ValueType>*>(a_pNode);
     }
 
-    template<typename T>
-    Node<T> * GetPrevious(Node<T> const * a_pNode)
+    template<typename ValueType>
+    Node<ValueType> * GetPrevious(Node<ValueType> const * a_pNode)
     {
       //Try left
       if (a_pNode->pLeft != nullptr)
@@ -73,17 +73,17 @@ namespace Dg
         a_pNode = a_pNode->pLeft;
         while (a_pNode->pRight != nullptr)
           a_pNode = a_pNode->pRight;
-        return const_cast<Node<T>*>(a_pNode);
+        return const_cast<Node<ValueType>*>(a_pNode);
       }
 
       //If no left, go up
-      Node<T> const * pOldNode;
+      Node<ValueType> const * pOldNode;
       do
       {
         pOldNode = a_pNode;
         a_pNode = a_pNode->pParent;
       } while (pOldNode == a_pNode->pLeft);
-      return const_cast<Node<T>*>(a_pNode);
+      return const_cast<Node<ValueType>*>(a_pNode);
     }
   }
 
@@ -94,12 +94,11 @@ namespace Dg
   // 3) No memory deallocation on erasing elements
   // 4) Fast iteration over elements if order is not important (iterator_rand)
   //An end node will follow the last element in the tree.
-  template<typename K, typename V, bool (*Compare)(K const &, K const &) = impl::Less<K>>
-  class Map_AVL : public ContainerBase
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &) = impl::Less<ValueType>>
+  class Set_AVL : public ContainerBase
   {
   public:
 
-    typedef Pair<K const, V>      ValueType;
     typedef impl::Node<ValueType> Node;
 
   private:
@@ -124,7 +123,7 @@ namespace Dg
     //Faster but assume order is random.
     class const_iterator_rand
     {
-      friend class Map_AVL;
+      friend class Set_AVL;
       friend class iterator_rand;
 
     private:
@@ -158,7 +157,7 @@ namespace Dg
     //Faster but assume order is random.
     class iterator_rand
     {
-      friend class Map_AVL;
+      friend class Set_AVL;
 
     private:
 
@@ -182,8 +181,8 @@ namespace Dg
 
       operator const_iterator_rand() const;
 
-      ValueType * operator->();
-      ValueType & operator*();
+      ValueType const * operator->();
+      ValueType const & operator*();
 
     private:
       Node * m_pNode;
@@ -192,7 +191,7 @@ namespace Dg
     //Iterates through the map as sorted by the criterion
     class const_iterator
     {
-      friend class Map_AVL;
+      friend class Set_AVL;
       friend class iterator;
     private:
 
@@ -230,7 +229,7 @@ namespace Dg
     //Iterates through the map as sorted by the criterion
     class iterator
     {
-      friend class Map_AVL;
+      friend class Set_AVL;
     private:
 
       iterator(Node *);
@@ -246,8 +245,8 @@ namespace Dg
       bool operator==(iterator const & a_it) const;
       bool operator!=(iterator const & a_it) const;
 
-      ValueType * operator->();
-      ValueType & operator*();
+      ValueType const * operator->();
+      ValueType const & operator*();
 
       iterator operator+(size_t) const;
       iterator operator-(size_t) const;
@@ -268,15 +267,15 @@ namespace Dg
 
   public:
 
-    Map_AVL();
-    Map_AVL(sizeType requestSize);
-    ~Map_AVL();
+    Set_AVL();
+    Set_AVL(sizeType requestSize);
+    ~Set_AVL();
 
-    Map_AVL(Map_AVL const &);
-    Map_AVL & operator=(Map_AVL const & a_other);
+    Set_AVL(Set_AVL const &);
+    Set_AVL & operator=(Set_AVL const & a_other);
 
-    Map_AVL(Map_AVL && a_other) noexcept;
-    Map_AVL & operator=(Map_AVL && a_other) noexcept;
+    Set_AVL(Set_AVL && a_other) noexcept;
+    Set_AVL & operator=(Set_AVL && a_other) noexcept;
 
     sizeType size() const;
     bool empty() const;
@@ -293,37 +292,23 @@ namespace Dg
 
     //If the key already exists in the map, the data is 
     //inserted at this key
-    iterator insert(K const & a_key, V const & a_data);
+    iterator insert(ValueType const &);
 
-    void erase(K const &);
+    void erase(ValueType const &);
 
     //Returns an iterator to the element that follows the element removed
     //(or end(), if the last element was removed).
     iterator erase(iterator);
 
-    //Searches the container for an element with a key equivalent to a_key and returns 
+    //Searches the container for an element with a key equivalent to a_value and returns 
     //a handle to it if found, otherwise it returns an iterator to end().
-    const_iterator find(K const &) const;
+    const_iterator find(ValueType const &) const;
 
-    //Searches the container for an element with a key equivalent to a_key and returns 
+    //Searches the container for an element with a key equivalent to a_value and returns 
     //a handle to it if found, otherwise it returns an iterator to end().
-    iterator find(K const &);
+    iterator find(ValueType const &);
 
-    //If k matches the key of an element in the container, the function returns 
-    //a reference to its mapped value.
-    //If k does not match the key of any element in the container, the function 
-    //inserts a new element with that key and returns a reference to its mapped value.
-    V & operator[](K const &);
-
-    //Returns a reference to the mapped value of the element identified with key k.
-    //If k does not match the key of any element in the container, the function 
-    //throws an out_of_range exception.
-    V & at(K const &);
-
-    //Returns a reference to the mapped value of the element identified with key k.
-    //If k does not match the key of any element in the container, the function 
-    //throws an out_of_range exception.
-    V const & at(K const &) const;
+    bool exists(ValueType const &) const;
 
     void clear();
 #ifdef DEBUG
@@ -339,12 +324,12 @@ namespace Dg
     void DestructAll();
     void InitMemory();
     void InitDefaultNode();
-    void Init(Map_AVL const &);
+    void Init(Set_AVL const &);
 
     //Sets a_out to the node index which references the key, or
     //if the key does not exist, the node at which the key should be
     //added
-    bool KeyExists(K const & a_key, Node *& a_out) const;
+    bool ValueExists(ValueType const & a_value, Node *& a_out) const;
 
     void Extend();
     int GetBalance(Node *) const;
@@ -356,18 +341,18 @@ namespace Dg
     Node * RightRotate(Node * a_y);
 
     //Constructs a new node after a_pParent. New node will point back to a_pParent.
-    Node * NewNode(Node * pParent, K const & key, V const & data);
+    Node * NewNode(Node * pParent, ValueType const &);
     inline Node * EndNode();
     inline Node const * EndNode() const;
 
     //Returns the pointer to the new node.
     //Assumes tree has at least 1 element
     Node * __Insert(Node * pNode, Node * pParent,
-                    K const & key, V const & data,
+                    ValueType const & data,
                     Node *& newNode);
 
     template<bool GetNext>
-    Node * __Erase(Node * root, K const &, EraseData &);
+    Node * __Erase(Node * root, ValueType const &, EraseData &);
 
   private:
 
@@ -378,8 +363,8 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
   // EraseData
   //------------------------------------------------------------------------------------------------
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::EraseData::EraseData()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::EraseData::EraseData()
     : oldNodeAdd(nullptr)
     , newNodeAdd(nullptr)
     , pNext(nullptr)
@@ -391,97 +376,97 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
   // const_iterator_rand
   //------------------------------------------------------------------------------------------------
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::const_iterator_rand::const_iterator_rand(Map_AVL<K, V, Compare>::Node const * a_pNode)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::const_iterator_rand::const_iterator_rand(Set_AVL<ValueType, Compare>::Node const * a_pNode)
     : m_pNode(a_pNode)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::const_iterator_rand::const_iterator_rand()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::const_iterator_rand::const_iterator_rand()
     : m_pNode(nullptr)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::const_iterator_rand::~const_iterator_rand()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::const_iterator_rand::~const_iterator_rand()
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::const_iterator_rand::const_iterator_rand(const_iterator_rand const & a_it)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::const_iterator_rand::const_iterator_rand(const_iterator_rand const & a_it)
     : m_pNode(a_it.m_pNode)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator_rand & 
-    Map_AVL<K, V, Compare>::const_iterator_rand::operator=(const_iterator_rand const & a_it)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator_rand & 
+    Set_AVL<ValueType, Compare>::const_iterator_rand::operator=(const_iterator_rand const & a_it)
   {
     m_pNode = a_it.m_pNode;
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  bool Map_AVL<K, V, Compare>::const_iterator_rand::operator==(const_iterator_rand const & a_it) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  bool Set_AVL<ValueType, Compare>::const_iterator_rand::operator==(const_iterator_rand const & a_it) const
   {
     return m_pNode == a_it.m_pNode;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  bool Map_AVL<K, V, Compare>::const_iterator_rand::operator!=(const_iterator_rand const & a_it) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  bool Set_AVL<ValueType, Compare>::const_iterator_rand::operator!=(const_iterator_rand const & a_it) const
   {
     return m_pNode != a_it.m_pNode;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator_rand & 
-    Map_AVL<K, V, Compare>::const_iterator_rand::operator++()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator_rand & 
+    Set_AVL<ValueType, Compare>::const_iterator_rand::operator++()
   {
     m_pNode++;
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator_rand
-    Map_AVL<K, V, Compare>::const_iterator_rand::operator++(int)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator_rand
+    Set_AVL<ValueType, Compare>::const_iterator_rand::operator++(int)
   {
     const_iterator_rand result(*this);
     ++(*this);
     return result;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator_rand & 
-    Map_AVL<K, V, Compare>::const_iterator_rand::operator--()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator_rand & 
+    Set_AVL<ValueType, Compare>::const_iterator_rand::operator--()
   {
     m_pNode--;
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator_rand
-    Map_AVL<K, V, Compare>::const_iterator_rand::operator--(int)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator_rand
+    Set_AVL<ValueType, Compare>::const_iterator_rand::operator--(int)
   {
     const_iterator_rand result(*this);
     --(*this);
     return result;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::ValueType const * 
-    Map_AVL<K, V, Compare>::const_iterator_rand::operator->() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  ValueType const * 
+    Set_AVL<ValueType, Compare>::const_iterator_rand::operator->() const
   {
     return &(m_pNode->data);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::ValueType const & 
-    Map_AVL<K, V, Compare>::const_iterator_rand::operator*() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  ValueType const & 
+    Set_AVL<ValueType, Compare>::const_iterator_rand::operator*() const
   {
     return m_pNode->data;
   }
@@ -489,104 +474,104 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
   // iterator_rand
   //------------------------------------------------------------------------------------------------
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::iterator_rand::iterator_rand(Map_AVL<K, V, Compare>::Node * a_pNode)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::iterator_rand::iterator_rand(Set_AVL<ValueType, Compare>::Node * a_pNode)
     : m_pNode(a_pNode)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::iterator_rand::iterator_rand()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::iterator_rand::iterator_rand()
     : m_pNode(nullptr)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::iterator_rand::~iterator_rand()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::iterator_rand::~iterator_rand()
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::iterator_rand::iterator_rand(iterator_rand const & a_it)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::iterator_rand::iterator_rand(iterator_rand const & a_it)
     : m_pNode(a_it.m_pNode)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator_rand & 
-    Map_AVL<K, V, Compare>::iterator_rand::operator=(iterator_rand const & a_it)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator_rand & 
+    Set_AVL<ValueType, Compare>::iterator_rand::operator=(iterator_rand const & a_it)
   {
     m_pNode = a_it.m_pNode;
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  bool Map_AVL<K, V, Compare>::iterator_rand::operator==(iterator_rand const & a_it) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  bool Set_AVL<ValueType, Compare>::iterator_rand::operator==(iterator_rand const & a_it) const
   {
     return m_pNode == a_it.m_pNode;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  bool Map_AVL<K, V, Compare>::iterator_rand::operator!=(iterator_rand const & a_it) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  bool Set_AVL<ValueType, Compare>::iterator_rand::operator!=(iterator_rand const & a_it) const
   {
     return m_pNode != a_it.m_pNode;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator_rand & 
-    Map_AVL<K, V, Compare>::iterator_rand::operator++()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator_rand & 
+    Set_AVL<ValueType, Compare>::iterator_rand::operator++()
   {
     m_pNode++;
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator_rand
-    Map_AVL<K, V, Compare>::iterator_rand::operator++(int)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator_rand
+    Set_AVL<ValueType, Compare>::iterator_rand::operator++(int)
   {
     iterator_rand result(*this);
     ++(*this);
     return result;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator_rand & 
-    Map_AVL<K, V, Compare>::iterator_rand::operator--()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator_rand & 
+    Set_AVL<ValueType, Compare>::iterator_rand::operator--()
   {
     m_pNode--;
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator_rand
-    Map_AVL<K, V, Compare>::iterator_rand::operator--(int)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator_rand
+    Set_AVL<ValueType, Compare>::iterator_rand::operator--(int)
   {
     iterator_rand result(*this);
     --(*this);
     return result;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::iterator_rand::operator
-    typename Map_AVL<K, V, Compare>::const_iterator_rand() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::iterator_rand::operator
+    typename Set_AVL<ValueType, Compare>::const_iterator_rand() const
   {
-    return Map_AVL<K, V, Compare>::const_iterator_rand(m_pNode);
+    return Set_AVL<ValueType, Compare>::const_iterator_rand(m_pNode);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::ValueType * 
-    Map_AVL<K, V, Compare>::iterator_rand::operator->()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  ValueType const * 
+    Set_AVL<ValueType, Compare>::iterator_rand::operator->()
   {
     return &(m_pNode->data);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::ValueType & 
-    Map_AVL<K, V, Compare>::iterator_rand::operator*()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  ValueType const & 
+    Set_AVL<ValueType, Compare>::iterator_rand::operator*()
   {
     return m_pNode->data;
   }
@@ -595,56 +580,56 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
   // const_iterator
   //------------------------------------------------------------------------------------------------
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::const_iterator::const_iterator(Node const * a_pNode)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::const_iterator::const_iterator(Node const * a_pNode)
     : m_pNode(a_pNode)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::const_iterator::const_iterator()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::const_iterator::const_iterator()
     : m_pNode(nullptr)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::const_iterator::~const_iterator()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::const_iterator::~const_iterator()
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::const_iterator::const_iterator(const_iterator const & a_it)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::const_iterator::const_iterator(const_iterator const & a_it)
     : m_pNode(a_it.m_pNode)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator & 
-    Map_AVL<K, V, Compare>::const_iterator::operator=(const_iterator const & a_it)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator & 
+    Set_AVL<ValueType, Compare>::const_iterator::operator=(const_iterator const & a_it)
   {
     m_pNode = a_it.m_pNode;
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  bool Map_AVL<K, V, Compare>::const_iterator::operator==(const_iterator const & a_it) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  bool Set_AVL<ValueType, Compare>::const_iterator::operator==(const_iterator const & a_it) const
   {
     return m_pNode == a_it.m_pNode;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  bool Map_AVL<K, V, Compare>::const_iterator::operator!=(const_iterator const & a_it) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  bool Set_AVL<ValueType, Compare>::const_iterator::operator!=(const_iterator const & a_it) const
   {
     return m_pNode != a_it.m_pNode;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator
-    Map_AVL<K, V, Compare>::const_iterator::operator+(size_t a_val) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator
+    Set_AVL<ValueType, Compare>::const_iterator::operator+(size_t a_val) const
   {
     Node const * pNode = m_pNode;
     for (size_t i = 0; i < a_val; i++)
@@ -652,9 +637,9 @@ namespace Dg
     return const_iterator(pNode);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator
-    Map_AVL<K, V, Compare>::const_iterator::operator-(size_t a_val) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator
+    Set_AVL<ValueType, Compare>::const_iterator::operator-(size_t a_val) const
   {
     Node const * pNode = m_pNode;
     for (size_t i = 0; i < a_val; i++)
@@ -662,68 +647,68 @@ namespace Dg
     return const_iterator(pNode);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator &
-    Map_AVL<K, V, Compare>::const_iterator::operator+=(size_t a_val)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator &
+    Set_AVL<ValueType, Compare>::const_iterator::operator+=(size_t a_val)
   {
     for (size_t i = 0; i < a_val; i++)
       m_pNode = impl::GetNext(m_pNode);
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator &
-    Map_AVL<K, V, Compare>::const_iterator::operator-=(size_t a_val)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator &
+    Set_AVL<ValueType, Compare>::const_iterator::operator-=(size_t a_val)
   {
     for (size_t i = 0; i < a_val; i++)
       m_pNode = impl::GetPrevious(m_pNode);
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator & 
-    Map_AVL<K, V, Compare>::const_iterator::operator++()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator & 
+    Set_AVL<ValueType, Compare>::const_iterator::operator++()
   {
     m_pNode = impl::GetNext(m_pNode);
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator
-    Map_AVL<K, V, Compare>::const_iterator::operator++(int)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator
+    Set_AVL<ValueType, Compare>::const_iterator::operator++(int)
   {
     const_iterator result(*this);
     ++(*this);
     return result;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator & 
-    Map_AVL<K, V, Compare>::const_iterator::operator--()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator & 
+    Set_AVL<ValueType, Compare>::const_iterator::operator--()
   {
     m_pNode = impl::GetPrevious(m_pNode);
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::const_iterator
-    Map_AVL<K, V, Compare>::const_iterator::operator--(int)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::const_iterator
+    Set_AVL<ValueType, Compare>::const_iterator::operator--(int)
   {
     const_iterator result(*this);
     --(*this);
     return result;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::ValueType const * 
-    Map_AVL<K, V, Compare>::const_iterator::operator->() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  ValueType const * 
+    Set_AVL<ValueType, Compare>::const_iterator::operator->() const
   {
     return &(m_pNode->data);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::ValueType const & 
-    Map_AVL<K, V, Compare>::const_iterator::operator*() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  ValueType const & 
+    Set_AVL<ValueType, Compare>::const_iterator::operator*() const
   {
     return m_pNode->data;
   }
@@ -731,56 +716,56 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
   // iterator
   //------------------------------------------------------------------------------------------------
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::iterator::iterator(Node * a_pNode)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::iterator::iterator(Node * a_pNode)
     : m_pNode(a_pNode)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::iterator::iterator()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::iterator::iterator()
     : m_pNode(nullptr)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::iterator::~iterator()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::iterator::~iterator()
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::iterator::iterator(iterator const & a_it)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::iterator::iterator(iterator const & a_it)
     : m_pNode(a_it.m_pNode)
   {
 
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator & 
-    Map_AVL<K, V, Compare>::iterator::operator=(iterator const & a_it)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator & 
+    Set_AVL<ValueType, Compare>::iterator::operator=(iterator const & a_it)
   {
     m_pNode = a_it.m_pNode;
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  bool Map_AVL<K, V, Compare>::iterator::operator==(iterator const & a_it) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  bool Set_AVL<ValueType, Compare>::iterator::operator==(iterator const & a_it) const
   {
     return m_pNode == a_it.m_pNode;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  bool Map_AVL<K, V, Compare>::iterator::operator!=(iterator const & a_it) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  bool Set_AVL<ValueType, Compare>::iterator::operator!=(iterator const & a_it) const
   {
     return m_pNode != a_it.m_pNode;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator
-    Map_AVL<K, V, Compare>::iterator::operator+(size_t a_val) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator
+    Set_AVL<ValueType, Compare>::iterator::operator+(size_t a_val) const
   {
     Node * pNode = m_pNode;
     for (size_t i = 0; i < a_val; i++)
@@ -788,9 +773,9 @@ namespace Dg
     return iterator(pNode);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator
-    Map_AVL<K, V, Compare>::iterator::operator-(size_t a_val) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator
+    Set_AVL<ValueType, Compare>::iterator::operator-(size_t a_val) const
   {
     Node * pNode = m_pNode;
     for (size_t i = 0; i < a_val; i++)
@@ -798,84 +783,84 @@ namespace Dg
     return iterator(pNode);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator &
-    Map_AVL<K, V, Compare>::iterator::operator+=(size_t a_val)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator &
+    Set_AVL<ValueType, Compare>::iterator::operator+=(size_t a_val)
   {
     for (size_t i = 0; i < a_val; i++)
       m_pNode = impl::GetNext(m_pNode);
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator &
-    Map_AVL<K, V, Compare>::iterator::operator-=(size_t a_val)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator &
+    Set_AVL<ValueType, Compare>::iterator::operator-=(size_t a_val)
   {
     for (size_t i = 0; i < a_val; i++)
       m_pNode = impl::GetPrevious(m_pNode);
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator & 
-    Map_AVL<K, V, Compare>::iterator::operator++()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator & 
+    Set_AVL<ValueType, Compare>::iterator::operator++()
   {
     m_pNode = impl::GetNext(m_pNode);
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator
-    Map_AVL<K, V, Compare>::iterator::operator++(int)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator
+    Set_AVL<ValueType, Compare>::iterator::operator++(int)
   {
     iterator result(*this);
     ++(*this);
     return result;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator & 
-    Map_AVL<K, V, Compare>::iterator::operator--()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator & 
+    Set_AVL<ValueType, Compare>::iterator::operator--()
   {
     m_pNode = impl::GetPrevious(m_pNode);
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator
-    Map_AVL<K, V, Compare>::iterator::operator--(int)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator
+    Set_AVL<ValueType, Compare>::iterator::operator--(int)
   {
     iterator result(*this);
     --(*this);
     return result;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::ValueType * 
-    Map_AVL<K, V, Compare>::iterator::operator->()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  ValueType const * 
+    Set_AVL<ValueType, Compare>::iterator::operator->()
   {
     return &(m_pNode->data);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::ValueType & 
-    Map_AVL<K, V, Compare>::iterator::operator*()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  ValueType const & 
+    Set_AVL<ValueType, Compare>::iterator::operator*()
   {
     return m_pNode->data;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::iterator::operator
-    typename Map_AVL<K, V, Compare>::const_iterator() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::iterator::operator
+    typename Set_AVL<ValueType, Compare>::const_iterator() const
   {
-    return Map_AVL<K, V, Compare>::const_iterator(m_pNode);
+    return Set_AVL<ValueType, Compare>::const_iterator(m_pNode);
   }
 
   //------------------------------------------------------------------------------------------------
-  // Map_AVL
+  // Set_AVL
   //------------------------------------------------------------------------------------------------
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::Map_AVL()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::Set_AVL()
     : ContainerBase()
     , m_pNodes(nullptr)
     , m_nItems(0)
@@ -885,8 +870,8 @@ namespace Dg
     InitDefaultNode();
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::Map_AVL(sizeType a_request)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::Set_AVL(sizeType a_request)
     : ContainerBase(a_request)
     , m_pNodes(nullptr)
     , m_nItems(0)
@@ -896,15 +881,15 @@ namespace Dg
     InitDefaultNode();
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::~Map_AVL()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::~Set_AVL()
   {
     DestructAll();
     free(m_pNodes);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::Map_AVL(Map_AVL const & a_other)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::Set_AVL(Set_AVL const & a_other)
     : ContainerBase(a_other.pool_size())
     , m_pNodes(nullptr)
     , m_nItems(0)
@@ -914,9 +899,9 @@ namespace Dg
     Init(a_other);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare> & 
-    Map_AVL<K, V, Compare>::operator=(Map_AVL const & a_other)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare> & 
+    Set_AVL<ValueType, Compare>::operator=(Set_AVL const & a_other)
   {
     if (this != &a_other)
     {
@@ -939,8 +924,8 @@ namespace Dg
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare>::Map_AVL(Map_AVL && a_other) noexcept
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare>::Set_AVL(Set_AVL && a_other) noexcept
     : ContainerBase(a_other)
     , m_pNodes(a_other.m_pNodes)
     , m_nItems(a_other.m_nItems)
@@ -951,9 +936,9 @@ namespace Dg
     a_other.m_pRoot = s_nullValue;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  Map_AVL<K, V, Compare> &
-    Map_AVL<K, V, Compare>::operator=(Map_AVL && a_other) noexcept
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  Set_AVL<ValueType, Compare> &
+    Set_AVL<ValueType, Compare>::operator=(Set_AVL && a_other) noexcept
   {
     if (this != &a_other)
     {
@@ -969,50 +954,50 @@ namespace Dg
     return *this;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::sizeType
-    Map_AVL<K, V, Compare>::Map_AVL::size() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::sizeType
+    Set_AVL<ValueType, Compare>::Set_AVL::size() const
   {
     return m_nItems;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  bool Map_AVL<K, V, Compare>::Map_AVL::empty() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  bool Set_AVL<ValueType, Compare>::Set_AVL::empty() const
   {
     return m_nItems == 0;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::Map_AVL::iterator_rand
-    Map_AVL<K, V, Compare>::Map_AVL::begin_rand()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::Set_AVL::iterator_rand
+    Set_AVL<ValueType, Compare>::Set_AVL::begin_rand()
   {
     return iterator_rand(&m_pNodes[1]);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::Map_AVL::iterator_rand
-    Map_AVL<K, V, Compare>::Map_AVL::end_rand()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::Set_AVL::iterator_rand
+    Set_AVL<ValueType, Compare>::Set_AVL::end_rand()
   {
     return iterator_rand(&m_pNodes[m_nItems]);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::Map_AVL::const_iterator_rand
-    Map_AVL<K, V, Compare>::Map_AVL::cbegin_rand() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::Set_AVL::const_iterator_rand
+    Set_AVL<ValueType, Compare>::Set_AVL::cbegin_rand() const
   {
     return const_iterator_rand(&m_pNodes[1]);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::Map_AVL::const_iterator_rand
-    Map_AVL<K, V, Compare>::Map_AVL::cend_rand() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::Set_AVL::const_iterator_rand
+    Set_AVL<ValueType, Compare>::Set_AVL::cend_rand() const
   {
     return const_iterator_rand(&m_pNodes[m_nItems]);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::Map_AVL::iterator
-    Map_AVL<K, V, Compare>::Map_AVL::begin()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::Set_AVL::iterator
+    Set_AVL<ValueType, Compare>::Set_AVL::begin()
   {
     Node * pNode = m_pRoot;
     while (pNode->pLeft != nullptr)
@@ -1020,16 +1005,16 @@ namespace Dg
     return iterator(pNode);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::Map_AVL::iterator
-    Map_AVL<K, V, Compare>::Map_AVL::end()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::Set_AVL::iterator
+    Set_AVL<ValueType, Compare>::Set_AVL::end()
   {
     return iterator(m_pNodes);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::Map_AVL::const_iterator
-    Map_AVL<K, V, Compare>::Map_AVL::cbegin() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::Set_AVL::const_iterator
+    Set_AVL<ValueType, Compare>::Set_AVL::cbegin() const
   {
     Node * pNode = m_pRoot;
     while (pNode->pLeft != nullptr)
@@ -1037,87 +1022,69 @@ namespace Dg
     return const_iterator(pNode);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::Map_AVL::const_iterator
-    Map_AVL<K, V, Compare>::Map_AVL::cend() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::Set_AVL::const_iterator
+    Set_AVL<ValueType, Compare>::Set_AVL::cend() const
   {
     return const_iterator(m_pNodes);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::Map_AVL::const_iterator
-    Map_AVL<K, V, Compare>::Map_AVL::find(K const & a_key) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::Set_AVL::const_iterator
+    Set_AVL<ValueType, Compare>::Set_AVL::find(ValueType const & a_value) const
   {
     Node * pNode;
-    if (KeyExists(a_key, pNode))
+    if (ValueExists(a_value, pNode))
       return const_iterator(pNode);
     return cend();
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::Map_AVL::iterator
-    Map_AVL<K, V, Compare>::Map_AVL::find(K const & a_key)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::Set_AVL::iterator
+    Set_AVL<ValueType, Compare>::Set_AVL::find(ValueType const & a_value)
   {
     Node * pNode;
-    if (KeyExists(a_key, pNode))
+    if (ValueExists(a_value, pNode))
       return iterator(pNode);
     return end();
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  V & Map_AVL<K, V, Compare>::Map_AVL::operator[](K const & a_key)
-  {
-    iterator it = insert(a_key, V());
-    return it->second;
-  }
-
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator Map_AVL<K, V, Compare>::insert(K const & a_key, V const & a_data)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator Set_AVL<ValueType, Compare>::insert(ValueType const & a_value)
   {
     if ((m_nItems + 1) == pool_size())
       Extend();
 
     Node * foundNode(nullptr);
-    m_pRoot = __Insert(m_pRoot, nullptr, a_key, a_data, foundNode);
+    m_pRoot = __Insert(m_pRoot, nullptr, a_value, foundNode);
     return iterator(foundNode);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  void Map_AVL<K, V, Compare>::erase(K const & a_key)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  void Set_AVL<ValueType, Compare>::erase(ValueType const & a_value)
   {
     EraseData eData;
-    m_pRoot = __Erase<false>(m_pRoot, a_key, eData);
+    m_pRoot = __Erase<false>(m_pRoot, a_value, eData);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::iterator
-    Map_AVL<K, V, Compare>::erase(iterator a_it)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator
+    Set_AVL<ValueType, Compare>::erase(iterator a_it)
   {
     EraseData eData;
-    m_pRoot = __Erase<true>(m_pRoot, a_it->first, eData);
+    m_pRoot = __Erase<true>(m_pRoot, *a_it, eData);
     return iterator(eData.pNext);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  V & Map_AVL<K, V, Compare>::Map_AVL::at(K const & a_key)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  bool Set_AVL<ValueType, Compare>::Set_AVL::exists(ValueType const & a_value) const
   {
-    Node * pResult;
-    if (!KeyExists(a_key, pResult))
-      throw std::out_of_range("Invalid key!");
-    return pResult->data.second;
+    Node * pNode;
+    return ValueExists(a_value, pNode);
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  V const & Map_AVL<K, V, Compare>::Map_AVL::at(K const & a_key) const
-  {
-    Node * pResult;
-    if (!KeyExists(a_key, pResult))
-      throw std::out_of_range("Invalid key!");
-    return pResult->data.second;
-  }
-
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  void Map_AVL<K, V, Compare>::Map_AVL::clear()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  void Set_AVL<ValueType, Compare>::Set_AVL::clear()
   {
     DestructAll();
     m_nItems = 0;
@@ -1125,16 +1092,16 @@ namespace Dg
   }
 
 #ifdef DEBUG
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  typename Map_AVL<K, V, Compare>::sizeType
-    Map_AVL<K, V, Compare>::Map_AVL::Ind(Node const * a_pNode) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::sizeType
+    Set_AVL<ValueType, Compare>::Set_AVL::Ind(Node const * a_pNode) const
   {
     return a_pNode - m_pNodes;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
   std::string 
-    Map_AVL<K, V, Compare>::Map_AVL::ToString(Node const * a_pNode) const
+    Set_AVL<ValueType, Compare>::Set_AVL::ToString(Node const * a_pNode) const
   {
     std::stringstream ss;
     if (a_pNode == nullptr)
@@ -1144,8 +1111,8 @@ namespace Dg
     return ss.str();
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  void Map_AVL<K, V, Compare>::PrintNode(Node const * a_pNode) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  void Set_AVL<ValueType, Compare>::PrintNode(Node const * a_pNode) const
   {
     std::cout << "Index: " << ToString(a_pNode)
       << ", Parent: "  << ToString(a_pNode->pParent)
@@ -1160,8 +1127,8 @@ namespace Dg
     std::cout << ", Height: " << a_pNode->height << "\n";
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  void Map_AVL<K, V, Compare>::Print() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  void Set_AVL<ValueType, Compare>::Print() const
   {
     std::cout << "nItems: " << m_nItems << '\n';
     std::cout << "Root:\n";
@@ -1178,23 +1145,23 @@ namespace Dg
   }
 #endif
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  void Map_AVL<K, V, Compare>::DestructAll()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  void Set_AVL<ValueType, Compare>::DestructAll()
   {
     for (sizeType i = 1; i <= m_nItems; i++)
       m_pNodes[i].data.~ValueType();
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  void Map_AVL<K, V, Compare>::InitMemory()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  void Set_AVL<ValueType, Compare>::InitMemory()
   {
     m_pNodes = static_cast<Node*> (realloc(m_pNodes, pool_size() * sizeof(Node)));
     if (m_pNodes == nullptr)
       throw std::bad_alloc();
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  void Map_AVL<K, V, Compare>::InitDefaultNode()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  void Set_AVL<ValueType, Compare>::InitDefaultNode()
   {
     m_pRoot = &m_pNodes[0];
     m_pNodes[0].pParent = nullptr;
@@ -1203,8 +1170,8 @@ namespace Dg
     m_pNodes[0].height = 0;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  void Map_AVL<K, V, Compare>::Init(Map_AVL const & a_other)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  void Set_AVL<ValueType, Compare>::Init(Set_AVL const & a_other)
   {
     m_nItems = a_other.m_nItems;
 
@@ -1212,10 +1179,10 @@ namespace Dg
     {
       Node newNode{nullptr, nullptr, nullptr, 0};
       newNode.pParent = m_pNodes + (a_other.m_pNodes[i].pParent - a_other.m_pNodes);
-      
+
       if (a_other.m_pNodes[i].pLeft)
         newNode.pLeft = m_pNodes + (a_other.m_pNodes[i].pLeft - a_other.m_pNodes);
-        
+
       if (a_other.m_pNodes[i].pRight)
         newNode.pRight = m_pNodes + (a_other.m_pNodes[i].pRight - a_other.m_pNodes);
 
@@ -1229,21 +1196,21 @@ namespace Dg
     m_pRoot->pParent = nullptr;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  bool Map_AVL<K, V, Compare>::KeyExists(K const & a_key, Node *& a_out) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  bool Set_AVL<ValueType, Compare>::ValueExists(ValueType const & a_value, Node *& a_out) const
   {
     a_out = m_pRoot;
     bool result = false;
     while (a_out != EndNode())
     {
-      if (Compare(a_key, a_out->data.first))
+      if (Compare(a_value, a_out->data))
       {
         if (a_out->pLeft != nullptr)
           a_out = a_out->pLeft;
         else
           break;
       }
-      else if (a_out->data.first == a_key)
+      else if (a_out->data == a_value)
       {
         result = true;
         break;
@@ -1259,8 +1226,8 @@ namespace Dg
     return result;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  void Map_AVL<K, V, Compare>::Extend()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  void Set_AVL<ValueType, Compare>::Extend()
   {
     set_next_pool_size();
     size_t oldSize = pool_size();
@@ -1293,25 +1260,25 @@ namespace Dg
     }
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  int Map_AVL<K, V, Compare>::GetBalance(Node * a_pNode) const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  int Set_AVL<ValueType, Compare>::GetBalance(Node * a_pNode) const
   {  
     if (a_pNode == nullptr)
       return 0;  
     return Height(a_pNode->pLeft) - Height(a_pNode->pRight);  
   } 
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  int Map_AVL<K, V, Compare>::Height(Node * a_pNode) const  
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  int Set_AVL<ValueType, Compare>::Height(Node * a_pNode) const  
   {  
     if (a_pNode == nullptr)  
       return 0;  
     return a_pNode->height;  
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  impl::Node<typename Map_AVL<K, V, Compare>::ValueType> * 
-    Map_AVL<K, V, Compare>::LeftRotate(Node * a_x)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  impl::Node<ValueType> * 
+    Set_AVL<ValueType, Compare>::LeftRotate(Node * a_x)
   {  
     Node * y = a_x->pRight;  
     Node * T2 = y->pLeft;  
@@ -1343,9 +1310,9 @@ namespace Dg
     return y;  
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  impl::Node<typename Map_AVL<K, V, Compare>::ValueType> * 
-    Map_AVL<K, V, Compare>::RightRotate(Node * a_y)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  impl::Node<ValueType> * 
+    Set_AVL<ValueType, Compare>::RightRotate(Node * a_y)
   {  
     Node * x = a_y->pLeft;  
     Node * T2 = x->pRight;  
@@ -1377,13 +1344,13 @@ namespace Dg
     return x;  
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  impl::Node<typename Map_AVL<K, V, Compare>::ValueType> * 
-    Map_AVL<K, V, Compare>::NewNode(Node * a_pParent, K const & a_key, V const & a_data)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  impl::Node<ValueType> * 
+    Set_AVL<ValueType, Compare>::NewNode(Node * a_pParent, ValueType const & a_value)
   {
     //Insert data
     m_nItems++;
-    new (&m_pNodes[m_nItems].data) ValueType{a_key, a_data};
+    new (&m_pNodes[m_nItems].data) ValueType(a_value);
 
     //Insert new node
     Node * newNode = &m_pNodes[m_nItems];
@@ -1395,32 +1362,32 @@ namespace Dg
     return newNode;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  impl::Node<typename Map_AVL<K, V, Compare>::ValueType> * 
-    Map_AVL<K, V, Compare>::EndNode()
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  impl::Node<ValueType> * 
+    Set_AVL<ValueType, Compare>::EndNode()
   {
     return &m_pNodes[0];
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  impl::Node<typename Map_AVL<K, V, Compare>::ValueType> const * 
-    Map_AVL<K, V, Compare>::EndNode() const
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  impl::Node<ValueType> const * 
+    Set_AVL<ValueType, Compare>::EndNode() const
   {
     return &m_pNodes[0];
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
-  impl::Node<typename Map_AVL<K, V, Compare>::ValueType> * 
-    Map_AVL<K, V, Compare>::__Insert(Node * a_pNode, Node * a_pParent,
-                                     K const & a_key, V const & a_data,
-                                     Node *& a_newNode)
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  impl::Node<ValueType> * 
+    Set_AVL<ValueType, Compare>::__Insert(Node * a_pNode, Node * a_pParent,
+                                          ValueType const & a_value,
+                                          Node *& a_newNode)
   {
     //Check if leaf node or final node in the tree. The final node will point
     //to the end node.
     bool isEndNode = (a_pNode == EndNode());
     if (a_pNode == nullptr || isEndNode )
     {
-      a_newNode = NewNode(a_pParent, a_key, a_data);
+      a_newNode = NewNode(a_pParent, a_value);
       if (isEndNode)
       {
         EndNode()->pParent = a_newNode;
@@ -1430,37 +1397,37 @@ namespace Dg
     }
 
     //Same key
-    if (a_key == a_pNode->data.first)
+    if (a_value == a_pNode->data)
     {
       a_newNode = a_pNode;
       return a_pNode;
     }
 
-    if (Compare(a_key, a_pNode->data.first))
-      a_pNode->pLeft = __Insert(a_pNode->pLeft, a_pNode, a_key, a_data, a_newNode);
+    if (Compare(a_value, a_pNode->data))
+      a_pNode->pLeft = __Insert(a_pNode->pLeft, a_pNode, a_value, a_newNode);
     else
-      a_pNode->pRight = __Insert(a_pNode->pRight, a_pNode, a_key, a_data, a_newNode);
+      a_pNode->pRight = __Insert(a_pNode->pRight, a_pNode, a_value, a_newNode);
 
     a_pNode->height = 1 + impl::Max(Height(a_pNode->pLeft), Height(a_pNode->pRight));
     int balance = GetBalance(a_pNode);
 
     // Left Left Case  
-    if (balance > 1 && Compare(a_key, a_pNode->data.first))  
+    if (balance > 1 && Compare(a_value, a_pNode->data))  
       return RightRotate(a_pNode);  
 
     // Right Right Case  
-    if (balance < -1 && !Compare(a_key, a_pNode->data.first))  
+    if (balance < -1 && !Compare(a_value, a_pNode->data))  
       return LeftRotate(a_pNode);  
 
     // Left Right Case  
-    if (balance > 1 && !Compare(a_key, a_pNode->data.first))  
+    if (balance > 1 && !Compare(a_value, a_pNode->data))  
     {  
       a_pNode->pLeft = LeftRotate(a_pNode->pLeft);  
       return RightRotate(a_pNode);  
     }  
 
     // Right Left Case  
-    if (balance < -1 && Compare(a_key, a_pNode->data.first))  
+    if (balance < -1 && Compare(a_value, a_pNode->data))  
     {
       a_pNode->pRight = RightRotate(a_pNode->pRight);
       return LeftRotate(a_pNode);
@@ -1468,23 +1435,23 @@ namespace Dg
     return a_pNode;
   }
 
-  template<typename K, typename V, bool (*Compare)(K const &, K const &)>
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
   template<bool GetNext>
-  impl::Node<typename Map_AVL<K, V, Compare>::ValueType> *
-    Map_AVL<K, V, Compare>::__Erase(Node * a_pRoot, K const & a_key, EraseData & a_data)
+  impl::Node<ValueType> *
+    Set_AVL<ValueType, Compare>::__Erase(Node * a_pRoot, ValueType const & a_value, EraseData & a_data)
   {
     if (a_pRoot == nullptr || a_pRoot == EndNode())
       return a_pRoot;
 
-    if (Compare(a_key, a_pRoot->data.first))
+    if (Compare(a_value, a_pRoot->data))
     {
-      Node * temp = __Erase<GetNext>(a_pRoot->pLeft, a_key, a_data);
+      Node * temp = __Erase<GetNext>(a_pRoot->pLeft, a_value, a_data);
       if (a_data.oldNodeAdd == a_pRoot)
         a_pRoot = a_data.newNodeAdd;
 
       a_pRoot->pLeft = temp;
     }
-    else if (a_key == a_pRoot->data.first)
+    else if (a_value == a_pRoot->data)
     {
       if constexpr (GetNext)
       {
@@ -1576,7 +1543,7 @@ namespace Dg
             if (a_data.pNext == oldNode)
               a_data.pNext = a_pRoot;
           }
-           
+
           a_pRoot->pLeft = oldNode->pLeft;
           a_pRoot->pRight = oldNode->pRight;
           a_pRoot->pParent = oldNode->pParent;
@@ -1624,7 +1591,7 @@ namespace Dg
         memcpy(&(a_pRoot->data), &(successor->data), sizeof(ValueType));
 
         // Delete the inorder successor
-        Node * temp = __Erase<GetNext>(a_pRoot->pRight, successor->data.first, a_data);
+        Node * temp = __Erase<GetNext>(a_pRoot->pRight, successor->data, a_data);
         if (a_data.oldNodeAdd == a_pRoot)
           a_pRoot = a_data.newNodeAdd;
 
@@ -1633,7 +1600,7 @@ namespace Dg
     }
     else
     {
-      Node * temp = __Erase<GetNext>(a_pRoot->pRight, a_key, a_data);
+      Node * temp = __Erase<GetNext>(a_pRoot->pRight, a_value, a_data);
       if (a_data.oldNodeAdd == a_pRoot)
         a_pRoot = a_data.newNodeAdd;
 
