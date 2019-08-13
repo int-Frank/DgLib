@@ -70,10 +70,33 @@ namespace Dg
     static double const INVSQRT2;
   };
 
+
   //! @}
   
   //! @ingroup DgMath_functions
   //! @{
+
+  template<typename INT, int SIZE, typename = std::enable_if<std::is_integral<INT>::value>>
+  inline INT GetMask()
+  {
+    INT result(0);
+    for (int i = 0; i < SIZE; i++)
+      result |= (1 << i);
+    return result;
+  }
+
+  template<typename INT, int OFFSET, int SIZE, typename = std::enable_if<std::is_integral<INT>::value>>
+  inline INT GetSubInt(INT a_integer)
+  {
+    return (a_integer >> OFFSET) & GetMask<INT, SIZE>();
+  }
+
+  template<typename INT, int OFFSET, int SIZE, typename = std::enable_if<std::is_integral<INT>::value>>
+  inline INT SetSubInt(INT a_integer, INT a_value)
+  {
+    return (a_integer & ~(GetMask<INT, SIZE>() << OFFSET)) 
+      | ((a_value & GetMask<INT, SIZE>()) << OFFSET);
+  }
 
   //! Test to see if a number is prime
   template<typename T, typename = std::enable_if<std::is_integral<T>::value>>
@@ -207,20 +230,6 @@ namespace Dg
     
     return r;
   }
-
-  //! Set bits within an integer type.
-  template<typename T, unsigned Position, unsigned Length, typename = std::enable_if<std::is_integral<T>::value>>
-  T SetBitSet(T a_input, T a_value)
-  {
-    T mask = (T(1) << (Length + 1)) - 1;
-    a_value &= mask;
-    mask <<= Position;
-    mask = ~mask;
-    a_input &= mask;
-    a_input |= (a_value << Position);
-    return a_input;
-  }// End: SetBitSet()
-
 
   //! Wrap a number to a range.
   template<typename Real>
