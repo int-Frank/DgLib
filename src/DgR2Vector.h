@@ -9,6 +9,7 @@
 #define DGVECTOR2D_H
 
 #include "impl/DgR2Vector_generic.h"
+#include "impl/DgVector2_generic.h"
 
 namespace Dg
 {
@@ -17,6 +18,8 @@ namespace Dg
     template<typename Real>
     using Vector = Dg::impl::Vector_generic<Real, 2>;
 
+    template<typename Real>
+    using Vector_cartesian = Dg::impl::Vector2_generic<Real>;
 
     //! Squared distance between two points.
     template<typename Real>
