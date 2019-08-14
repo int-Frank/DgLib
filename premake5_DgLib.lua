@@ -76,6 +76,7 @@ vpaths
     "src/impl/DgR3Vector_generic.h",
     "src/impl/DgR2Matrix_generic.h",
     "src/impl/DgR2Vector_generic.h",
+    "src/impl/DgVector2_generic.h"
   },
   ["Math/R2"] = 
   {
