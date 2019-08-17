@@ -6,7 +6,7 @@
 #ifndef DGTYPES_H
 #define DGTYPES_H
 
-#define IS_FLAGGED(x, y) static_cast<bool>(x & (1 << y))
+#define IS_FLAGGED(x, y) ((x & (1 << y)) != 0)
 
 namespace Dg
 {

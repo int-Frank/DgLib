@@ -8,6 +8,7 @@
 
 #include "DgPair.h"
 #include "impl/DgContainerBase.h"
+#include "impl/DgAVLTree_Common.h"
 
 #ifdef DEBUG
 #include <sstream>
@@ -16,77 +17,6 @@
 
 namespace Dg
 {
-  namespace impl
-  {
-    template<typename T>
-    bool Less(T const & t0, T const & t1)
-    {
-      return t0 < t1;
-    }
-
-    template<typename T>
-    T Max(T a, T b)
-    {
-      return a > b ? a : b;
-    }
-
-    template<typename T>
-    struct Node
-    {
-      Node *       pParent;
-      Node *       pLeft;
-      Node *       pRight;
-      int          height;
-      T            data;
-    };
-
-    template<typename T>
-    Node<T> * GetNext(Node<T> const * a_pNode)
-    {
-      //Try right
-      if (a_pNode->pRight != nullptr)
-      {
-        //If right, take right, then take left all the way you can, then return.
-        a_pNode = a_pNode->pRight;
-        while (a_pNode->pLeft != nullptr)
-          a_pNode = a_pNode->pLeft;
-        return const_cast<Node<T>*>(a_pNode);
-      }
-
-      //If no right, go up
-      Node<T> const * pOldNode;
-      do
-      {
-        pOldNode = a_pNode;
-        a_pNode = a_pNode->pParent;
-      } while (pOldNode == a_pNode->pRight);
-      return const_cast<Node<T>*>(a_pNode);
-    }
-
-    template<typename T>
-    Node<T> * GetPrevious(Node<T> const * a_pNode)
-    {
-      //Try left
-      if (a_pNode->pLeft != nullptr)
-      {
-        //If left, take left, then take right all the way you can, then return.
-        a_pNode = a_pNode->pLeft;
-        while (a_pNode->pRight != nullptr)
-          a_pNode = a_pNode->pRight;
-        return const_cast<Node<T>*>(a_pNode);
-      }
-
-      //If no left, go up
-      Node<T> const * pOldNode;
-      do
-      {
-        pOldNode = a_pNode;
-        a_pNode = a_pNode->pParent;
-      } while (pOldNode == a_pNode->pLeft);
-      return const_cast<Node<T>*>(a_pNode);
-    }
-  }
-
   //AVL tree implemented with an object pool. 
   //Objectives:
   // 1) Fast searching
