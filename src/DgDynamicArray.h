@@ -15,13 +15,13 @@
 #include <exception>
 #include <stdint.h>
 
-#include "impl/DgContainerBase.h"
+#include "impl/DgPoolSizeManager.h"
 
 //TODO add iterator class
 namespace Dg
 {
   template<typename T>
-  class DynamicArray : public ContainerBase
+  class DynamicArray
   {
   public:
 
@@ -86,8 +86,9 @@ namespace Dg
 
   private:
     //Data members
-    T* m_pData;
-    size_t m_nItems;
+    T*              m_pData;
+    size_t          m_nItems;
+    PoolSizeManager m_poolSize;
   };
 
   //--------------------------------------------------------------------------------
@@ -96,22 +97,21 @@ namespace Dg
 
   template<typename T>
   DynamicArray<T>::DynamicArray()
-    : ContainerBase()
-    , m_pData(nullptr)
+    : m_pData(nullptr)
     , m_nItems(0)
   {
-    m_pData = static_cast<T*>(malloc(pool_size() * sizeof(T)));
+    m_pData = static_cast<T*>(malloc(m_poolSize.GetSize() * sizeof(T)));
     if (m_pData == nullptr)
       throw std::bad_alloc();
   }
 
   template<typename T>
   DynamicArray<T>::DynamicArray(size_t a_size)
-    : ContainerBase(a_size)
-    , m_pData(nullptr)
+    : m_pData(nullptr)
     , m_nItems(0)
   {
-    m_pData = static_cast<T*>(malloc(pool_size() * sizeof(T)));
+    m_poolSize.SetSize(a_size);
+    m_pData = static_cast<T*>(malloc(m_poolSize.GetSize() * sizeof(T)));
     if (m_pData == nullptr)
       throw std::bad_alloc();
   }
@@ -127,10 +127,11 @@ namespace Dg
 
   template<typename T>
   DynamicArray<T>::DynamicArray(DynamicArray const & a_other)
-    : ContainerBase(a_other.size())
+    : m_poolSize(a_other.m_poolSize)
     , m_pData(nullptr)
     , m_nItems(0)
   {
+    m_poolSize.SetSize(a_other.m_poolSize.GetSize());
     init(a_other);
   }
 
@@ -140,7 +141,7 @@ namespace Dg
     if (this != &a_other)
     {
       clear();
-      ContainerBase::operator=(a_other);
+      m_poolSize = a_other.m_poolSize;
       init(a_other);
     }
     return *this;
@@ -148,7 +149,7 @@ namespace Dg
 
   template<typename T>
   DynamicArray<T>::DynamicArray(DynamicArray && a_other)
-    : ContainerBase(std::move(a_other))
+    : m_poolSize(a_other.m_poolSize)
     , m_pData(a_other.m_pData)
     , m_nItems(a_other.m_nItems)
   {
@@ -164,7 +165,7 @@ namespace Dg
       //Assign to this
       m_nItems = a_other.m_nItems;
       m_pData = a_other.m_pData;
-      pool_size(a_other.pool_size());
+      m_poolSize = a_other.m_poolSize;
 
       //Clear other
       a_other.m_pData = nullptr;
@@ -224,7 +225,7 @@ namespace Dg
   template<typename T>
   void DynamicArray<T>::push_back(T const & a_item)
   {
-    if (m_nItems == pool_size())
+    if (m_nItems == m_poolSize.GetSize())
       extend();
 
     new(&m_pData[m_nItems]) T(a_item);
@@ -234,14 +235,14 @@ namespace Dg
   template<typename T>
   void DynamicArray<T>::pop_back()
   {
-    m_pData[pool_size() - 1].~T();
+    m_pData[m_poolSize.GetSize() - 1].~T();
     --m_nItems;
   }
 
   template<typename T>
   void DynamicArray<T>::clear()
   {
-    for (size_t i = 0; i < pool_size(); i++)
+    for (size_t i = 0; i < m_poolSize.GetSize(); i++)
       m_pData[i].~T();
     m_nItems = 0;
   }
@@ -251,14 +252,14 @@ namespace Dg
   {
     pool_size(a_size);
 
-    if (pool_size() < m_nItems)
+    if (m_poolSize.GetSize() < m_nItems)
     {
-      for (size_t i = pool_size(); i < m_nItems; i++)
+      for (size_t i = m_poolSize.GetSize(); i < m_nItems; i++)
         m_pData[i].~T();
-      m_nItems = pool_size();
+      m_nItems = m_poolSize.GetSize();
     }
 
-    m_pData = static_cast<T*>(realloc(m_pData, pool_size() * sizeof(T)));
+    m_pData = static_cast<T*>(realloc(m_pData, m_poolSize.GetSize() * sizeof(T)));
     if (m_pData == nullptr)
       throw std::bad_alloc();
   }
@@ -274,8 +275,8 @@ namespace Dg
   template<typename T>
   void DynamicArray<T>::extend()
   {
-    set_next_pool_size();
-    m_pData = static_cast<T*>(realloc(m_pData, pool_size() * sizeof(T)));
+    m_poolSize.SetNextPoolSize();
+    m_pData = static_cast<T*>(realloc(m_pData, m_poolSize.GetSize() * sizeof(T)));
     if (m_pData == nullptr)
       throw std::bad_alloc();
   }
@@ -283,9 +284,9 @@ namespace Dg
   template<typename T>
   void DynamicArray<T>::init(DynamicArray const & a_other)
   {
-    pool_size(a_other.pool_size());
+    m_poolSize = a_other.m_poolSize;
     m_nItems = a_other.m_nItems;
-    m_pData = static_cast<T*>(realloc(m_pData, pool_size() * sizeof(T)));
+    m_pData = static_cast<T*>(realloc(m_pData, m_poolSize.GetSize() * sizeof(T)));
     if (m_pData == nullptr)
       throw std::bad_alloc();
 
@@ -297,7 +298,7 @@ namespace Dg
   //		Bool specialization
   //--------------------------------------------------------------------------------
   template<>
-  class DynamicArray<bool> : public ContainerBase
+  class DynamicArray<bool>
   {
   private:
 
@@ -386,22 +387,21 @@ namespace Dg
   public:
 
     DynamicArray()
-      : ContainerBase()
-      , m_pBuckets(nullptr)
+      : m_pBuckets(nullptr)
       , m_nItems(0)
     {
-      m_pBuckets = static_cast<TypeTraits::intType*>(malloc(pool_size() * sizeof(TypeTraits::intType)));
+      m_pBuckets = static_cast<TypeTraits::intType*>(malloc(m_poolSize.GetSize() * sizeof(TypeTraits::intType)));
       if (m_pBuckets == nullptr)
         throw std::bad_alloc();
     }
 
     //! Construct with a set size
     DynamicArray(TypeTraits::intType a_size)
-      : ContainerBase(a_size)
-      , m_pBuckets(nullptr)
+      : m_pBuckets(nullptr)
       , m_nItems(0)
     {
-      m_pBuckets = static_cast<TypeTraits::intType*>(malloc(pool_size() * sizeof(TypeTraits::intType)));
+      m_poolSize.SetSize(a_size);
+      m_pBuckets = static_cast<TypeTraits::intType*>(malloc(m_poolSize.GetSize() * sizeof(TypeTraits::intType)));
       if (m_pBuckets == nullptr)
         throw std::bad_alloc();
     }
@@ -413,7 +413,7 @@ namespace Dg
 
     //! Copy constructor
     DynamicArray(DynamicArray const & a_other)
-      : ContainerBase(a_other)
+      : m_poolSize(a_other.m_poolSize)
       , m_pBuckets(nullptr)
     {
       init(a_other);
@@ -426,7 +426,7 @@ namespace Dg
         return *this;
 
       clear();
-      ContainerBase::operator=(a_other);
+      m_poolSize = a_other.m_poolSize;
       init(a_other);
 
       return *this;
@@ -434,7 +434,7 @@ namespace Dg
 
     //! Move constructor
     DynamicArray(DynamicArray && a_other)
-      : ContainerBase(std::move(a_other))
+      : m_poolSize(a_other.m_poolSize)
       , m_pBuckets(a_other.m_pBuckets)
     {
       a_other.m_pBuckets = nullptr;
@@ -449,7 +449,7 @@ namespace Dg
         //Assign to this
         m_nItems = a_other.m_nItems;
         m_pBuckets = a_other.m_pBuckets;
-        pool_size(a_other.pool_size());
+        m_poolSize = a_other.m_poolSize;
 
         //Clear other
         a_other.m_pBuckets = nullptr;
@@ -508,7 +508,7 @@ namespace Dg
     //! Add element to the back of the array.
     void push_back(bool a_val)
     {
-      if (m_nItems == pool_size() * (TypeTraits::nBits))
+      if (m_nItems == m_poolSize.GetSize() * (TypeTraits::nBits))
       {
         extend();
       }
@@ -533,8 +533,8 @@ namespace Dg
     void resize(TypeTraits::intType newSize)
     {
       newSize = newSize >> TypeTraits::shift;
-      newSize = pool_size(newSize);
-      m_pBuckets = static_cast<TypeTraits::intType*>(realloc(m_pBuckets, pool_size() * sizeof(TypeTraits::intType)));
+      newSize = m_poolSize.SetSize(newSize);
+      m_pBuckets = static_cast<TypeTraits::intType*>(realloc(m_pBuckets, m_poolSize.GetSize() * sizeof(TypeTraits::intType)));
       if (m_pBuckets == nullptr)
         throw std::bad_alloc();
     }
@@ -544,15 +544,15 @@ namespace Dg
     //! Exteneds the total size of the array (current + reserve) by a factor of 2
     void extend()
     {
-      set_next_pool_size();
-      m_pBuckets = static_cast<TypeTraits::intType*>(realloc(m_pBuckets, pool_size() * sizeof(TypeTraits::intType)));
+      m_poolSize.SetNextPoolSize();
+      m_pBuckets = static_cast<TypeTraits::intType*>(realloc(m_pBuckets, m_poolSize.GetSize() * sizeof(TypeTraits::intType)));
       if (m_pBuckets == nullptr)
         throw std::bad_alloc();
     }
 
     void init(DynamicArray const & a_other)
     {
-      resize(a_other.pool_size() << TypeTraits::shift);
+      resize(a_other.m_poolSize.GetSize() << TypeTraits::shift);
       TypeTraits::intType sze = ((a_other.m_nItems + 7) >> 3);
       memcpy(m_pBuckets, a_other.m_pBuckets, sze);
       m_nItems = a_other.m_nItems;
@@ -560,6 +560,7 @@ namespace Dg
 
   private:
     //Data members
+    PoolSizeManager          m_poolSize;
     TypeTraits::intType *    m_pBuckets;
     TypeTraits::intType      m_nItems;
   };

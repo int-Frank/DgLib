@@ -7,7 +7,7 @@
 #include <exception>
 
 #include "DgPair.h"
-#include "impl/DgContainerBase.h"
+#include "impl/DgPoolSizeManager.h"
 #include "impl/DgAVLTree_Common.h"
 
 #ifdef DEBUG
@@ -25,7 +25,7 @@ namespace Dg
   // 4) Fast iteration over elements if order is not important (iterator_rand)
   //An end node will follow the last element in the tree.
   template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &) = impl::Less<ValueType>>
-  class Set_AVL : public ContainerBase
+  class Set_AVL
   {
   public:
 
@@ -286,9 +286,10 @@ namespace Dg
 
   private:
 
-    Node *    m_pRoot;
-    Node *    m_pNodes;
-    sizeType  m_nItems;
+    PoolSizeManager m_poolSize;
+    Node *          m_pRoot;
+    Node *          m_pNodes;
+    sizeType        m_nItems;
   };
   //------------------------------------------------------------------------------------------------
   // EraseData
@@ -791,8 +792,7 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
   template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
   Set_AVL<ValueType, Compare>::Set_AVL()
-    : ContainerBase()
-    , m_pNodes(nullptr)
+    : m_pNodes(nullptr)
     , m_nItems(0)
     , m_pRoot(nullptr)
   {
@@ -802,11 +802,11 @@ namespace Dg
 
   template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
   Set_AVL<ValueType, Compare>::Set_AVL(sizeType a_request)
-    : ContainerBase(a_request)
-    , m_pNodes(nullptr)
+    : m_pNodes(nullptr)
     , m_nItems(0)
     , m_pRoot(nullptr)
   {
+    m_poolSize.SetSize(a_request);
     InitMemory();
     InitDefaultNode();
   }
@@ -820,7 +820,7 @@ namespace Dg
 
   template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
   Set_AVL<ValueType, Compare>::Set_AVL(Set_AVL const & a_other)
-    : ContainerBase(a_other.pool_size())
+    : m_poolSize(a_other.m_poolSize)
     , m_pNodes(nullptr)
     , m_nItems(0)
     , m_pRoot(nullptr)
@@ -835,16 +835,16 @@ namespace Dg
   {
     if (this != &a_other)
     {
-      if (pool_size() < a_other.pool_size())
+      if (m_poolSize.GetSize() < a_other.m_poolSize.GetSize())
       {
-        Node * pMem = static_cast<Node*>(malloc(a_other.pool_size() * sizeof(Node)));
+        Node * pMem = static_cast<Node*>(malloc(a_other.m_poolSize.GetSize() * sizeof(Node)));
         if (pMem == nullptr)
           throw std::bad_alloc();
 
         DestructAll();
         free(m_pNodes);
         m_pNodes = pMem;
-        pool_size(a_other.pool_size());
+        m_poolSize = a_other.m_poolSize;
       }
       else
         DestructAll();
@@ -856,7 +856,7 @@ namespace Dg
 
   template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
   Set_AVL<ValueType, Compare>::Set_AVL(Set_AVL && a_other) noexcept
-    : ContainerBase(a_other)
+    : m_poolSize(a_other.m_poolSize)
     , m_pNodes(a_other.m_pNodes)
     , m_nItems(a_other.m_nItems)
     , m_pRoot(a_other.m_pRoot)
@@ -872,7 +872,7 @@ namespace Dg
   {
     if (this != &a_other)
     {
-      ContainerBase::operator=(a_other);
+      m_poolSize = a_other.m_poolSize;
       m_pNodes = a_other.m_pNodes;
       m_nItems = a_other.m_nItems;
       m_pRoot = a_other.m_pRoot;
@@ -982,7 +982,7 @@ namespace Dg
   template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
   typename Set_AVL<ValueType, Compare>::iterator Set_AVL<ValueType, Compare>::insert(ValueType const & a_value)
   {
-    if ((m_nItems + 1) == pool_size())
+    if ((m_nItems + 1) == m_poolSize.GetSize())
       Extend();
 
     Node * foundNode(nullptr);
@@ -1085,7 +1085,7 @@ namespace Dg
   template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
   void Set_AVL<ValueType, Compare>::InitMemory()
   {
-    m_pNodes = static_cast<Node*> (realloc(m_pNodes, pool_size() * sizeof(Node)));
+    m_pNodes = static_cast<Node*> (realloc(m_pNodes, m_poolSize.GetSize() * sizeof(Node)));
     if (m_pNodes == nullptr)
       throw std::bad_alloc();
   }
@@ -1159,14 +1159,14 @@ namespace Dg
   template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
   void Set_AVL<ValueType, Compare>::Extend()
   {
-    set_next_pool_size();
-    size_t oldSize = pool_size();
+    m_poolSize.SetNextPoolSize();
+    size_t oldSize = m_poolSize.GetSize();
     Node * oldNodes = m_pNodes;
 
-    Node * pNodesTemp = static_cast<Node*> (realloc(m_pNodes, pool_size() * sizeof(Node)));
+    Node * pNodesTemp = static_cast<Node*> (realloc(m_pNodes, m_poolSize.GetSize() * sizeof(Node)));
     if (pNodesTemp == nullptr)
     {
-      pool_size(oldSize);
+      m_poolSize.SetSize(oldSize);
       throw std::bad_alloc();
     }
 

@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <exception>
 
-#include "impl/DgContainerBase.h"
+#include "impl/DgPoolSizeManager.h"
 
 namespace Dg
 {
@@ -31,7 +31,7 @@ namespace Dg
   //! @author Frank B. Hart
   //! @date 25/08/2016
   template<typename T>
-  class DoublyLinkedList : public ContainerBase
+  class DoublyLinkedList
   {
   private:
     
@@ -249,8 +249,9 @@ namespace Dg
 
   private:
 
-	  Node *    m_pNodes;      //Pre-allocated block of memory to hold items
-	  size_t    m_nItems;     //Number of items currently in the DoublyLinkedList
+    PoolSizeManager m_poolSize;
+	  Node *          m_pNodes;      //Pre-allocated block of memory to hold items
+	  size_t          m_nItems;     //Number of items currently in the DoublyLinkedList
   };
 
   //--------------------------------------------------------------------------------
@@ -549,8 +550,7 @@ namespace Dg
   //--------------------------------------------------------------------------------
   template<typename T>
    DoublyLinkedList<T>::DoublyLinkedList()
-    : ContainerBase()
-    , m_nItems(0)
+    : m_nItems(0)
     , m_pNodes(nullptr)
   {
     InitMemory();
@@ -559,10 +559,10 @@ namespace Dg
 
    template<typename T>
    DoublyLinkedList<T>::DoublyLinkedList(size_t a_size)
-     : ContainerBase(a_size)
-     , m_nItems(0)
+     : m_nItems(0)
      , m_pNodes(nullptr)
    {
+     m_poolSize.SetSize(a_size);
      InitMemory();
      InitEndNode();
    }
@@ -576,7 +576,7 @@ namespace Dg
 
    template<typename T>
    DoublyLinkedList<T>::DoublyLinkedList(DoublyLinkedList const & a_other)
-     : ContainerBase(a_other)
+     : m_poolSize(a_other.m_poolSize)
      , m_nItems(0)
      , m_pNodes(nullptr)
    {
@@ -589,16 +589,16 @@ namespace Dg
    {
      if (this != &a_other)
      {
-       if (pool_size() < a_other.pool_size())
+       if (m_poolSize.GetSize() < a_other.m_poolSize.GetSize())
        {
-         Node * pMem = static_cast<Node*>(malloc(a_other.pool_size() * sizeof(Node)));
+         Node * pMem = static_cast<Node*>(malloc(a_other.m_poolSize.GetSize() * sizeof(Node)));
          if (pMem == nullptr)
            throw std::bad_alloc();
 
          DestructAll();
          free(m_pNodes);
          m_pNodes = pMem;
-         pool_size(a_other.pool_size());
+         m_poolSize = a_other.m_poolSize;
        }
        else
          DestructAll();
@@ -610,7 +610,7 @@ namespace Dg
 
    template<typename T>
    DoublyLinkedList<T>::DoublyLinkedList(DoublyLinkedList && a_other) noexcept
-     : ContainerBase(a_other)
+     : m_poolSize(a_other.m_poolSize)
      , m_nItems(a_other.m_nItems)
      , m_pNodes(a_other.m_pNodes)
    {
@@ -624,7 +624,7 @@ namespace Dg
    {
      if (this != &a_other)
      {
-       ContainerBase::operator=(a_other);
+       m_poolSize = a_other.m_poolSize;
        m_pNodes = a_other.m_pNodes;
        m_nItems = a_other.m_nItems;
 
@@ -757,13 +757,13 @@ namespace Dg
    void DoublyLinkedList<T>::Extend()
    {
      Node * pOldNodes(m_pNodes);
-     size_t oldSize = pool_size();
-     set_next_pool_size();
+     size_t oldSize = m_poolSize.GetSize();
+     m_poolSize.SetNextPoolSize();
 
-     Node * pNodesTemp = static_cast<Node *>(realloc(m_pNodes, (pool_size()) * sizeof(Node)));
+     Node * pNodesTemp = static_cast<Node *>(realloc(m_pNodes, (m_poolSize.GetSize()) * sizeof(Node)));
      if (pNodesTemp == nullptr)
      {
-       pool_size(oldSize);
+       m_poolSize.SetSize(oldSize);
        throw std::bad_alloc();
      }
 
@@ -783,7 +783,7 @@ namespace Dg
    typename DoublyLinkedList<T>::Node *
      DoublyLinkedList<T>::InsertNewAfter(Node * a_pNode, T const & a_data)
    {
-     if (m_nItems == (pool_size() - 1))
+     if (m_nItems == (m_poolSize.GetSize() - 1))
      {
        //Extending might invalidate a_pNode, so we need to record its index in the pool.
        size_t index(a_pNode - m_pNodes);
@@ -813,7 +813,7 @@ namespace Dg
    template<typename T>
    void DoublyLinkedList<T>::InitMemory()
    {
-     m_pNodes = static_cast<Node*> (realloc(m_pNodes, pool_size() * sizeof(Node)));
+     m_pNodes = static_cast<Node*> (realloc(m_pNodes, m_poolSize.GetSize() * sizeof(Node)));
      if (m_pNodes == nullptr)
        throw std::bad_alloc();
    }

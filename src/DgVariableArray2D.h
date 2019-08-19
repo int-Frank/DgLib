@@ -29,7 +29,7 @@ namespace Dg
   //! @author Frank Hart
   //! @date 7/01/2014
   template<class T>
-  class VariableArray2D : public ContainerBase
+  class VariableArray2D
   {
   public:
     //Constructor / destructor

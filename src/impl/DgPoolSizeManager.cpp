@@ -1,4 +1,4 @@
-#include "DgContainerBase.h"
+#include "DgPoolSizeManager.h"
 
 #define ARRAY_SIZE(a) sizeof(a) / sizeof(*a)
 
@@ -24,101 +24,53 @@ namespace Dg
       0x1000000000000ull, 0x16a09e667f3bfull, 0x2000000000000ull, 0x2d413cccfe77full, 0x4000000000000ull, 0x5a827999fcefeull, 0x8000000000000ull, 0xb504f333f9dfcull,
       0x10000000000000ull, 0x16a09e667f3bfaull, 0x20000000000000ull, 0x2d413cccfe77f6ull, 0x40000000000000ull, 0x5a827999fceff0ull, 0x80000000000000ull, 0xb504f333f9dfe8ull,
       0x100000000000000ull, 0x16a09e667f3bfe0ull, 0x200000000000000ull, 0x2d413cccfe77fe0ull, 0x400000000000000ull, 0x5a827999fcf0000ull, 0x800000000000000ull, 0xb504f333f9e0000ull,
-      0x1000000000000000ull, 0x16a09e667f3c0100ull, 0x2000000000000000ull, 0x2d413cccfe780400ull, 0x4000000000000000ull, 0x5a827999fcf00c00ull, 0x8000000000000000ull, 0xb504f333f9e02000ull
+      0x1000000000000000ull, 0x16a09e667f3c0100ull, 0x2000000000000000ull, 0x2d413cccfe780400ull, 0x4000000000000000ull, 0x5a827999fcf00c00ull, 0x8000000000000000ull, 0xb504f333f9e02000ull,
+      0xFFFFFFFFFFFFFFFFull
     };
   }
 
   //--------------------------------------------------------------------------------
-  //	@	ContainerBase::ContainerBase()
+  //	@	PoolSizeManager::PoolSizeManager()
   //--------------------------------------------------------------------------------
-  ContainerBase::ContainerBase() : m_poolSizeIndex(0)
+  PoolSizeManager::PoolSizeManager() : m_index(0)
   {
   }
 
   //--------------------------------------------------------------------------------
-  //	@	ContainerBase::~ContainerBase()
+  //	@	PoolSizeManager::pool_size()
   //--------------------------------------------------------------------------------
-  ContainerBase::~ContainerBase()
+  size_t PoolSizeManager::GetSize() const
   {
+    return impl::validContainerPoolSizes[m_index];
   }
 
   //--------------------------------------------------------------------------------
-  //	@	ContainerBase::ContainerBase()
+  //	@	PoolSizeManager::pool_size()
   //--------------------------------------------------------------------------------
-  ContainerBase::ContainerBase(size_t a_nItems) : m_poolSizeIndex(0)
-  {
-    pool_size(a_nItems);
-  }
-
-  //--------------------------------------------------------------------------------
-  //	@	ContainerBase::ContainerBase()
-  //--------------------------------------------------------------------------------
-  ContainerBase::ContainerBase(ContainerBase const & a_other) 
-    : m_poolSizeIndex(a_other.m_poolSizeIndex)
-  {
-  }
-
-  //--------------------------------------------------------------------------------
-  //	@	ContainerBase::operator=()
-  //--------------------------------------------------------------------------------
-  ContainerBase & ContainerBase::operator=(ContainerBase const & a_other)
-  {
-    m_poolSizeIndex = a_other.m_poolSizeIndex;
-    return *this;
-  }
-
-  //--------------------------------------------------------------------------------
-  //	@	ContainerBase::ContainerBase()
-  //--------------------------------------------------------------------------------
-  ContainerBase::ContainerBase(ContainerBase && a_other) noexcept
-    : m_poolSizeIndex(a_other.m_poolSizeIndex)
-  {
-  }
-
-  //--------------------------------------------------------------------------------
-  //	@	ContainerBase::operator=()
-  //--------------------------------------------------------------------------------
-  ContainerBase & ContainerBase::operator=(ContainerBase && a_other) noexcept
-  {
-    m_poolSizeIndex = a_other.m_poolSizeIndex;
-    return *this;
-  }
-
-  //--------------------------------------------------------------------------------
-  //	@	ContainerBase::pool_size()
-  //--------------------------------------------------------------------------------
-  size_t ContainerBase::pool_size() const
-  {
-    return impl::validContainerPoolSizes[m_poolSizeIndex];
-  }
-
-  //--------------------------------------------------------------------------------
-  //	@	ContainerBase::pool_size()
-  //--------------------------------------------------------------------------------
-  size_t ContainerBase::pool_size(size_t a_nItems)
+  size_t PoolSizeManager::SetSize(size_t a_nItems)
   {
     for (int i = 0; i < ARRAY_SIZE(impl::validContainerPoolSizes); i++)
     {
       if (a_nItems <= impl::validContainerPoolSizes[i])
       {
-        m_poolSizeIndex = i;
-        return pool_size();
+        m_index = i;
+        return GetSize();
       }
     }
-    m_poolSizeIndex = ARRAY_SIZE(impl::validContainerPoolSizes) - 1;
-    return pool_size();
+    m_index = ARRAY_SIZE(impl::validContainerPoolSizes) - 1;
+    return GetSize();
   }
 
   //--------------------------------------------------------------------------------
-  //	@	ContainerBase::set_next_pool_size()
+  //	@	PoolSizeManager::set_next_pool_size()
   //--------------------------------------------------------------------------------
-  size_t ContainerBase::set_next_pool_size()
+  size_t PoolSizeManager::SetNextPoolSize()
   {
-    if (m_poolSizeIndex == ARRAY_SIZE(impl::validContainerPoolSizes))
+    if (m_index == ARRAY_SIZE(impl::validContainerPoolSizes))
     {
-      return pool_size();
+      return GetSize();
     }
-    m_poolSizeIndex++;
-    return pool_size();
+    m_index++;
+    return GetSize();
   }
 }

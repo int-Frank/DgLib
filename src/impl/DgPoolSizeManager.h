@@ -5,8 +5,8 @@
 //!
 //! Class declaration: ContainerBase
 
-#ifndef DG_CONTAINERBASE_H
-#define DG_CONTAINERBASE_H
+#ifndef DG_POOLSIZEMANAGER_H
+#define DG_POOLSIZEMANAGER_H
 
 namespace Dg
 {
@@ -19,48 +19,29 @@ namespace Dg
   //!
   //! @author Frank B. Hart
   //! @date 24/08/2016
-  class ContainerBase
+  class PoolSizeManager
   {
   public:
 
     //! Constructor
-    ContainerBase();
-
-    //! Request the container to hold at least a_nItems. The memory pool
-    //! will be large enough to hold a_nItems.
-    ContainerBase(size_t a_nItems);
-
-    //! Destructor.
-    virtual ~ContainerBase();
-
-    //! Copy constructor.
-    ContainerBase(ContainerBase const &);
-
-    //! Assignment
-    ContainerBase & operator=(ContainerBase const &);
-
-    //! Move constructor
-    ContainerBase(ContainerBase &&) noexcept;
-
-    //! Move assignment
-    ContainerBase & operator=(ContainerBase &&) noexcept;
+    PoolSizeManager();
 
     //! Get the current size of the memory pool.
     //! The memory pool is derived from a table of valid memory pool sizes.
-    size_t pool_size() const;
+    size_t GetSize() const;
 
     //! Set the current size of the memory pool.
     //! This is only a request. The memory pool is derived 
     //! from a table of valid memory pool sizes, but will endevour to 
     //! be at large enough to fit a_nItems.
-    size_t pool_size(size_t a_nItems);
+    size_t SetSize(size_t a_nItems);
 
     //! Increase the memory pool size. This is done by selecting the
     //! next value in the table of valid memory pool sizes.
-    size_t set_next_pool_size();
+    size_t SetNextPoolSize();
 
   private:
-    int   m_poolSizeIndex;
+    int   m_index;
   };
 }
 
