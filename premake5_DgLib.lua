@@ -16,6 +16,7 @@ vpaths
     "src/DgTimer.h",
     "src/DgTypes.h",
     "src/DgIDManager.h",
+    "src/DgEndian.h"
   },
   ["Misc/impl"] = 
   {
@@ -23,6 +24,7 @@ vpaths
     "src/impl/DgAssert.cpp",
     "src/impl/DgParser_INI.cpp",
     "src/impl/DgTimer.cpp",
+    "src/impl/DgEndian.cpp"
   },
   ["Math"] = 
   { 
