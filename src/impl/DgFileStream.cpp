@@ -174,7 +174,7 @@ namespace Dg
       return -Err_Disallowed;
 
     fwrite(a_buffer, 1, a_count, m_file);
-    return -a_count;
+    return a_count;
   }
 
 

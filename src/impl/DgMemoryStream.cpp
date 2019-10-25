@@ -292,16 +292,16 @@ namespace Dg
       myInt remaining = m_size - m_position;
       if (count > remaining)
         return Err_BadInput;
-      m_size -= count;
     }
     else
     {
       if (-count > m_position)
         return Err_BadInput;
       m_position += count;
-      m_size += count;
       count = -count;
     }
+
+    m_size -= abs(count);
     memmove(&m_buffer[m_position], &m_buffer[m_position + count], count);
     
     return Err_None;

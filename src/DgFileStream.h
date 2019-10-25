@@ -17,8 +17,8 @@ namespace Dg
      r   |     Y     |     Y    |     N    |    
      w   |     N     |     N    |     Y    | 
      rw  |     N     |     Y    |     Y    |      
-     wt  |     N     |     N    |     Y    | 
-     rwt |     N     |     Y    |     Y    | 
+     wt  |     N     |     N    |     Y    | will truncate file on open
+     rwt |     N     |     Y    |     Y    | will truncate file on open
   */
   class FileStream : public Stream
   {

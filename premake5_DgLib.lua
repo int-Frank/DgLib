@@ -32,7 +32,8 @@ vpaths
     "src/impl/DgTimer.cpp",
     "src/impl/DgEndian.cpp",
     "src/impl/DgStream.cpp",
-    "src/impl/DgMemoryStream.cpp"    
+    "src/impl/DgMemoryStream.cpp",
+    "src/impl/DgFileStream.cpp"    
   },
   ["Math"] = 
   { 
