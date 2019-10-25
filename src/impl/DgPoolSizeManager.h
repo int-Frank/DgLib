@@ -25,6 +25,7 @@ namespace Dg
 
     //! Constructor
     PoolSizeManager();
+    PoolSizeManager(size_t);
 
     //! Get the current size of the memory pool.
     //! The memory pool is derived from a table of valid memory pool sizes.
@@ -39,6 +40,10 @@ namespace Dg
     //! Increase the memory pool size. This is done by selecting the
     //! next value in the table of valid memory pool sizes.
     size_t SetNextPoolSize();
+
+    //! Decrease the memory pool size. This is done by selecting the
+    //! previous value in the table of valid memory pool sizes.
+    size_t SetPrevPoolSize();
 
   private:
     int   m_index;

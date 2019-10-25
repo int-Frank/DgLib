@@ -18,13 +18,21 @@ vpaths
     "src/DgIDManager.h",
     "src/DgEndian.h"
   },
+  ["Misc/io"] = 
+  {
+    "src/DgStream.h",
+    "src/DgMemoryStream.h",
+    "src/DgFileStream.h",
+  },
   ["Misc/impl"] = 
   {
     "src/impl/DgStringFunctions.cpp",
     "src/impl/DgAssert.cpp",
     "src/impl/DgParser_INI.cpp",
     "src/impl/DgTimer.cpp",
-    "src/impl/DgEndian.cpp"
+    "src/impl/DgEndian.cpp",
+    "src/impl/DgStream.cpp",
+    "src/impl/DgMemoryStream.cpp"    
   },
   ["Math"] = 
   { 
@@ -175,5 +183,7 @@ vpaths
     "src/impl/DgContainerBase.cpp",
     "src/impl/DgContainerBase.h",
     "src/impl/DgHashTable.cpp",
+    "src/impl/DgPoolSizeManager.h",
+    "src/impl/DgPoolSizeManager.cpp"
   }
 }
