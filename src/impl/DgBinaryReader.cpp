@@ -21,14 +21,14 @@ namespace Dg
     Close();
   }
 
-  BinaryReader::BinaryReader(BinaryReader && a_rhs)
+  BinaryReader::BinaryReader(BinaryReader && a_rhs) noexcept
     : m_endianConverter(std::move(a_rhs.m_endianConverter))
     , m_pStream(std::move(a_rhs.m_pStream))
   {
 
   }
 
-  BinaryReader & BinaryReader::operator=(BinaryReader && a_rhs)
+  BinaryReader & BinaryReader::operator=(BinaryReader && a_rhs) noexcept
   {
     if (this != &a_rhs)
     {
@@ -50,7 +50,7 @@ namespace Dg
     if (a_pStream == nullptr)
       return Err_BadInput;
 
-    if (a_pStream->IsReadable())
+    if (!a_pStream->IsReadable())
       return Err_Disallowed;
 
     m_pStream = a_pStream;
@@ -169,7 +169,9 @@ namespace Dg
       else
         break;
     }
-    return result;
+    if (result == Err_None)
+      return a_length;
+    return -result;
   }
 
   BinaryReader::myInt BinaryReader::Read(void * a_buffer, myInt const a_count)

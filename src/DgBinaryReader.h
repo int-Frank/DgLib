@@ -25,8 +25,8 @@ namespace Dg
     BinaryReader(BinaryReader &) = delete;
     BinaryReader & operator=(BinaryReader &) = delete;
 
-    BinaryReader(BinaryReader &&);
-    BinaryReader & operator=(BinaryReader &&);
+    BinaryReader(BinaryReader &&) noexcept;
+    BinaryReader & operator=(BinaryReader &&) noexcept;
 
     void SetEndianConverter(EndianConverter const);
 
@@ -72,8 +72,7 @@ namespace Dg
       if (m_pStream == nullptr)
         return Err_NullObject;
 
-      T tempOut(static_cast<T>(0));
-      myInt result = m_pStream->Read(static_cast<void *>(&tempOut), sizeof(T));
+      myInt result = m_pStream->Read(static_cast<void *>(&a_out), sizeof(T));
       if (result < 0)
         return Stream::GetErrorCode(result);
 

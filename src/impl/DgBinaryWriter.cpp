@@ -21,14 +21,14 @@ namespace Dg
     Close();
   }
 
-  BinaryWriter::BinaryWriter(BinaryWriter && a_rhs)
+  BinaryWriter::BinaryWriter(BinaryWriter && a_rhs) noexcept
     : m_endianConverter(std::move(a_rhs.m_endianConverter))
     , m_pStream(std::move(a_rhs.m_pStream))
   {
 
   }
 
-  BinaryWriter & BinaryWriter::operator=(BinaryWriter && a_rhs)
+  BinaryWriter & BinaryWriter::operator=(BinaryWriter && a_rhs) noexcept
   {
     if (this != &a_rhs)
     {
@@ -50,7 +50,7 @@ namespace Dg
     if (a_pStream == nullptr)
       return Err_BadInput;
 
-    if (a_pStream->IsWritable())
+    if (!a_pStream->IsWritable())
       return Err_Disallowed;
 
     m_pStream = a_pStream;

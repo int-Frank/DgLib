@@ -25,8 +25,8 @@ namespace Dg
     BinaryWriter(BinaryWriter &) = delete;
     BinaryWriter & operator=(BinaryWriter &) = delete;
 
-    BinaryWriter(BinaryWriter &&);
-    BinaryWriter & operator=(BinaryWriter &&);
+    BinaryWriter(BinaryWriter &&) noexcept;
+    BinaryWriter & operator=(BinaryWriter &&) noexcept;
 
     void SetEndianConverter(EndianConverter const);
 
