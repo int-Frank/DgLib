@@ -23,6 +23,8 @@ vpaths
     "src/DgStream.h",
     "src/DgMemoryStream.h",
     "src/DgFileStream.h",
+    "src/DgBinaryReader.h",
+    "src/DgBinaryWriter.h",
   },
   ["Misc/impl"] = 
   {
@@ -33,7 +35,9 @@ vpaths
     "src/impl/DgEndian.cpp",
     "src/impl/DgStream.cpp",
     "src/impl/DgMemoryStream.cpp",
-    "src/impl/DgFileStream.cpp"    
+    "src/impl/DgFileStream.cpp",
+    "src/impl/DgBinaryReader.cpp",  
+    "src/impl/DgBinaryWriter.cpp" 
   },
   ["Math"] = 
   { 

@@ -55,7 +55,6 @@ namespace Dg
     virtual myInt GetSize() = 0;
 
     // Returns a new position or a negative value on error. On 
-    // success, the position will be clamped to [0, size]
     virtual myInt Seek(myInt const offset, StreamSeekOrigin const origin) = 0;
 
     // Skips a number of bytes forward if count is positive or
@@ -66,8 +65,7 @@ namespace Dg
     // Returns a current position or a negative value on error.
     virtual myInt GetPosition();
 
-    // Moves stream's pointer to a new position. On 
-    // success, the position will be clamped to [0, size].
+    // Moves stream's pointer to a new position.
     // Returns position on success.
     // Returns a negative value on error.
     virtual myInt SetPosition(myInt const position);

@@ -26,6 +26,7 @@ namespace Dg
     Err_FailedToAllocMem,
     Err_Disallowed,
     Err_InsufficientSpace,
+    Err_NullObject,
     Err_COUNT
   };
 }
