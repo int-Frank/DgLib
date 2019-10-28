@@ -20,9 +20,11 @@ vpaths
   },
   ["Misc/io"] = 
   {
+    "src/DgIO_Common.h",
     "src/DgStream.h",
     "src/DgMemoryStream.h",
     "src/DgFileStream.h",
+    "src/DgBinaryIO.h",
     "src/DgBinaryReader.h",
     "src/DgBinaryWriter.h",
   },
@@ -36,6 +38,7 @@ vpaths
     "src/impl/DgStream.cpp",
     "src/impl/DgMemoryStream.cpp",
     "src/impl/DgFileStream.cpp",
+    "src/impl/DgBinaryIO.cpp", 
     "src/impl/DgBinaryReader.cpp",  
     "src/impl/DgBinaryWriter.cpp" 
   },

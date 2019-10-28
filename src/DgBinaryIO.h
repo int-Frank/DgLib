@@ -25,13 +25,11 @@ namespace Dg
     bool IsOpen() const;
     void Close();
 
-    // Returns a new position or a negative value on error. On 
-    // success, the position will be clamped to [0, size]
+    // Returns a new position.
     IO::ReturnType Seek(IO::myInt const offset, StreamSeekOrigin const origin);
 
     // Skips a number of bytes forward if count is positive or
     // backward otherwise.
-    // Returns a negative value on error.
     IO::ReturnType Skip(IO::myInt const);
 
     // Returns a current position or a negative value on error.
@@ -39,7 +37,6 @@ namespace Dg
 
     // Moves stream's pointer to a new position.
     // Returns position on success.
-    // Returns a negative value on error.
     IO::ReturnType SetPosition(IO::myInt const position);
 
   protected:
