@@ -28,88 +28,74 @@ namespace Dg
     return *this;
   }
 
-  Stream::myInt Stream::Skip(myInt const a_count)
+  IO::ReturnType Stream::Skip(IO::myInt const a_count)
   {
     return Seek(a_count, StreamSeekOrigin::current);
   }
 
-  Stream::myInt Stream::SetPosition(myInt const a_position)
+  IO::ReturnType Stream::SetPosition(IO::myInt const a_position)
   {
     return Seek(a_position, StreamSeekOrigin::begin);
   }
 
-  Stream::myInt Stream::GetPosition()
+  IO::ReturnType Stream::GetPosition()
   {
     return Seek(0, StreamSeekOrigin::current);
   }
 
-  Stream::myInt Stream::ReadByte(byte & a_out)
+  IO::ReturnType Stream::ReadByte(IO::byte & a_out)
   {
     return Read(&a_out, 1);
   }
 
-  Stream::myInt Stream::WriteByte(byte const a_value)
+  IO::ReturnType Stream::WriteByte(IO::byte const a_value)
   {
     return Write(&a_value, 1);
   }
 
-  Stream::myInt Stream::WriteString(std::string const & a_str)
+  IO::ReturnType Stream::WriteString(std::string const & a_str)
   {
-    return Write(a_str.c_str(), static_cast<myInt>(a_str.length()));
+    return Write(a_str.c_str(), static_cast<IO::myInt>(a_str.length()));
   }
 
-  Stream::myInt Stream::CopyTo(Stream * a_pStream, myInt const a_bufSze)
+  IO::ReturnType Stream::CopyTo(Stream * a_pStream, IO::myInt const a_bufSze)
   {
     if (a_pStream == nullptr)
-      return -Err_BadInput;
+      IO::ReturnType{Err_BadInput, 0};
 
     if (!a_pStream->IsWritable())
-      return -Err_Disallowed;
+      IO::ReturnType{Err_Disallowed, 0};
 
-    myInt bufSze = a_bufSze;
+    IO::myInt bufSze = a_bufSze;
     if (bufSze <= 0)
-      bufSze = GetDefaultCopyBufferSize();
+      bufSze = s_defaultCopyBufSize;
 
-    byte * buffer = new byte[bufSze];
-    myInt result = 0;
+    IO::byte * buffer = new IO::byte[bufSze];
+    IO::ReturnType result{Err_None, 0};
 
     while (true)
     {
-      myInt readResult = Read(buffer, bufSze);
+      IO::ReturnType readResult = Read(buffer, bufSze);
 
-      if (readResult < 0) //Read error
+      if (readResult.error != Err_None) //Read error
       {
-        result = readResult;
+        result.error = readResult.error;
         break;
       }
-      else if (readResult == 0) //No more to read
+      else if (readResult.value == 0) //No more to read
         break;
 
-      myInt writeResult = a_pStream->Write(buffer, readResult);
+      IO::ReturnType writeResult = a_pStream->Write(buffer, readResult.value);
 
-      if (writeResult < 0) //Write error
+      if (writeResult.error != Err_None) //Write error
       {
-        result = writeResult;
+        result.error = writeResult.error;
         break;
       }
-      result += writeResult;
+      result.value += writeResult.value;
     }
 
     delete[] buffer;
     return result;
-  }
-
-  Stream::myInt Stream::GetDefaultCopyBufferSize()
-  {
-    return 4096;
-  }
-
-  ErrorCode Stream::GetErrorCode(myInt const a_val)
-  {
-    if (a_val >= 0)
-      return Err_None;
-    if (-a_val < Err_COUNT)
-      return static_cast<ErrorCode>(-a_val);
-    return Err_Unknown;
   }
 }

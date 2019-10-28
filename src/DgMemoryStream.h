@@ -39,8 +39,8 @@ namespace Dg
   
     MemoryStream(uint32_t const openMode = StreamOpenMode::read | StreamOpenMode::write);
 
-    MemoryStream(myInt const bufSize,
-                 byte const * buffer, 
+    MemoryStream(IO::myInt const bufSize,
+                 IO::byte const * buffer, 
                  uint32_t const openMode = StreamOpenMode::read);
   
     MemoryStream(MemoryStream const &) = delete;
@@ -52,44 +52,44 @@ namespace Dg
     virtual ~MemoryStream();
 
     ErrorCode Open(uint32_t const openMode = StreamOpenMode::read | StreamOpenMode::write);
-    ErrorCode Open(myInt const bufSize,
-                   byte const * buffer, 
+    ErrorCode Open(IO::myInt const bufSize,
+                   IO::byte const * buffer, 
                    uint32_t const openMode = StreamOpenMode::read);
 
     void Close() override;
     bool IsOpen() const override;
-    myInt GetSize() override;
+    IO::ReturnType GetSize() override;
 
     //Cannot move cursor before the start of the stream
-    myInt Seek(myInt const offset, StreamSeekOrigin const) override;
+    IO::ReturnType Seek(IO::myInt const offset, StreamSeekOrigin const) override;
 
-    myInt Skip(myInt const) override;
-    myInt GetPosition() override;
+    IO::ReturnType Skip(IO::myInt const) override;
+    IO::ReturnType GetPosition() override;
 
-    myInt SetPosition(myInt const) override;
+    IO::ReturnType SetPosition(IO::myInt const) override;
 
     //Will fail if the cursor is beyond the end of the stream
-    myInt Read(void * buffer, myInt const count) override;
+    IO::ReturnType Read(void * buffer, IO::myInt const count) override;
 
     //If the stream is written to beyond the end of the stream,
     //the gap will be filled with 0s.
-    myInt Write(void const * buffer, myInt const count) override;
+    IO::ReturnType Write(void const * buffer, IO::myInt const count) override;
 
     bool IsReadable() const override;
     bool IsSeekable() const override;
     bool IsWritable() const override;
 
-    byte * GetData();
-    byte const * GetData() const;
+    IO::byte * GetData();
+    IO::byte const * GetData() const;
 
     //count can be +ve or -ve. Either way,
     //on success the current position will be moved to the
     //start of where the block was located.
-    ErrorCode RemoveBlock(myInt const count);
+    IO::ReturnType RemoveBlock(IO::myInt const count);
 
   private:
 
-    ErrorCode SetBufferSize(myInt const);
+    ErrorCode SetBufferSize(IO::myInt const);
     ErrorCode CloseAndReset();
     void SetFlags(uint32_t const);
 
@@ -98,11 +98,11 @@ namespace Dg
     bool m_isOpen;
     bool m_isReadable;
     bool m_isWritable;
-    myInt m_position;
-    myInt m_size;
+    IO::myInt m_position;
+    IO::myInt m_size;
 
     PoolSizeManager m_bufSize;
-    byte * m_buffer;
+    IO::byte * m_buffer;
 
   };
 }

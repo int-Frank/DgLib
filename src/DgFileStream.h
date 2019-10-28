@@ -39,14 +39,14 @@ namespace Dg
 
     void Close() override;
     bool IsOpen() const override;
-    myInt GetSize() override;
-    myInt Seek(myInt const offset, StreamSeekOrigin const) override;
-    myInt Skip(myInt const) override;
-    myInt GetPosition() override;
-    myInt SetPosition(myInt const) override;
+    IO::ReturnType GetSize() override;
+    IO::ReturnType Seek(IO::myInt const offset, StreamSeekOrigin const) override;
+    IO::ReturnType Skip(IO::myInt const) override;
+    IO::ReturnType GetPosition() override;
+    IO::ReturnType SetPosition(IO::myInt const) override;
 
-    myInt Read(void * buffer, myInt const count) override;
-    myInt Write(void const * buffer, myInt const count) override;
+    IO::ReturnType Read(void * buffer, IO::myInt const count) override;
+    IO::ReturnType Write(void const * buffer, IO::myInt const count) override;
 
     bool IsReadable() const override;
     bool IsSeekable() const override;

@@ -86,23 +86,23 @@ namespace Dg
     return m_file != nullptr;
   }
 
-  Stream::myInt FileStream::GetSize()
+  IO::ReturnType FileStream::GetSize()
   {
     if (m_file == nullptr)
-      return -Err_StreamNotOpen;
+      return IO::ReturnType{Err_StreamNotOpen, IO::INVALID_VALUE};
 
     fpos_t position;
     fgetpos(m_file, &position);
     fseek(m_file, 0L, SEEK_END);
-    myInt size = ftell(m_file);
+    IO::myInt size = ftell(m_file);
     fsetpos(m_file, &position);
-    return size;
+    return IO::ReturnType{Err_None, size};
   }
 
-  Stream::myInt FileStream::Seek(myInt const a_offset, StreamSeekOrigin const a_origin)
+  IO::ReturnType FileStream::Seek(IO::myInt const a_offset, StreamSeekOrigin const a_origin)
   {
     if (m_file == nullptr)
-      return -Err_StreamNotOpen;
+      return IO::ReturnType{Err_StreamNotOpen, IO::INVALID_VALUE};
 
     fpos_t position;
     fgetpos(m_file, &position);
@@ -130,51 +130,71 @@ namespace Dg
     if (result != 0)
     {
       fsetpos(m_file, &position);
-      return -Err_Failure;
+      return IO::ReturnType{Err_Failure, position};
     }
 
     return GetPosition();
   }
 
-  Stream::myInt FileStream::Skip(myInt const a_offset)
+  IO::ReturnType FileStream::Skip(IO::myInt const a_offset)
   {
     return Seek(a_offset, StreamSeekOrigin::current);
   }
 
-  Stream::myInt FileStream::GetPosition()
+  IO::ReturnType FileStream::GetPosition()
   {
-    return static_cast<myInt>(ftell(m_file));
+    IO::ReturnType rt;
+    rt.value = static_cast<IO::myInt>(ftell(m_file));
+    if (rt.value < 0)
+      rt.error = Err_Failure;
+    else
+      rt.error = Err_None;
+    return rt;
   }
 
-  Stream::myInt FileStream::SetPosition(myInt const a_position)
+  IO::ReturnType FileStream::SetPosition(IO::myInt const a_position)
   {
     return Seek(a_position, StreamSeekOrigin::begin);
   }
 
-  Stream::myInt FileStream::Read(void * a_buffer, myInt const a_count)
+  IO::ReturnType FileStream::Read(void * a_buffer, IO::myInt const a_count)
   {
     if (m_file == nullptr)
-      return -Err_StreamNotOpen;
+      return IO::ReturnType{Err_StreamNotOpen, 0};
 
     if (!m_isReadable)
-      return -Err_Disallowed;
+      return IO::ReturnType{Err_Disallowed, 0};
 
     if (a_buffer == nullptr || a_count < 0)
-      return -Err_BadInput;
+      return IO::ReturnType{Err_BadInput, 0};
 
-    return static_cast<myInt>(fread(a_buffer, 1, a_count, m_file));
+    return IO::ReturnType{Err_None, static_cast<IO::myInt>(fread(a_buffer, 1, a_count, m_file))};
   }
 
-  Stream::myInt FileStream::Write(void const * a_buffer, myInt const a_count)
+  IO::ReturnType FileStream::Write(void const * a_buffer, IO::myInt const a_count)
   {
     if (m_file == nullptr)
-      return -Err_StreamNotOpen;
+      return IO::ReturnType{Err_StreamNotOpen, 0};
 
     if (!m_isWritable)
-      return -Err_Disallowed;
+      return IO::ReturnType{Err_Disallowed, 0};
 
-    fwrite(a_buffer, 1, a_count, m_file);
-    return a_count;
+    if (a_count == 0)
+      return IO::ReturnType{Err_None, 0};
+
+    //We need this as fwrite cannot follow after a fread without calling a repositioning function.
+    //That is, FileStream::Write will fail if it follows a FileStream::Read().
+    fseek(m_file, 0, SEEK_CUR);
+
+    IO::ReturnType rt;
+    rt.value = static_cast<IO::myInt>(fwrite(a_buffer, 1, a_count, m_file));
+    
+    if (rt.value != a_count)
+      rt.error = Err_WriteError;
+    else
+      rt.error = Err_None;
+
+    return rt;
   }
 
 

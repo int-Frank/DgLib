@@ -27,6 +27,7 @@ namespace Dg
     Err_Disallowed,
     Err_InsufficientSpace,
     Err_NullObject,
+    Err_WriteError,
     Err_COUNT
   };
 }

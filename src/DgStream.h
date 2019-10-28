@@ -6,6 +6,7 @@
 #include <string>
 
 #include "DgTypes.h"
+#include "DgIO_Common.h"
 
 namespace Dg
 {
@@ -29,15 +30,6 @@ namespace Dg
   class Stream
   {
   public:
-
-    typedef uint8_t byte;
-    typedef int64_t myInt;
-
-    // The negative myInt returned by some methods as an error
-    // can be converted to an ErrorCode with this method. 
-    static ErrorCode GetErrorCode(myInt);
-
-  public:
   
     Stream();
     virtual ~Stream();
@@ -51,46 +43,33 @@ namespace Dg
     virtual bool IsOpen() const = 0;
     virtual void Close();
 
-    // Returns a size of the stream or a negative value on error.
-    virtual myInt GetSize() = 0;
+    virtual IO::ReturnType GetSize() = 0;
 
-    // Returns a new position or a negative value on error. On 
-    virtual myInt Seek(myInt const offset, StreamSeekOrigin const origin) = 0;
+    virtual IO::ReturnType Seek(IO::myInt const offset, StreamSeekOrigin const origin) = 0;
 
-    // Skips a number of bytes forward if count is positive or
-    // backward otherwise.
-    // Returns a negative value on error.
-    virtual myInt Skip(myInt const);
+    //! Skips a number of bytes forward if count is positive or
+    //! backward otherwise.
+    virtual IO::ReturnType Skip(IO::myInt const);
 
-    // Returns a current position or a negative value on error.
-    virtual myInt GetPosition();
+    virtual IO::ReturnType GetPosition();
 
-    // Moves stream's pointer to a new position.
-    // Returns position on success.
-    // Returns a negative value on error.
-    virtual myInt SetPosition(myInt const position);
+    //! Moves stream's pointer to a new position.
+    virtual IO::ReturnType SetPosition(IO::myInt const position);
 
-    // Reads a specified number of bytes and returns an actual
-    // read number of bytes.
-    // Returns a negative value on error.
-    virtual myInt Read(void* buffer, myInt const count) = 0;
+    // Attempts to read a specified number of bytes. Check 
+    // RetrunType::value to query actual number of bytes read.
+    virtual IO::ReturnType Read(void* buffer, IO::myInt const count) = 0;
 
-    // Writes byte data into the stream at the current position.
-    // If successful, the position is advanced to the end of
-    // the write block.
-    // Returns number of bytes written or a negative value on error.
-    virtual myInt Write(void const * buffer, myInt const count) = 0;
+    // Attempts to write a specified number of bytes to the stream.
+    //Check RetrunType::value to query actual number of bytes written.
+    virtual IO::ReturnType Write(void const * buffer, IO::myInt const count) = 0;
 
-    // Returns number of bytes read or a negative value on error.
-    virtual myInt ReadByte(byte &);
+    virtual IO::ReturnType ReadByte(IO::byte &);
 
-    // Returns number of bytes written or a negative value on error.
-    virtual myInt WriteByte(byte const);
+    virtual IO::ReturnType WriteByte(IO::byte const);
 
-    // Writes a string without a terminator
-    // Err_None (0) on success
-    // negative value on error
-    virtual myInt WriteString(std::string const &);
+    // Writes a string without a terminator.
+    virtual IO::ReturnType WriteString(std::string const &);
 
     virtual bool IsReadable() const = 0;
     virtual bool IsSeekable() const = 0;
@@ -98,14 +77,11 @@ namespace Dg
 
     // Copies the stream from a current position to
     // an another stream using internal buffer.
-    // The position will change. This is useful if the copy
-    // fails; you can query the position to see where it
-    // got up to.
-    myInt CopyTo(Stream * , myInt const buffer_size = 0);
+    IO::ReturnType CopyTo(Stream * , IO::myInt const buffer_size = 0);
 
-    static myInt GetDefaultCopyBufferSize();
-  
   private:
+
+    static const IO::myInt s_defaultCopyBufSize = 4096;
   
   };
 }
