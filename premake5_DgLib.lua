@@ -40,7 +40,8 @@ vpaths
     "src/impl/DgFileStream.cpp",
     "src/impl/DgBinaryIO.cpp", 
     "src/impl/DgBinaryReader.cpp",  
-    "src/impl/DgBinaryWriter.cpp" 
+    "src/impl/DgBinaryWriter.cpp",
+    "src/impl/DgTypes.cpp"
   },
   ["Math"] = 
   { 
