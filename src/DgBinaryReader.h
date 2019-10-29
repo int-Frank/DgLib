@@ -27,7 +27,7 @@ namespace Dg
     BinaryReader(BinaryReader &&) noexcept;
     BinaryReader & operator=(BinaryReader &&) noexcept;
 
-    ErrorCode Open(Stream *) override;
+    ErrorCode::Type Open(Stream *) override;
 
     template<typename T>
     IO::ReturnType Read(T * a_buffer, IO::myInt const a_count = 1);
@@ -41,17 +41,17 @@ namespace Dg
     ENSURE_VALID_FUNDAMENTAL_TYPE;
 
     if (m_pStream == nullptr)
-      return IO::ReturnType{Err_NullObject, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::NullObject, IO::INVALID_VALUE};
 
     IO::ReturnType rt;
-    rt.error = Err_None;
+    rt.error = ErrorCode::None;
     rt.value = 0;
 
     for (IO::myInt i = 0; i < a_count; i++)
     {
       T temp(static_cast<T>(0));
       IO::ReturnType result = m_pStream->Read(static_cast<void *>(&temp), sizeof(T));
-      if (result.error != Err_None)
+      if (result.error != ErrorCode::None)
       {
         rt.error = result.error;
         break;
@@ -59,7 +59,7 @@ namespace Dg
 
       if (result.value != static_cast<IO::myInt>(sizeof(T)))
       {
-        rt.error = Err_Failure;
+        rt.error = ErrorCode::Failure;
         break;
       }
       a_buffer[i] = m_endianConverter.Convert<T>(temp);

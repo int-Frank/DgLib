@@ -34,24 +34,24 @@ namespace Dg
     return *this;
   }
 
-  ErrorCode BinaryWriter::Open(Stream * a_pStream)
+  ErrorCode::Type BinaryWriter::Open(Stream * a_pStream)
   {
     Close();
 
     if (a_pStream == nullptr)
-      return Err_BadInput;
+      return ErrorCode::BadInput;
 
     if (!a_pStream->IsWritable())
-      return Err_Disallowed;
+      return ErrorCode::Disallowed;
 
     m_pStream = a_pStream;
-    return Err_None;
+    return ErrorCode::None;
   }
 
   IO::ReturnType BinaryWriter::Write_string(std::string const & a_str)
   {
     if (m_pStream == nullptr)
-      return IO::ReturnType{Err_NullObject, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::NullObject, IO::INVALID_VALUE};
 
     return m_pStream->Write(&a_str[0], static_cast<IO::myInt>(a_str.length()));
   }
@@ -59,7 +59,7 @@ namespace Dg
   IO::ReturnType BinaryWriter::WriteRaw(void const * a_buffer, IO::myInt const a_count)
   {
     if (m_pStream == nullptr)
-      return IO::ReturnType{Err_NullObject, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::NullObject, IO::INVALID_VALUE};
 
     return m_pStream->Write(a_buffer, a_count);
   }

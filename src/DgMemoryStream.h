@@ -51,8 +51,8 @@ namespace Dg
 
     virtual ~MemoryStream();
 
-    ErrorCode Open(uint32_t const openMode = StreamOpenMode::read | StreamOpenMode::write);
-    ErrorCode Open(IO::myInt const bufSize,
+    ErrorCode::Type Open(uint32_t const openMode = StreamOpenMode::read | StreamOpenMode::write);
+    ErrorCode::Type Open(IO::myInt const bufSize,
                    IO::byte const * buffer, 
                    uint32_t const openMode = StreamOpenMode::read);
 
@@ -89,8 +89,8 @@ namespace Dg
 
   private:
 
-    ErrorCode SetBufferSize(IO::myInt const);
-    ErrorCode CloseAndReset();
+    ErrorCode::Type SetBufferSize(IO::myInt const);
+    ErrorCode::Type CloseAndReset();
     void SetFlags(uint32_t const);
 
   private:

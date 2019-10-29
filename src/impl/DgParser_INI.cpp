@@ -74,14 +74,14 @@ namespace Dg
     return m_pimpl->items;
   }
 
-  ErrorCode Parser_INI::Parse(std::string const & a_file)
+  ErrorCode::Type Parser_INI::Parse(std::string const & a_file)
   {
     m_pimpl->items.clear();
 
     std::ifstream file(a_file);
     if (!file.good())
     {
-      return Err_FailedToOpenFile;
+      return ErrorCode::FailedToOpenFile;
     }
 
     std::string line;
@@ -99,6 +99,6 @@ namespace Dg
         m_pimpl->items.insert(std::pair<std::string, std::string>(Trim(name), Trim(value)));
       }
     }
-    return Err_None;
+    return ErrorCode::None;
   }
 }

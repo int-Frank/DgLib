@@ -17,10 +17,7 @@ namespace Dg
 
     struct ReturnType
     {
-      operator myInt(){return value;}
-      operator ::Dg::ErrorCode(){return error;}
-
-      ::Dg::ErrorCode error;
+      ErrorCode::Type error;
       myInt           value;
     };
 

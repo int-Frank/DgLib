@@ -21,9 +21,9 @@ namespace Dg
   //! @param a_lower Lower bound on the normal distribution
   //! @param a_upper Upper bound on the normal distribution
   //! @param a_nValues Number of values in the table to generate.
-  //! @return Err_None on success.
+  //! @return ErrorCode::None on success.
   template<typename Real>
-  ErrorCode GetSNDValues(Real a_mean,
+  ErrorCode::Type GetSNDValues(Real a_mean,
                          Real a_sd,
                          Real a_lower,
                          Real a_upper,
@@ -31,7 +31,7 @@ namespace Dg
                          Real * a_out)
   {
     if (a_lower >= a_upper || Dg::IsZero(a_sd) || a_nValues == 0)
-      return Err_OutOfBounds;
+      return ErrorCode::OutOfBounds;
 
     Real two = static_cast<Real>(2);
     Real one = static_cast<Real>(1);
@@ -48,7 +48,7 @@ namespace Dg
       a_out[i] = a_sd * Dg::Constants<Real>::SQRT2 * inverfResult + a_mean;
     }
 
-    return Err_None;
+    return ErrorCode::None;
   }
 }
 

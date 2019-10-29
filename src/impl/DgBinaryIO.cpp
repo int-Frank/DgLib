@@ -50,7 +50,7 @@ namespace Dg
                                 StreamSeekOrigin const a_origin)
   {
     if (m_pStream == nullptr)
-      return IO::ReturnType{Err_NullObject, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::NullObject, IO::INVALID_VALUE};
 
     return m_pStream->Seek(a_offset, a_origin);
   }
@@ -58,7 +58,7 @@ namespace Dg
   IO::ReturnType BinaryIO::Skip(IO::myInt const a_offset)
   {
     if (m_pStream == nullptr)
-      return IO::ReturnType{Err_NullObject, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::NullObject, IO::INVALID_VALUE};
 
     return m_pStream->Skip(a_offset);
   }
@@ -66,7 +66,7 @@ namespace Dg
   IO::ReturnType BinaryIO::GetPosition()
   {
     if (m_pStream == nullptr)
-      return IO::ReturnType{Err_NullObject, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::NullObject, IO::INVALID_VALUE};
 
     return m_pStream->GetPosition();
   }
@@ -74,7 +74,7 @@ namespace Dg
   IO::ReturnType BinaryIO::SetPosition(IO::myInt const a_position)
   {
     if (m_pStream == nullptr)
-      return IO::ReturnType{Err_NullObject, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::NullObject, IO::INVALID_VALUE};
 
     return m_pStream->SetPosition(a_position);
   }

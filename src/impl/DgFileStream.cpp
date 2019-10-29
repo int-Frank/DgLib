@@ -48,25 +48,25 @@ namespace Dg
   }
 
 
-  ErrorCode FileStream::Open(std::string const & a_filePath, uint32_t const a_openMode)
+  ErrorCode::Type FileStream::Open(std::string const & a_filePath, uint32_t const a_openMode)
   {
     Close();
 
     if (!IsValidMode(a_openMode))
-      return Err_BadInput;
+      return ErrorCode::BadInput;
 
     std::string format = GetOpenFormat(a_openMode);
 
     if (format.empty())
-      return Err_Failure;
+      return ErrorCode::Failure;
 
     m_file = fopen(a_filePath.c_str(), format.c_str());
 
     if (m_file == nullptr)
-      return Err_Failure;
+      return ErrorCode::Failure;
 
     SetFlags(a_openMode);
-    return Err_None;
+    return ErrorCode::None;
   }
 
 
@@ -89,20 +89,20 @@ namespace Dg
   IO::ReturnType FileStream::GetSize()
   {
     if (m_file == nullptr)
-      return IO::ReturnType{Err_StreamNotOpen, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::StreamNotOpen, IO::INVALID_VALUE};
 
     fpos_t position;
     fgetpos(m_file, &position);
     fseek(m_file, 0L, SEEK_END);
     IO::myInt size = ftell(m_file);
     fsetpos(m_file, &position);
-    return IO::ReturnType{Err_None, size};
+    return IO::ReturnType{ErrorCode::None, size};
   }
 
   IO::ReturnType FileStream::Seek(IO::myInt const a_offset, StreamSeekOrigin const a_origin)
   {
     if (m_file == nullptr)
-      return IO::ReturnType{Err_StreamNotOpen, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::StreamNotOpen, IO::INVALID_VALUE};
 
     fpos_t position;
     fgetpos(m_file, &position);
@@ -130,7 +130,7 @@ namespace Dg
     if (result != 0)
     {
       fsetpos(m_file, &position);
-      return IO::ReturnType{Err_Failure, position};
+      return IO::ReturnType{ErrorCode::Failure, position};
     }
 
     return GetPosition();
@@ -146,9 +146,9 @@ namespace Dg
     IO::ReturnType rt;
     rt.value = static_cast<IO::myInt>(ftell(m_file));
     if (rt.value < 0)
-      rt.error = Err_Failure;
+      rt.error = ErrorCode::Failure;
     else
-      rt.error = Err_None;
+      rt.error = ErrorCode::None;
     return rt;
   }
 
@@ -160,27 +160,27 @@ namespace Dg
   IO::ReturnType FileStream::Read(void * a_buffer, IO::myInt const a_count)
   {
     if (m_file == nullptr)
-      return IO::ReturnType{Err_StreamNotOpen, 0};
+      return IO::ReturnType{ErrorCode::StreamNotOpen, 0};
 
     if (!m_isReadable)
-      return IO::ReturnType{Err_Disallowed, 0};
+      return IO::ReturnType{ErrorCode::Disallowed, 0};
 
     if (a_buffer == nullptr || a_count < 0)
-      return IO::ReturnType{Err_BadInput, 0};
+      return IO::ReturnType{ErrorCode::BadInput, 0};
 
-    return IO::ReturnType{Err_None, static_cast<IO::myInt>(fread(a_buffer, 1, a_count, m_file))};
+    return IO::ReturnType{ErrorCode::None, static_cast<IO::myInt>(fread(a_buffer, 1, a_count, m_file))};
   }
 
   IO::ReturnType FileStream::Write(void const * a_buffer, IO::myInt const a_count)
   {
     if (m_file == nullptr)
-      return IO::ReturnType{Err_StreamNotOpen, 0};
+      return IO::ReturnType{ErrorCode::StreamNotOpen, 0};
 
     if (!m_isWritable)
-      return IO::ReturnType{Err_Disallowed, 0};
+      return IO::ReturnType{ErrorCode::Disallowed, 0};
 
     if (a_count == 0)
-      return IO::ReturnType{Err_None, 0};
+      return IO::ReturnType{ErrorCode::None, 0};
 
     //We need this as fwrite cannot follow after a fread without calling a repositioning function.
     //That is, FileStream::Write will fail if it follows a FileStream::Read().
@@ -190,9 +190,9 @@ namespace Dg
     rt.value = static_cast<IO::myInt>(fwrite(a_buffer, 1, a_count, m_file));
     
     if (rt.value != a_count)
-      rt.error = Err_WriteError;
+      rt.error = ErrorCode::WriteError;
     else
-      rt.error = Err_None;
+      rt.error = ErrorCode::None;
 
     return rt;
   }

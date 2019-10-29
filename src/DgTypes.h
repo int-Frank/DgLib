@@ -8,28 +8,43 @@
 
 #define IS_FLAGGED(x, y) ((x & (1 << y)) != 0)
 
+#define ITEM()
+#define ERRORCODES \
+  ITEM(None) \
+  ITEM(Unknown) \
+  ITEM(Failure) \
+  ITEM(Undefined) \
+  ITEM(OutOfBounds) \
+  ITEM(Duplicate) \
+  ITEM(FailedToOpenFile) \
+  ITEM(BadInput) \
+  ITEM(StreamNotOpen) \
+  ITEM(FailedToAllocMem) \
+  ITEM(Disallowed) \
+  ITEM(InsufficientSpace) \
+  ITEM(NullObject) \
+  ITEM(WriteError)
+
 namespace Dg
 {
-  //! @ingroup DgUtility_constants
-  //! Error codes
-  enum ErrorCode : int
+  struct ErrorCode
   {
-    Err_None = 0,
-    Err_Unknown,
-    Err_Failure,
-    Err_Undefined,
-    Err_OutOfBounds,
-    Err_Duplicate,
-    Err_FailedToOpenFile,
-    Err_BadInput,
-    Err_StreamNotOpen,
-    Err_FailedToAllocMem,
-    Err_Disallowed,
-    Err_InsufficientSpace,
-    Err_NullObject,
-    Err_WriteError,
-    Err_COUNT
+    typedef int Type;
+
+    //! @ingroup DgUtility_constants
+    //! Error codes
+#undef ITEM
+#define ITEM(x) x,
+    enum : Type
+    {
+      ERRORCODES
+      COUNT
+    };
+#undef ITEM
+
+    static char const * ErrorCodeStrings[];
   };
+
 }
 
 #endif

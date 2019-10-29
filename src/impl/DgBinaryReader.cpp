@@ -34,24 +34,24 @@ namespace Dg
     return *this;
   }
 
-  ErrorCode BinaryReader::Open(Stream * a_pStream)
+  ErrorCode::Type BinaryReader::Open(Stream * a_pStream)
   {
     Close();
 
     if (a_pStream == nullptr)
-      return Err_BadInput;
+      return ErrorCode::BadInput;
 
     if (!a_pStream->IsReadable())
-      return Err_Disallowed;
+      return ErrorCode::Disallowed;
 
     m_pStream = a_pStream;
-    return Err_None;
+    return ErrorCode::None;
   }
 
   IO::ReturnType BinaryReader::Read_string(std::string * a_out, IO::myInt const a_count)
   {
     if (a_count < 0 || a_out == nullptr)
-      return IO::ReturnType{Err_BadInput, 0};
+      return IO::ReturnType{ErrorCode::BadInput, 0};
 
     IO::myInt curSze = static_cast<IO::myInt>(a_out->size());
     a_out->resize(curSze + a_count);
@@ -61,7 +61,7 @@ namespace Dg
   IO::ReturnType BinaryReader::ReadRaw(void * a_buffer, IO::myInt const a_count)
   {
     if (m_pStream == nullptr)
-      return IO::ReturnType{Err_NullObject, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::NullObject, IO::INVALID_VALUE};
 
     return m_pStream->Read(a_buffer, a_count);
   }

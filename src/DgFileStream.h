@@ -35,7 +35,7 @@ namespace Dg
 
     virtual ~FileStream();
 
-    ErrorCode Open(std::string const & filePath, uint32_t const openMode = StreamOpenMode::read);
+    ErrorCode::Type Open(std::string const & filePath, uint32_t const openMode = StreamOpenMode::read);
 
     void Close() override;
     bool IsOpen() const override;

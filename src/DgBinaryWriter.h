@@ -26,7 +26,7 @@ namespace Dg
     BinaryWriter(BinaryWriter &&) noexcept;
     BinaryWriter & operator=(BinaryWriter &&) noexcept;
 
-    ErrorCode Open(Stream *) override;
+    ErrorCode::Type Open(Stream *) override;
 
     template<typename T>
     IO::ReturnType Write(T const * a_val, IO::myInt const a_count = 1);
@@ -40,15 +40,15 @@ namespace Dg
     ENSURE_VALID_FUNDAMENTAL_TYPE;
 
     if (m_pStream == nullptr)
-      return IO::ReturnType{Err_NullObject, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::NullObject, IO::INVALID_VALUE};
 
-    IO::ReturnType result{Err_None, 0};
+    IO::ReturnType result{ErrorCode::None, 0};
     for (IO::myInt i = 0; i < a_count; i++)
     {
       T temp = m_endianConverter.Convert<T>(a_val[i]);
       IO::ReturnType rt = m_pStream->Write(&temp, static_cast<IO::myInt>(sizeof(T)));
 
-      if (rt.error != Err_None || rt.value != static_cast<IO::myInt>(sizeof(T)))
+      if (rt.error != ErrorCode::None || rt.value != static_cast<IO::myInt>(sizeof(T)))
       {
         result.error = rt.error;
         break;

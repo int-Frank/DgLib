@@ -21,7 +21,7 @@ namespace Dg
 
     void SetEndianConverter(EndianConverter const);
 
-    virtual ErrorCode Open(Stream *) = 0;
+    virtual ErrorCode::Type Open(Stream *) = 0;
     bool IsOpen() const;
     void Close();
 

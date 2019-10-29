@@ -72,10 +72,10 @@ namespace Dg
   }
 
 
-  ErrorCode MemoryStream::Open(uint32_t const a_openMode)
+  ErrorCode::Type MemoryStream::Open(uint32_t const a_openMode)
   {
-    ErrorCode code = CloseAndReset();
-    if (code != Err_None)
+    ErrorCode::Type code = CloseAndReset();
+    if (code != ErrorCode::None)
       return code;
 
     SetFlags(a_openMode);
@@ -83,19 +83,19 @@ namespace Dg
     return code;
   }
 
-  ErrorCode MemoryStream::Open(IO::myInt const a_bufSize,
+  ErrorCode::Type MemoryStream::Open(IO::myInt const a_bufSize,
                                IO::byte const * a_buffer, 
                                uint32_t const a_openMode)
   {
     if (a_bufSize < 0 || a_buffer == nullptr)
-      return Err_BadInput;
+      return ErrorCode::BadInput;
 
-    ErrorCode code = CloseAndReset();
-    if (code != Err_None) 
+    ErrorCode::Type code = CloseAndReset();
+    if (code != ErrorCode::None) 
       return code;
 
     code = SetBufferSize(a_bufSize);
-    if (code != Err_None) 
+    if (code != ErrorCode::None) 
       return code;
 
     m_isOpen = true;
@@ -117,13 +117,13 @@ namespace Dg
 
   IO::ReturnType MemoryStream::GetSize()
   {
-    return IO::ReturnType {Err_None, m_size};
+    return IO::ReturnType {ErrorCode::None, m_size};
   }
 
   IO::ReturnType MemoryStream::Seek(IO::myInt const a_offset, StreamSeekOrigin const a_origin)
   {
     if (!m_isOpen)
-      return IO::ReturnType{Err_StreamNotOpen, IO::INVALID_VALUE};
+      return IO::ReturnType{ErrorCode::StreamNotOpen, IO::INVALID_VALUE};
 
     IO::myInt newPos = m_position;
 
@@ -144,10 +144,10 @@ namespace Dg
     }
 
     if (newPos < 0)
-      return IO::ReturnType{Err_OutOfBounds, m_position};
+      return IO::ReturnType{ErrorCode::OutOfBounds, m_position};
 
     m_position = newPos;
-    return IO::ReturnType{Err_None, m_position};
+    return IO::ReturnType{ErrorCode::None, m_position};
   }
 
   IO::ReturnType MemoryStream::Skip(IO::myInt const a_offset)
@@ -157,32 +157,32 @@ namespace Dg
 
   IO::ReturnType MemoryStream::GetPosition()
   {
-    return IO::ReturnType{Err_None, m_position};
+    return IO::ReturnType{ErrorCode::None, m_position};
   }
 
   IO::ReturnType MemoryStream::SetPosition(IO::myInt const a_position)
   {
     if (a_position < 0)
-      return IO::ReturnType{Err_OutOfBounds, m_position};
+      return IO::ReturnType{ErrorCode::OutOfBounds, m_position};
 
     m_position = a_position;
-    return IO::ReturnType{Err_None, m_position};
+    return IO::ReturnType{ErrorCode::None, m_position};
   }
 
   IO::ReturnType MemoryStream::Read(void * a_buffer, IO::myInt const a_count)
   {
     if (!m_isOpen)
-      return IO::ReturnType{Err_StreamNotOpen, 0};
+      return IO::ReturnType{ErrorCode::StreamNotOpen, 0};
 
     if (!m_isReadable)
-      return IO::ReturnType{Err_Disallowed, 0};
+      return IO::ReturnType{ErrorCode::Disallowed, 0};
 
     if (a_buffer == nullptr || a_count < 0)
-      return IO::ReturnType{Err_BadInput, 0};
+      return IO::ReturnType{ErrorCode::BadInput, 0};
 
     IO::myInt remain = m_size - m_position;
     if (remain <= 0)
-      return IO::ReturnType{Err_None, 0};
+      return IO::ReturnType{ErrorCode::None, 0};
 
     IO::myInt count = a_count;
     if (count > remain)
@@ -191,13 +191,13 @@ namespace Dg
     memcpy(a_buffer, &m_buffer[m_position], count);
     m_position += count;
     
-    return IO::ReturnType{Err_None, count};
+    return IO::ReturnType{ErrorCode::None, count};
   }
 
-  ErrorCode MemoryStream::SetBufferSize(IO::myInt const a_newSize)
+  ErrorCode::Type MemoryStream::SetBufferSize(IO::myInt const a_newSize)
   {
     if (a_newSize < 0)
-      return Err_BadInput;
+      return ErrorCode::BadInput;
 
     IO::myInt newSize = a_newSize;
     if (newSize < s_defaultBufSze)
@@ -209,29 +209,29 @@ namespace Dg
     if (newBuf == nullptr)
     {
       m_bufSize.SetSize(prevSize);
-      return Err_FailedToAllocMem;
+      return ErrorCode::FailedToAllocMem;
     }
     m_buffer = newBuf;
-    return Err_None;
+    return ErrorCode::None;
   }
 
   IO::ReturnType MemoryStream::Write(void const * a_buffer, IO::myInt const a_count)
   {
     if (!m_isOpen)
-      return IO::ReturnType{Err_StreamNotOpen, 0};
+      return IO::ReturnType{ErrorCode::StreamNotOpen, 0};
 
     if (!m_isWritable)
-      return IO::ReturnType{Err_Disallowed, 0};
+      return IO::ReturnType{ErrorCode::Disallowed, 0};
 
     if (a_buffer == nullptr || a_count < 0)
-      return IO::ReturnType{Err_BadInput, 0};
+      return IO::ReturnType{ErrorCode::BadInput, 0};
 
     IO::myInt required = m_position + a_count;
 
     if (required > static_cast<IO::myInt>(m_bufSize.GetSize()))
     {
-      ErrorCode result = SetBufferSize(required);
-      if (result != Err_None)
+      ErrorCode::Type result = SetBufferSize(required);
+      if (result != ErrorCode::None)
         return IO::ReturnType{result, 0};
     }
     
@@ -244,7 +244,7 @@ namespace Dg
     if (m_position > m_size)
       m_size = m_position;
 
-    return IO::ReturnType{Err_None, a_count};
+    return IO::ReturnType{ErrorCode::None, a_count};
   }
 
 
@@ -276,25 +276,25 @@ namespace Dg
   IO::ReturnType MemoryStream::RemoveBlock(IO::myInt const a_count)
   {
     if (!m_isWritable)
-      return IO::ReturnType{Err_Disallowed, m_position};
+      return IO::ReturnType{ErrorCode::Disallowed, m_position};
 
     if (!m_isOpen)
-      return IO::ReturnType{Err_StreamNotOpen, m_position};
+      return IO::ReturnType{ErrorCode::StreamNotOpen, m_position};
 
     if (a_count == 0)
-      return IO::ReturnType{Err_None, m_position};
+      return IO::ReturnType{ErrorCode::None, m_position};
 
     IO::myInt count = a_count;
     if (count > 0)
     {
       IO::myInt remaining = m_size - m_position;
       if (count > remaining)
-        return IO::ReturnType{Err_BadInput, m_position};
+        return IO::ReturnType{ErrorCode::BadInput, m_position};
     }
     else
     {
       if (-count > m_position)
-        return IO::ReturnType{Err_BadInput, m_position};
+        return IO::ReturnType{ErrorCode::BadInput, m_position};
       m_position += count;
       count = -count;
     }
@@ -302,10 +302,10 @@ namespace Dg
     m_size -= abs(count);
     memmove(&m_buffer[m_position], &m_buffer[m_position + count], count);
     
-    return IO::ReturnType{Err_None, m_position};
+    return IO::ReturnType{ErrorCode::None, m_position};
   }
 
-  ErrorCode MemoryStream::CloseAndReset()
+  ErrorCode::Type MemoryStream::CloseAndReset()
   {
     m_isOpen = false;
     m_isReadable = false;

@@ -61,23 +61,23 @@ namespace Dg
   IO::ReturnType Stream::CopyTo(Stream * a_pStream, IO::myInt const a_bufSze)
   {
     if (a_pStream == nullptr)
-      IO::ReturnType{Err_BadInput, 0};
+      IO::ReturnType{ErrorCode::BadInput, 0};
 
     if (!a_pStream->IsWritable())
-      IO::ReturnType{Err_Disallowed, 0};
+      IO::ReturnType{ErrorCode::Disallowed, 0};
 
     IO::myInt bufSze = a_bufSze;
     if (bufSze <= 0)
       bufSze = s_defaultCopyBufSize;
 
     IO::byte * buffer = new IO::byte[bufSze];
-    IO::ReturnType result{Err_None, 0};
+    IO::ReturnType result{ErrorCode::None, 0};
 
     while (true)
     {
       IO::ReturnType readResult = Read(buffer, bufSze);
 
-      if (readResult.error != Err_None) //Read error
+      if (readResult.error != ErrorCode::None) //Read error
       {
         result.error = readResult.error;
         break;
@@ -87,7 +87,7 @@ namespace Dg
 
       IO::ReturnType writeResult = a_pStream->Write(buffer, readResult.value);
 
-      if (writeResult.error != Err_None) //Write error
+      if (writeResult.error != ErrorCode::None) //Write error
       {
         result.error = writeResult.error;
         break;
