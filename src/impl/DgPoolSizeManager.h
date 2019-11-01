@@ -41,6 +41,8 @@ namespace Dg
     //! next value in the table of valid memory pool sizes.
     size_t SetNextPoolSize();
 
+    size_t PeekNextPoolSize() const;
+
     //! Decrease the memory pool size. This is done by selecting the
     //! previous value in the table of valid memory pool sizes.
     size_t SetPrevPoolSize();

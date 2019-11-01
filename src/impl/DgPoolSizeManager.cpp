@@ -80,6 +80,16 @@ namespace Dg
   //--------------------------------------------------------------------------------
   //	@	PoolSizeManager::set_next_pool_size()
   //--------------------------------------------------------------------------------
+  size_t PoolSizeManager::PeekNextPoolSize() const
+  {
+    if (m_index == ARRAY_SIZE(impl::validContainerPoolSizes))
+      return GetSize();
+    return impl::validContainerPoolSizes[m_index + 1];
+  }
+
+  //--------------------------------------------------------------------------------
+  //	@	PoolSizeManager::set_next_pool_size()
+  //--------------------------------------------------------------------------------
   size_t PoolSizeManager::SetPrevPoolSize()
   {
     if (m_index == 0)
