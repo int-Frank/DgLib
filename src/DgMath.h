@@ -76,28 +76,6 @@ namespace Dg
   //! @ingroup DgMath_functions
   //! @{
 
-  template<typename INT, int SIZE, typename = std::enable_if<std::is_integral<INT>::value>>
-  inline INT GetMask()
-  {
-    INT result(0);
-    for (int i = 0; i < SIZE; i++)
-      result |= (1 << i);
-    return result;
-  }
-
-  template<typename INT, int OFFSET, int SIZE, typename = std::enable_if<std::is_integral<INT>::value>>
-  inline INT GetSubInt(INT a_integer)
-  {
-    return (a_integer >> OFFSET) & GetMask<INT, SIZE>();
-  }
-
-  template<typename INT, int OFFSET, int SIZE, typename = std::enable_if<std::is_integral<INT>::value>>
-  inline INT SetSubInt(INT a_integer, INT a_value)
-  {
-    return (a_integer & ~(GetMask<INT, SIZE>() << OFFSET)) 
-      | ((a_value & GetMask<INT, SIZE>()) << OFFSET);
-  }
-
   //! Test to see if a number is prime
   template<typename T, typename = std::enable_if<std::is_integral<T>::value>>
   bool IsPrime(T a_val)
@@ -138,21 +116,6 @@ namespace Dg
       val |= (val >> (1 << i));
     val++;
     return val;
-  }
-
-  //! Finds the highest bit
-  template<typename T, typename = std::enable_if<std::is_integral<T>::value>>
-  T HighestBit(T val)
-  {
-    if (!val)
-      return 0;
-
-    T ret = 1;
-
-    while (val >>= 1)
-      ret++;
-
-    return ret;
   }
 
   //! Computes 2 numbers which are closest to sprt(val) but when

@@ -47,6 +47,7 @@ vpaths
   { 
     "src/DgFixedPoint.h",
     "src/DgMath.h",
+    "src/DgBit.h",
     "src/DgMatrix.h",
     "src/DgRNG_Local.h",
     "src/DgRNG_Global.h",
