@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <type_traits>
 
-#define BIT(x) (1 << (x))
-
 namespace Dg
 {
   namespace impl
@@ -31,16 +29,29 @@ namespace Dg
     };
   }
 
+  template<typename INT, INT SHIFT>
+  struct BIT
+  {
+    static_assert(SHIFT < (sizeof(INT) * CHAR_BIT), "Bit shift cannot be more than the size of the int!");
+    static INT const value = static_cast<INT>(1) << SHIFT;
+  };
+
+  template<typename INT>
+  INT Bit(INT a_val)
+  {
+    return static_cast<INT>(1) << a_val;
+  }
+
   template<typename INT, unsigned BEGIN, unsigned COUNT, typename = std::enable_if_t<std::is_integral<INT>::value>>
   struct Mask
   {
-    static INT const value = BIT(BEGIN + COUNT - 1) | Mask<INT, BEGIN, COUNT - 1>::value;
+    static INT const value = BIT<INT, (BEGIN + COUNT - 1)>::value | Mask<INT, BEGIN, COUNT - 1>::value;
   };
 
   template<typename INT, int BEGIN>
   struct Mask<INT, BEGIN, 1>
   {
-    static INT const value = BIT(BEGIN);
+    static INT const value = BIT<INT, BEGIN>::value;
   };
 
   template<typename INT, unsigned BEGIN, unsigned COUNT, typename = std::enable_if_t<std::is_integral<INT>::value>>

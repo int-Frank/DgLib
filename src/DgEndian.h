@@ -2,6 +2,7 @@
 #define DGENDIAN_H
 
 #include <stdint.h>
+#include <type_traits>
 #include "DgIO_Common.h"
 
 namespace Dg
@@ -49,10 +50,9 @@ namespace Dg
   template<typename T>
   T EndianConverter::Convert(T const a_val) const
   {
-    ENSURE_VALID_FUNDAMENTAL_TYPE;
-    if (m_reverse)
-      return ReverseBytes<T>(a_val);
-    return a_val;
+    if (!std::is_fundamental<T>::value || !m_reverse)
+      return a_val;
+    return ReverseBytes<T>(a_val);
   }
 }
 

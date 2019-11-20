@@ -282,6 +282,9 @@ namespace Dg
       throw std::bad_alloc();
   }
 
+  //TODO initializing from another can fail. If so, the array
+  //should be left in its original state. Currently it is left 
+  //in an invalid state.
   template<typename T>
   void DynamicArray<T>::init(DynamicArray const & a_other)
   {
