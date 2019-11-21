@@ -34,8 +34,8 @@ namespace Dg
     DynamicArray(DynamicArray const &);
     DynamicArray& operator= (DynamicArray const &);
 
-    DynamicArray(DynamicArray &&);
-    DynamicArray& operator= (DynamicArray &&);
+    DynamicArray(DynamicArray &&) noexcept;
+    DynamicArray& operator= (DynamicArray &&) noexcept;
 
     T & operator[](size_t);
     T const & operator[](size_t) const;
@@ -149,24 +149,24 @@ namespace Dg
   }
 
   template<typename T>
-  DynamicArray<T>::DynamicArray(DynamicArray && a_other)
-    : m_poolSize(a_other.m_poolSize)
-    , m_pData(a_other.m_pData)
-    , m_nItems(a_other.m_nItems)
+  DynamicArray<T>::DynamicArray(DynamicArray && a_other) noexcept
+    : m_poolSize(std::move(a_other.m_poolSize))
+    , m_pData(std::move(a_other.m_pData))
+    , m_nItems(std::move(a_other.m_nItems))
   {
     a_other.m_pData = nullptr;
     a_other.m_nItems = 0;
   }
 
   template<typename T>
-  DynamicArray<T> & DynamicArray<T>::operator= (DynamicArray && a_other)
+  DynamicArray<T> & DynamicArray<T>::operator= (DynamicArray && a_other) noexcept
   {
     if (this != &a_other)
     {
       //Assign to this
-      m_nItems = a_other.m_nItems;
-      m_pData = a_other.m_pData;
-      m_poolSize = a_other.m_poolSize;
+      m_nItems = std::move(a_other.m_nItems);
+      m_pData = std::move(a_other.m_pData);
+      m_poolSize = std::move(a_other.m_poolSize);
 
       //Clear other
       a_other.m_pData = nullptr;
@@ -437,23 +437,24 @@ namespace Dg
     }
 
     //! Move constructor
-    DynamicArray(DynamicArray && a_other)
-      : m_poolSize(a_other.m_poolSize)
-      , m_pBuckets(a_other.m_pBuckets)
+    DynamicArray(DynamicArray && a_other) noexcept
+      : m_poolSize(std::move(a_other.m_poolSize))
+      , m_pBuckets(std::move(a_other.m_pBuckets))
+      , m_nItems(std::move(a_other.m_nItems))
     {
       a_other.m_pBuckets = nullptr;
       a_other.m_nItems = 0;
     }
 
     //! Move assignment
-    DynamicArray& operator= (DynamicArray && a_other)
+    DynamicArray& operator= (DynamicArray && a_other) noexcept
     {
       if (this != &a_other)
       {
         //Assign to this
-        m_nItems = a_other.m_nItems;
-        m_pBuckets = a_other.m_pBuckets;
-        m_poolSize = a_other.m_poolSize;
+        m_nItems = std::move(a_other.m_nItems);
+        m_pBuckets = std::move(a_other.m_pBuckets);
+        m_poolSize = std::move(a_other.m_poolSize);
 
         //Clear other
         a_other.m_pBuckets = nullptr;
@@ -538,9 +539,10 @@ namespace Dg
     {
       newSize = newSize >> TypeTraits::shift;
       newSize = m_poolSize.SetSize(newSize);
-      m_pBuckets = static_cast<TypeTraits::intType*>(realloc(m_pBuckets, m_poolSize.GetSize() * sizeof(TypeTraits::intType)));
-      if (m_pBuckets == nullptr)
+      TypeTraits::intType * tempBuckets = static_cast<TypeTraits::intType*>(realloc(m_pBuckets, m_poolSize.GetSize() * sizeof(TypeTraits::intType)));
+      if (tempBuckets == nullptr)
         throw std::bad_alloc();
+      m_pBuckets = tempBuckets;
     }
 
   private:
@@ -549,9 +551,10 @@ namespace Dg
     void extend()
     {
       m_poolSize.SetNextPoolSize();
-      m_pBuckets = static_cast<TypeTraits::intType*>(realloc(m_pBuckets, m_poolSize.GetSize() * sizeof(TypeTraits::intType)));
-      if (m_pBuckets == nullptr)
+      TypeTraits::intType* tempBuckets = static_cast<TypeTraits::intType*>(realloc(m_pBuckets, m_poolSize.GetSize() * sizeof(TypeTraits::intType)));
+      if (tempBuckets == nullptr)
         throw std::bad_alloc();
+      m_pBuckets = tempBuckets;
     }
 
     void init(DynamicArray const & a_other)
