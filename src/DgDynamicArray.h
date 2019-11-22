@@ -150,9 +150,9 @@ namespace Dg
 
   template<typename T>
   DynamicArray<T>::DynamicArray(DynamicArray && a_other) noexcept
-    : m_poolSize(std::move(a_other.m_poolSize))
-    , m_pData(std::move(a_other.m_pData))
-    , m_nItems(std::move(a_other.m_nItems))
+    : m_poolSize(a_other.m_poolSize)
+    , m_pData(a_other.m_pData)
+    , m_nItems(a_other.m_nItems)
   {
     a_other.m_pData = nullptr;
     a_other.m_nItems = 0;
@@ -164,9 +164,9 @@ namespace Dg
     if (this != &a_other)
     {
       //Assign to this
-      m_nItems = std::move(a_other.m_nItems);
-      m_pData = std::move(a_other.m_pData);
-      m_poolSize = std::move(a_other.m_poolSize);
+      m_nItems = a_other.m_nItems;
+      m_pData = a_other.m_pData;
+      m_poolSize = a_other.m_poolSize;
 
       //Clear other
       a_other.m_pData = nullptr;
@@ -438,9 +438,9 @@ namespace Dg
 
     //! Move constructor
     DynamicArray(DynamicArray && a_other) noexcept
-      : m_poolSize(std::move(a_other.m_poolSize))
-      , m_pBuckets(std::move(a_other.m_pBuckets))
-      , m_nItems(std::move(a_other.m_nItems))
+      : m_poolSize(a_other.m_poolSize)
+      , m_pBuckets(a_other.m_pBuckets)
+      , m_nItems(a_other.m_nItems)
     {
       a_other.m_pBuckets = nullptr;
       a_other.m_nItems = 0;
@@ -452,9 +452,9 @@ namespace Dg
       if (this != &a_other)
       {
         //Assign to this
-        m_nItems = std::move(a_other.m_nItems);
-        m_pBuckets = std::move(a_other.m_pBuckets);
-        m_poolSize = std::move(a_other.m_poolSize);
+        m_nItems = a_other.m_nItems;
+        m_pBuckets = a_other.m_pBuckets;
+        m_poolSize = a_other.m_poolSize;
 
         //Clear other
         a_other.m_pBuckets = nullptr;
