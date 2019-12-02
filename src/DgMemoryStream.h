@@ -101,7 +101,7 @@ namespace Dg
     IO::myInt m_position;
     IO::myInt m_size;
 
-    PoolSizeManager m_bufSize;
+    PoolSizeMngr_Default m_bufSize;
     IO::byte * m_buffer;
 
   };

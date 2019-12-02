@@ -21,14 +21,14 @@ namespace Dg
     RNG_Local();
 
     //! Seed the internal generator from one value.
-    void SetSeed(uint32_t seed);
+    void SetSeed(uint32_t seed) override;
 
     //! Seed the internal generator from two values.
-    void SetSeed(uint32_t seed1, uint32_t seed2);
+    void SetSeed(uint32_t seed1, uint32_t seed2) override;
 
     //! Get random unsigned integer.
     //! This is the heart of the RNG.
-    uint32_t GetUint();
+    uint32_t GetUint() override;
 
   private:
 

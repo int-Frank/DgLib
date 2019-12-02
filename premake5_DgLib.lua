@@ -183,7 +183,7 @@ vpaths
     "src/DgDoublyLinkedList.h",
     "src/DgDynamicArray.h",
     "src/DgHyperArray.h",
-    "src/DgOpenHashTable.h",
+    "src/DgOpenHashMap.h",
     "src/DgPair.h",
     "src/DgStaticArray.h",
     "src/DgVariableArray2D.h"

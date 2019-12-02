@@ -140,6 +140,7 @@ namespace Dg
 
     Key insert(T const &);
     void erase(Key const &);
+    void erase(iterator const &); //TODO
 
   private:
   
@@ -160,7 +161,7 @@ namespace Dg
 
     size_t m_nItems;
 
-    PoolSizeManager m_poolSize;
+    PoolSizeMngr_Default m_poolSize;
 
     size_t m_freeListHead;
     size_t m_freeListTail;
@@ -706,7 +707,7 @@ namespace Dg
   template<typename T>
   void SlotMap<T>::Init(size_t a_size)
   {
-    PoolSizeManager szeMgr(a_size);
+    PoolSizeMngr_Default szeMgr(a_size);
     InitMemory(szeMgr.GetSize());
 
     m_poolSize = szeMgr;

@@ -24,7 +24,7 @@ namespace Dg
     return (GetUint() & 1) == 1;
   }
 
-  unsigned int RNG_Base::GetUint(unsigned int a, unsigned int b)
+  unsigned int RNG_Base::GetUintRange(unsigned int a, unsigned int b)
   {
     if (a >= b)
     {

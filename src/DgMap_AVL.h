@@ -302,7 +302,7 @@ namespace Dg
 
   private:
 
-    PoolSizeManager m_poolSize;
+    PoolSizeMngr_Default m_poolSize;
     Node *          m_pRoot;
     Node *          m_pNodes;
     sizeType        m_nItems;
@@ -879,7 +879,7 @@ namespace Dg
   {
     a_other.m_pNodes = nullptr;
     a_other.m_nItems = 0;
-    a_other.m_pRoot = s_nullValue;
+    a_other.m_pRoot = nullptr;
   }
 
   template<typename K, typename V, bool (*Compare)(K const &, K const &)>
@@ -895,7 +895,7 @@ namespace Dg
 
       a_other.m_pNodes = nullptr;
       a_other.m_nItems = 0;
-      a_other.m_pRoot = s_nullValue;
+      a_other.m_pRoot = nullptr;
     }
     return *this;
   }

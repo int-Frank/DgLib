@@ -89,7 +89,7 @@ namespace Dg
     //Data members
     T*              m_pData;
     size_t          m_nItems;
-    PoolSizeManager m_poolSize;
+    PoolSizeMngr_Default m_poolSize;
   };
 
   //--------------------------------------------------------------------------------
@@ -567,7 +567,7 @@ namespace Dg
 
   private:
     //Data members
-    PoolSizeManager          m_poolSize;
+    PoolSizeMngr_Default          m_poolSize;
     TypeTraits::intType *    m_pBuckets;
     TypeTraits::intType      m_nItems;
   };

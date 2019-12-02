@@ -286,7 +286,7 @@ namespace Dg
 
   private:
 
-    PoolSizeManager m_poolSize;
+    PoolSizeMngr_Default m_poolSize;
     Node *          m_pRoot;
     Node *          m_pNodes;
     sizeType        m_nItems;

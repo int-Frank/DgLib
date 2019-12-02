@@ -61,7 +61,7 @@ namespace Dg
     }
 
     //! Get random unsigned integer within the interval [a, b].
-    uint32_t GetUint(unsigned int a, unsigned int b);
+    unsigned int GetUintRange(unsigned int a, unsigned int b);
 
     bool FlipCoin();
 

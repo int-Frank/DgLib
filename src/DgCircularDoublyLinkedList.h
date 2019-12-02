@@ -199,7 +199,7 @@ namespace Dg
 
   private:
 
-    PoolSizeManager m_poolSize;
+    PoolSizeMngr_Default m_poolSize;
     Node *          m_pNodes;      //Pre-allocated block of memory to hold items
     size_t          m_nItems;     //Number of items currently in the CircularDoublyLinkedList
   };

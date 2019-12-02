@@ -232,6 +232,9 @@ namespace Dg
     //! Resizes the DoublyLinkedList. This function also clears the DoublyLinkedList.
 	  void resize(size_t newMemBlockSize);
 
+    //Used to determin if the memory block allocation has changed when reallocating
+    void const * data();
+
   private:
 
     // Increases the size of the underlying memory block
@@ -249,7 +252,7 @@ namespace Dg
 
   private:
 
-    PoolSizeManager m_poolSize;
+    PoolSizeMngr_Default m_poolSize;
 	  Node *          m_pNodes;      //Pre-allocated block of memory to hold items
 	  size_t          m_nItems;     //Number of items currently in the DoublyLinkedList
   };
@@ -751,6 +754,12 @@ namespace Dg
    {
      DestructAll();
      Init(a_newSize);
+   }
+
+   template<typename T>
+   void const * DoublyLinkedList<T>::data()
+   {
+     return m_pNodes;
    }
 
    template<typename T>
