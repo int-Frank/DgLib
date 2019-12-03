@@ -12,14 +12,11 @@
 #include <exception>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
+//#include <iostream>
 
 #include "DgPair.h"
 #include "impl/DgPoolSizeManager.h"
 #include "DgBit.h"
-
-#undef ARRAY_SIZE
-#define ARRAY_SIZE(a) sizeof(a) / sizeof(*a)
 
 namespace Dg
 {
@@ -31,7 +28,7 @@ namespace Dg
       {
       public:
 
-        enum Type : uint64_t
+        enum class Type : uint64_t
         {
           Data = 0,
           Bucket = 1
@@ -39,8 +36,8 @@ namespace Dg
 
         static uint64_t const NULLNODE = Mask<uint64_t, 0, 63>::value;
 
-        NodeIndex::NodeIndex() : m_data(0) {SetNull();}
-        NodeIndex::NodeIndex(Type a_type, uint64_t a_index)
+        NodeIndex() : m_data(0) {SetNull();}
+        NodeIndex(Type a_type, uint64_t a_index)
           : m_data(0)
         {
           SetType(a_type);
@@ -48,7 +45,7 @@ namespace Dg
         }
 
         inline operator uint64_t()              {return GetIndex();}
-        inline void SetType(Type a_type)        {m_data = SetSubInt<uint64_t, 63, 1>(m_data, a_type);}
+        inline void SetType(Type a_type)        {m_data = SetSubInt<uint64_t, 63, 1>(m_data, static_cast<uint64_t>(a_type));}
         inline Type GetType() const             {return static_cast<Type>(GetSubInt<uint64_t, 63, 1>(m_data));}
         inline void SetIndex(uint64_t a_index)  {m_data = SetSubInt<uint64_t, 0, 63>(m_data, a_index);}
         inline uint64_t GetIndex() const        {return GetSubInt<uint64_t, 0, 63>(m_data);}
@@ -124,7 +121,6 @@ namespace Dg
 
   public:
 
-    //Iterates through the map as sorted by the criterion
     class const_iterator
     {
       friend class OpenHashMap;
@@ -162,7 +158,6 @@ namespace Dg
       DataNode const* m_pNode;
     };
 
-    //Iterates through the map as sorted by the criterion
     class iterator
     {
       friend class OpenHashMap;
@@ -266,7 +261,7 @@ namespace Dg
     void set_buckets(size_t bucketCount);
 
     //Debug
-    void Print();
+    //void Print();
 
   private:
 
@@ -585,7 +580,7 @@ namespace Dg
     , m_equalTo()
     , m_poolSizeMngr(impl::OpenHashMap::defaultBucketCount)
     , m_pDataNodes(nullptr)
-    , m_nextFreeIndex(NodeIndex::Data, 0)
+    , m_nextFreeIndex(NodeIndex::Type::Data, 0)
     , m_nItems(0)
     , m_pBuckets(nullptr)
   {
@@ -602,7 +597,7 @@ namespace Dg
     , m_equalTo(a_equalTo)
     , m_poolSizeMngr(impl::OpenHashMap::defaultBucketCount)
     , m_pDataNodes(nullptr)
-    , m_nextFreeIndex(NodeIndex::Data, 0)
+    , m_nextFreeIndex(NodeIndex::Type::Data, 0)
     , m_nItems(0)
     , m_pBuckets(nullptr)
   {
@@ -624,7 +619,7 @@ namespace Dg
     , m_equalTo()
     , m_poolSizeMngr(impl::OpenHashMap::defaultBucketCount)
     , m_pDataNodes(nullptr)
-    , m_nextFreeIndex(NodeIndex::Data, 0)
+    , m_nextFreeIndex(NodeIndex::Type::Data, 0)
     , m_nItems(0)
     , m_pBuckets(nullptr)
   {
@@ -703,7 +698,7 @@ namespace Dg
     size_t index = Index(a_key);
     if (m_pBuckets[index].next.IsNull())
     {
-      NodeIndex bucketIndex(NodeIndex::Bucket, index);
+      NodeIndex bucketIndex(NodeIndex::Type::Bucket, index);
       return Pair<bool, NodeIndex>{false, bucketIndex};
     }
 
@@ -802,7 +797,7 @@ namespace Dg
 
     //Insert into end of chain
     m_pDataNodes[newNode].prev = result.second;
-    if (result.second.GetType() == NodeIndex::Data)
+    if (result.second.GetType() == NodeIndex::Type::Data)
       m_pDataNodes[result.second].next = newNode;
     else
       m_pBuckets[result.second].next = newNode;
@@ -826,7 +821,7 @@ namespace Dg
     //No need to check if prev exists. If the key was found, there
     //will always be a previous node, either another DataNode or the
     //BucketNode
-    if (t->prev.GetType() == NodeIndex::Data)
+    if (t->prev.GetType() == NodeIndex::Type::Data)
       m_pDataNodes[t->prev].next = t->next;
     else
       m_pBuckets[t->prev].next = t->next;
@@ -834,18 +829,18 @@ namespace Dg
     if (t != &m_pDataNodes[m_nItems - 1])
     {
       memcpy(t, &m_pDataNodes[m_nItems - 1], sizeof(DataNode));
-      NodeIndex t_index(NodeIndex::Data, static_cast<uint64_t>(t - m_pDataNodes));
+      NodeIndex t_index(NodeIndex::Type::Data, static_cast<uint64_t>(t - m_pDataNodes));
       if (!t->next.IsNull())
         m_pDataNodes[t->next].prev = t_index;
 
-      if (t->prev.GetType() == NodeIndex::Data)
+      if (t->prev.GetType() == NodeIndex::Type::Data)
         m_pDataNodes[t->prev].next = t_index;
       else
         m_pBuckets[t->prev].next = t_index;
     }
 
     //Place node back on the free node chain
-    NodeIndex newFree(NodeIndex::Data, (m_nItems - 1));
+    NodeIndex newFree(NodeIndex::Type::Data, (m_nItems - 1));
     m_pDataNodes[newFree].next = m_nextFreeIndex;
     m_nextFreeIndex = newFree;
 
@@ -952,41 +947,41 @@ namespace Dg
     return DataPoolSize(bucket_count(), max_load_factor());
   }
 
-  template<typename K, typename V, class HASHER, class EQUALTO>
-  void OpenHashMap<K, V, HASHER, EQUALTO>::Print()
-  {
-    std::cout << "item count: " << size() << '\n';
-    std::cout << "bucket count: " << bucket_count() << "\n";
-    std::cout << "item pool size: " << DataPoolSize() << '\n';
-
-    for (size_t i = 0; i < bucket_count(); i++)
-    {
-      std::cout << "\n[" << i << "]";
-      NodeIndex index = m_pBuckets[i].next;
-      while (!index.IsNull())
-      {
-        std::cout << "(" << index.GetIndex()
-          << ", " << m_pDataNodes[index].kv.first << "),";
-        index = m_pDataNodes[index].next;
-      }
-    }
-
-    //TODO Nodes in memory...
-    std::cout << "\n\nKeys in memory\n";
-    for (size_t i = 0; i < m_nItems; i++)
-    {
-      std::cout << "[" << i << "]: " << m_pDataNodes[i].kv.first << '\n';
-    }
-
-    NodeIndex index = m_nextFreeIndex;
-    std::cout << "\nFree chain";
-    while (!index.IsNull())
-    {
-      std::cout << ", " << index.GetIndex();
-      index = m_pDataNodes[index].next;
-    }
-    std::cout << "\n\n";
-  }
+  //template<typename K, typename V, class HASHER, class EQUALTO>
+  //void OpenHashMap<K, V, HASHER, EQUALTO>::Print()
+  //{
+  //  std::cout << "item count: " << size() << '\n';
+  //  std::cout << "bucket count: " << bucket_count() << "\n";
+  //  std::cout << "item pool size: " << DataPoolSize() << '\n';
+  //
+  //  for (size_t i = 0; i < bucket_count(); i++)
+  //  {
+  //    std::cout << "\n[" << i << "]";
+  //    NodeIndex index = m_pBuckets[i].next;
+  //    while (!index.IsNull())
+  //    {
+  //      std::cout << "(" << index.GetIndex()
+  //        << ", " << m_pDataNodes[index].kv.first << "),";
+  //      index = m_pDataNodes[index].next;
+  //    }
+  //  }
+  //
+  //  //TODO Nodes in memory...
+  //  std::cout << "\n\nKeys in memory\n";
+  //  for (size_t i = 0; i < m_nItems; i++)
+  //  {
+  //    std::cout << "[" << i << "]: " << m_pDataNodes[i].kv.first << '\n';
+  //  }
+  //
+  //  NodeIndex index = m_nextFreeIndex;
+  //  std::cout << "\nFree chain";
+  //  while (!index.IsNull())
+  //  {
+  //    std::cout << ", " << index.GetIndex();
+  //    index = m_pDataNodes[index].next;
+  //  }
+  //  std::cout << "\n\n";
+  //}
 
   template<typename K, typename V, class HASHER, class EQUALTO>
   void OpenHashMap<K, V, HASHER, EQUALTO>::AllocateMemory()
@@ -1076,22 +1071,22 @@ namespace Dg
     {
       for (size_t i = 0; (i + 1) < DataPoolSize(); i++)
       {
-        m_pDataNodes[i].next = NodeIndex(NodeIndex::Data, static_cast<uint64_t>(i + 1));
-        //m_pDataNodes[i + 1].prev = NodeIndex(NodeIndex::Data, static_cast<uint64_t>(i));
+        m_pDataNodes[i].next = NodeIndex(NodeIndex::Type::Data, static_cast<uint64_t>(i + 1));
+        //m_pDataNodes[i + 1].prev = NodeIndex(NodeIndex::Type::Data, static_cast<uint64_t>(i));
       }
 
-      m_pDataNodes[DataPoolSize() - 1].next = NodeIndex(NodeIndex::Data, NodeIndex::NULLNODE);
-      m_nextFreeIndex.Set(NodeIndex::Data, 0);
+      m_pDataNodes[DataPoolSize() - 1].next = NodeIndex(NodeIndex::Type::Data, NodeIndex::NULLNODE);
+      m_nextFreeIndex.Set(NodeIndex::Type::Data, 0);
     }
     else
     {
-      m_nextFreeIndex.Set(NodeIndex::Data, NodeIndex::NULLNODE);
+      m_nextFreeIndex.Set(NodeIndex::Type::Data, NodeIndex::NULLNODE);
     }
 
     if (m_pBuckets != nullptr)
     {
       for (size_t i = 0; i < m_poolSizeMngr.GetSize(); i++)
-        m_pBuckets[i].next = NodeIndex(NodeIndex::Data, NodeIndex::NULLNODE);
+        m_pBuckets[i].next = NodeIndex(NodeIndex::Type::Data, NodeIndex::NULLNODE);
     }
   }
 

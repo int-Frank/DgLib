@@ -60,9 +60,9 @@ namespace Dg
     if (format.empty())
       return ErrorCode::Failure;
 
-    m_file = fopen(a_filePath.c_str(), format.c_str());
+    errno_t err = fopen_s(&m_file, a_filePath.c_str(), format.c_str());
 
-    if (m_file == nullptr)
+    if (err != 0)
       return ErrorCode::Failure;
 
     SetFlags(a_openMode);
