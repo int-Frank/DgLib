@@ -17,7 +17,6 @@
 #include "DgPair.h"
 #include "impl/DgPoolSizeManager.h"
 #include "DgBit.h"
-#include "DgDoublyLinkedList.h"
 
 #undef ARRAY_SIZE
 #define ARRAY_SIZE(a) sizeof(a) / sizeof(*a)
@@ -125,6 +124,85 @@ namespace Dg
 
   public:
 
+    //Iterates through the map as sorted by the criterion
+    class const_iterator
+    {
+      friend class OpenHashMap;
+      friend class iterator;
+    private:
+
+      const_iterator(DataNode const*);
+
+    public:
+
+      const_iterator();
+      ~const_iterator();
+
+      const_iterator(const_iterator const& a_it);
+      const_iterator& operator=(const_iterator const& a_other);
+
+      bool operator==(const_iterator const& a_it) const;
+      bool operator!=(const_iterator const& a_it) const;
+
+      ValueType const* operator->() const;
+      ValueType const& operator*() const;
+
+      const_iterator operator+(size_t) const;
+      const_iterator operator-(size_t) const;
+
+      const_iterator& operator+=(size_t);
+      const_iterator& operator-=(size_t);
+
+      const_iterator& operator++();
+      const_iterator operator++(int);
+      const_iterator& operator--();
+      const_iterator operator--(int);
+
+    private:
+      DataNode const* m_pNode;
+    };
+
+    //Iterates through the map as sorted by the criterion
+    class iterator
+    {
+      friend class OpenHashMap;
+    private:
+
+      iterator(DataNode*);
+
+    public:
+
+      iterator();
+      ~iterator();
+
+      iterator(iterator const& a_it);
+      iterator& operator=(iterator const& a_other);
+
+      bool operator==(iterator const& a_it) const;
+      bool operator!=(iterator const& a_it) const;
+
+      ValueType* operator->();
+      ValueType& operator*();
+
+      iterator operator+(size_t) const;
+      iterator operator-(size_t) const;
+
+      iterator& operator+=(size_t);
+      iterator& operator-=(size_t);
+
+      iterator& operator++();
+      iterator operator++(int);
+      iterator& operator--();
+      iterator operator--(int);
+
+      operator const_iterator() const;
+
+    private:
+      DataNode* m_pNode;
+    };
+
+  public:
+
     OpenHashMap();
     explicit OpenHashMap(size_t nBuckets,
                          HASHER const & hasher = HASHER(),
@@ -146,10 +224,17 @@ namespace Dg
     //Returns nullptr if key not found
     V const * at(K const &) const;
 
+    iterator begin();
+    iterator end();
+
+    const_iterator cbegin() const;
+    const_iterator cend() const;
+
     //Returns pointer to newly inserted item, or current item if it already exists.
     V* insert(K const&, V const&);
     //V* insert(K&&, V&&);//TODO
-    void erase(K const &);
+    void erase(K const&);
+    iterator erase(iterator);
     size_t size() const;
     size_t bucket_count() const;
 
@@ -185,7 +270,7 @@ namespace Dg
 
   private:
 
-
+    void EraseAtIndex(size_t);
     static bool IsValidLoadFactor(myFloat);
 
     //Assumes valid bucketCount and loadFactor
@@ -221,47 +306,276 @@ namespace Dg
     BucketNode *       m_pBuckets;
   };
 
-  template<typename K, 
-           typename V, 
-           class HASHER = impl::OpenHashMap::SimpleHasher<K>, 
-           class EQUALTO = impl::OpenHashMap::EqualTo<K>>
-  class OpenHashMap_iterator
+  //------------------------------------------------------------------------------------------------
+  // const_iterator
+  //------------------------------------------------------------------------------------------------
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::const_iterator(DataNode const* a_pNode)
+    : m_pNode(a_pNode)
   {
-  public:
 
-    typedef typename DoublyLinkedList<K>::iterator iterator;
+  }
 
-    OpenHashMap_iterator(OpenHashMap<K, V, HASHER, EQUALTO> &);
-
-    iterator begin();
-    iterator end();
-    iterator erase(iterator const&);
-    iterator insert(K const&, V const&);
-
-  private:
-    OpenHashMap<K, V, HASHER, EQUALTO> & m_rMap;
-    DoublyLinkedList<K> m_keys;
-  };
-
-  template<typename K, 
-           typename V, 
-           class HASHER = impl::OpenHashMap::SimpleHasher<K>, 
-           class EQUALTO = impl::OpenHashMap::EqualTo<K>>
-  class OpenHashMap_const_iterator
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::const_iterator()
+    : m_pNode(nullptr)
   {
-  public:
 
-    typedef typename DoublyLinkedList<K>::const_iterator const_iterator;
+  }
 
-    OpenHashMap_const_iterator(OpenHashMap<K, V, HASHER, EQUALTO> const &);
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::~const_iterator()
+  {
 
-    const_iterator cbegin();
-    const_iterator cend();
+  }
 
-  private:
-    OpenHashMap<K, V, HASHER, EQUALTO> & m_rMap;
-    DoublyLinkedList<K> m_keys;
-  };
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::const_iterator(const_iterator const& a_it)
+    : m_pNode(a_it.m_pNode)
+  {
+
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator&
+    OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator=(const_iterator const& a_it)
+  {
+    m_pNode = a_it.m_pNode;
+    return *this;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  bool OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator==(const_iterator const& a_it) const
+  {
+    return m_pNode == a_it.m_pNode;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  bool OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator!=(const_iterator const& a_it) const
+  {
+    return m_pNode != a_it.m_pNode;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator+(size_t a_val) const
+  {
+    DataNode pNode = m_pNode + a_val;
+    return const_iterator(pNode);
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator-(size_t a_val) const
+  {
+    DataNode pNode = m_pNode - a_val;
+    return const_iterator(pNode);
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator&
+    OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator+=(size_t a_val)
+  {
+    m_pNode += a_val;
+    return *this;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator&
+    OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator-=(size_t a_val)
+  {
+    m_pNode -= a_val;
+    return *this;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator&
+    OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator++()
+  {
+    m_pNode++;
+    return *this;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator++(int)
+  {
+    const_iterator result(*this);
+    ++(*this);
+    return result;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator&
+    OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator--()
+  {
+    m_pNode--;
+    return *this;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator--(int)
+  {
+    const_iterator result(*this);
+    --(*this);
+    return result;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::ValueType const*
+    OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator->() const
+  {
+    return &(m_pNode->kv);
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::ValueType const&
+    OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator*() const
+  {
+    return m_pNode->kv;
+  }
+
+  //------------------------------------------------------------------------------------------------
+  // iterator
+  //------------------------------------------------------------------------------------------------
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  OpenHashMap<K, V, HASHER, EQUALTO>::iterator::iterator(DataNode* a_pNode)
+    : m_pNode(a_pNode)
+  {
+
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  OpenHashMap<K, V, HASHER, EQUALTO>::iterator::iterator()
+    : m_pNode(nullptr)
+  {
+
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  OpenHashMap<K, V, HASHER, EQUALTO>::iterator::~iterator()
+  {
+
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  OpenHashMap<K, V, HASHER, EQUALTO>::iterator::iterator(iterator const& a_it)
+    : m_pNode(a_it.m_pNode)
+  {
+
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator&
+    OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator=(iterator const& a_it)
+  {
+    m_pNode = a_it.m_pNode;
+    return *this;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  bool OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator==(iterator const& a_it) const
+  {
+    return m_pNode == a_it.m_pNode;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  bool OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator!=(iterator const& a_it) const
+  {
+    return m_pNode != a_it.m_pNode;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator+(size_t a_val) const
+  {
+    DataNode * pNode = m_pNode + a_val;
+    return iterator(pNode);
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator-(size_t a_val) const
+  {
+    DataNode* pNode = m_pNode - a_val;
+    return iterator(pNode);
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator&
+    OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator+=(size_t a_val)
+  {
+    m_pNode += a_val;
+    return *this;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator&
+    OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator-=(size_t a_val)
+  {
+    m_pNode -= a_val;
+    return *this;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator&
+    OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator++()
+  {
+    m_pNode++;
+    return *this;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator++(int)
+  {
+    iterator result(*this);
+    ++(*this);
+    return result;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator&
+    OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator--()
+  {
+    m_pNode--;
+    return *this;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator--(int)
+  {
+    iterator result(*this);
+    --(*this);
+    return result;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::ValueType*
+    OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator->()
+  {
+    return &(m_pNode->kv);
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::ValueType&
+    OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator*()
+  {
+    return m_pNode->kv;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  OpenHashMap<K, V, HASHER, EQUALTO>::iterator::operator
+    typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator() const
+  {
+    return const_iterator(m_pNode);
+  }
+
+  //------------------------------------------------------------------------------------------------
+  // OpenHashMap
+  //------------------------------------------------------------------------------------------------
 
   //! Default constructor.
   template<typename K, typename V, class HASHER, class EQUALTO>
@@ -431,6 +745,42 @@ namespace Dg
   }
 
   template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::begin()
+  {
+    return iterator(m_pDataNodes);
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::end()
+  {
+    return iterator(&m_pDataNodes[m_nItems]);
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::cbegin() const
+  {
+    return const_iterator(m_pDataNodes);
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::cend() const
+  {
+    return const_iterator(&m_pDataNodes[m_nItems]);
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  typename OpenHashMap<K, V, HASHER, EQUALTO>::iterator
+    OpenHashMap<K, V, HASHER, EQUALTO>::erase(iterator a_it)
+  {
+    EraseAtIndex(static_cast<size_t>(a_it.m_pNode - m_pDataNodes));
+    return a_it;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
   V* OpenHashMap<K, V, HASHER, EQUALTO>::insert(K const& a_key, V const& a_value)
    {
     Pair<bool, NodeIndex> result = FindNode(a_key);
@@ -463,15 +813,11 @@ namespace Dg
   }
 
   template<typename K, typename V, class HASHER, class EQUALTO>
-  void OpenHashMap<K, V, HASHER, EQUALTO>::erase(K const& a_key)
+  void OpenHashMap<K, V, HASHER, EQUALTO>::EraseAtIndex(size_t a_index)
   {
-    Pair<bool, NodeIndex> result = FindNode(a_key);
-    if (!result.first)
-      return;
+    m_pDataNodes[a_index].kv.~ValueType();
 
-    m_pDataNodes[result.second].kv.~ValueType();
-
-    DataNode * t = &m_pDataNodes[result.second];
+    DataNode* t = &m_pDataNodes[a_index];
 
     //Break node from the chain
     if (!t->next.IsNull())
@@ -504,6 +850,16 @@ namespace Dg
     m_nextFreeIndex = newFree;
 
     m_nItems--;
+  }
+
+  template<typename K, typename V, class HASHER, class EQUALTO>
+  void OpenHashMap<K, V, HASHER, EQUALTO>::erase(K const& a_key)
+  {
+    Pair<bool, NodeIndex> result = FindNode(a_key);
+    if (!result.first)
+      return;
+
+    EraseAtIndex(static_cast<size_t>(result.second.GetIndex()));
   }
 
   template<typename K, typename V, class HASHER, class EQUALTO>
