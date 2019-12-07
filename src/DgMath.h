@@ -97,6 +97,12 @@ namespace Dg
   //! Finds log base 2 of a 64-bit integer.
   uint64_t Log2_64(uint64_t);
 
+  template<typename INT, INT ALIGNMENT>
+  INT ToNextAlignment(INT a_val)
+  {
+    return a_val + ((ALIGNMENT - (a_val % ALIGNMENT)) % ALIGNMENT);
+  }
+
   //! Floors a number to the nearest power of 2.
   template<typename T, typename = std::enable_if<std::is_integral<T>::value>>
   T FloorPower2(T val)
