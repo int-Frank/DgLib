@@ -355,7 +355,7 @@ namespace Dg
   typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator
     OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator+(size_t a_val) const
   {
-    DataNode pNode = m_pNode + a_val;
+    DataNode const * pNode = m_pNode + a_val;
     return const_iterator(pNode);
   }
 
@@ -363,7 +363,7 @@ namespace Dg
   typename OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator
     OpenHashMap<K, V, HASHER, EQUALTO>::const_iterator::operator-(size_t a_val) const
   {
-    DataNode pNode = m_pNode - a_val;
+    DataNode const * pNode = m_pNode - a_val;
     return const_iterator(pNode);
   }
 

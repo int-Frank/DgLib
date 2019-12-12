@@ -26,6 +26,83 @@ namespace Dg
   {
   public:
 
+    class const_iterator
+    {
+      friend class DynamicArray;
+      friend class iterator;
+    private:
+
+      const_iterator(T const *);
+
+    public:
+
+      const_iterator();
+      ~const_iterator();
+
+      const_iterator(const_iterator const& a_it);
+      const_iterator& operator=(const_iterator const& a_other);
+
+      bool operator==(const_iterator const& a_it) const;
+      bool operator!=(const_iterator const& a_it) const;
+
+      T const* operator->() const;
+      T const& operator*() const;
+
+      const_iterator operator+(size_t) const;
+      const_iterator operator-(size_t) const;
+
+      const_iterator& operator+=(size_t);
+      const_iterator& operator-=(size_t);
+
+      const_iterator& operator++();
+      const_iterator operator++(int);
+      const_iterator& operator--();
+      const_iterator operator--(int);
+
+    private:
+      T const * m_pData;
+    };
+
+    class iterator
+    {
+      friend class DynamicArray;
+    private:
+
+      iterator(T*);
+
+    public:
+
+      iterator();
+      ~iterator();
+
+      iterator(iterator const& a_it);
+      iterator& operator=(iterator const& a_other);
+
+      bool operator==(iterator const& a_it) const;
+      bool operator!=(iterator const& a_it) const;
+
+      T* operator->();
+      T& operator*();
+
+      iterator operator+(size_t) const;
+      iterator operator-(size_t) const;
+
+      iterator& operator+=(size_t);
+      iterator& operator-=(size_t);
+
+      iterator& operator++();
+      iterator operator++(int);
+      iterator& operator--();
+      iterator operator--(int);
+
+      operator const_iterator() const;
+
+    private:
+      T* m_pData;
+    };
+
+  public:
+
     DynamicArray();
     DynamicArray(size_t memBlockSize);
 
@@ -39,6 +116,12 @@ namespace Dg
 
     T & operator[](size_t);
     T const & operator[](size_t) const;
+
+    iterator begin();
+    iterator end();
+
+    const_iterator cbegin() const;
+    const_iterator cend() const;
 
     //! Get last element
     //! Calling this function on an empty container causes undefined behavior.
@@ -91,6 +174,269 @@ namespace Dg
     size_t          m_nItems;
     PoolSizeMngr_Default m_poolSize;
   };
+
+  //------------------------------------------------------------------------------------------------
+  // const_iterator
+  //------------------------------------------------------------------------------------------------
+  template<typename T>
+  DynamicArray<T>::const_iterator::const_iterator(T const* a_pData)
+    : m_pData(a_pData)
+  {
+
+  }
+
+  template<typename T>
+  DynamicArray<T>::const_iterator::const_iterator()
+    : m_pData(nullptr)
+  {
+
+  }
+
+  template<typename T>
+  DynamicArray<T>::const_iterator::~const_iterator()
+  {
+
+  }
+
+  template<typename T>
+  DynamicArray<T>::const_iterator::const_iterator(const_iterator const& a_it)
+    : m_pData(a_it.m_pData)
+  {
+
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::const_iterator&
+    DynamicArray<T>::const_iterator::operator=(const_iterator const& a_it)
+  {
+    m_pData = a_it.m_pData;
+    return *this;
+  }
+
+  template<typename T>
+  bool DynamicArray<T>::const_iterator::operator==(const_iterator const& a_it) const
+  {
+    return m_pData == a_it.m_pData;
+  }
+
+  template<typename T>
+  bool DynamicArray<T>::const_iterator::operator!=(const_iterator const& a_it) const
+  {
+    return m_pData != a_it.m_pData;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::const_iterator
+    DynamicArray<T>::const_iterator::operator+(size_t a_val) const
+  {
+    T const * pData = m_pData + a_val;
+    return const_iterator(pData);
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::const_iterator
+    DynamicArray<T>::const_iterator::operator-(size_t a_val) const
+  {
+    T const * pData = m_pData - a_val;
+    return const_iterator(pData);
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::const_iterator&
+    DynamicArray<T>::const_iterator::operator+=(size_t a_val)
+  {
+    m_pData += a_val;
+    return *this;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::const_iterator&
+    DynamicArray<T>::const_iterator::operator-=(size_t a_val)
+  {
+    m_pData -= a_val;
+    return *this;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::const_iterator&
+    DynamicArray<T>::const_iterator::operator++()
+  {
+    m_pData++;
+    return *this;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::const_iterator
+    DynamicArray<T>::const_iterator::operator++(int)
+  {
+    const_iterator result(*this);
+    ++(*this);
+    return result;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::const_iterator&
+    DynamicArray<T>::const_iterator::operator--()
+  {
+    m_pData--;
+    return *this;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::const_iterator
+    DynamicArray<T>::const_iterator::operator--(int)
+  {
+    const_iterator result(*this);
+    --(*this);
+    return result;
+  }
+
+  template<typename T>
+  T const * DynamicArray<T>::const_iterator::operator->() const
+  {
+    return m_pData;
+  }
+
+  template<typename T>
+  T const & DynamicArray<T>::const_iterator::operator*() const
+  {
+    return *m_pData;
+  }
+
+  //------------------------------------------------------------------------------------------------
+  // iterator
+  //------------------------------------------------------------------------------------------------
+  template<typename T>
+  DynamicArray<T>::iterator::iterator(T* a_pData)
+    : m_pData(a_pData)
+  {
+
+  }
+
+  template<typename T>
+  DynamicArray<T>::iterator::iterator()
+    : m_pData(nullptr)
+  {
+
+  }
+
+  template<typename T>
+  DynamicArray<T>::iterator::~iterator()
+  {
+
+  }
+
+  template<typename T>
+  DynamicArray<T>::iterator::iterator(iterator const& a_it)
+    : m_pData(a_it.m_pData)
+  {
+
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::iterator&
+    DynamicArray<T>::iterator::operator=(iterator const& a_it)
+  {
+    m_pData = a_it.m_pData;
+    return *this;
+  }
+
+  template<typename T>
+  bool DynamicArray<T>::iterator::operator==(iterator const& a_it) const
+  {
+    return m_pData == a_it.m_pData;
+  }
+
+  template<typename T>
+  bool DynamicArray<T>::iterator::operator!=(iterator const& a_it) const
+  {
+    return m_pData != a_it.m_pData;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::iterator
+    DynamicArray<T>::iterator::operator+(size_t a_val) const
+  {
+    T* pData = m_pData + a_val;
+    return iterator(pData);
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::iterator
+    DynamicArray<T>::iterator::operator-(size_t a_val) const
+  {
+    T* pData = m_pData - a_val;
+    return iterator(pData);
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::iterator&
+    DynamicArray<T>::iterator::operator+=(size_t a_val)
+  {
+    m_pData += a_val;
+    return *this;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::iterator&
+    DynamicArray<T>::iterator::operator-=(size_t a_val)
+  {
+    m_pData -= a_val;
+    return *this;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::iterator&
+    DynamicArray<T>::iterator::operator++()
+  {
+    m_pData++;
+    return *this;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::iterator
+    DynamicArray<T>::iterator::operator++(int)
+  {
+    iterator result(*this);
+    ++(*this);
+    return result;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::iterator&
+    DynamicArray<T>::iterator::operator--()
+  {
+    m_pData--;
+    return *this;
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::iterator
+    DynamicArray<T>::iterator::operator--(int)
+  {
+    iterator result(*this);
+    --(*this);
+    return result;
+  }
+
+  template<typename T>
+  T * DynamicArray<T>::iterator::operator->()
+  {
+    return m_pData;
+  }
+
+  template<typename T>
+  T & DynamicArray<T>::iterator::operator*()
+  {
+    return *m_pData;
+  }
+
+  template<typename T>
+  DynamicArray<T>::iterator::operator
+    typename DynamicArray<T>::const_iterator() const
+  {
+    return const_iterator(m_pData);
+  }
 
   //--------------------------------------------------------------------------------
   //		DynamicArray
@@ -185,6 +531,34 @@ namespace Dg
   T const & DynamicArray<T>::operator[](size_t i) const
   { 
     return m_pData[i]; 
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::iterator
+    DynamicArray<T>::begin()
+  {
+    return iterator(m_pData);
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::iterator
+    DynamicArray<T>::end()
+  {
+    return iterator(m_pData + m_nItems);
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::const_iterator
+    DynamicArray<T>::cbegin() const
+  {
+    return const_iterator(m_pData);
+  }
+
+  template<typename T>
+  typename DynamicArray<T>::const_iterator
+    DynamicArray<T>::cend() const
+  {
+    return const_iterator(m_pData + m_nItems);
   }
 
   template<typename T>

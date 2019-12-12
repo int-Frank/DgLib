@@ -56,7 +56,8 @@ vpaths
   },
   ["Math/impl"] = 
   {
-    "src/impl/Dgmath.cpp",
+    "src/impl/DgMath.cpp",
+    "src/impl/DgBit.cpp",
     "src/impl/DgRNG.cpp",
     "src/impl/DgRNG_Base.h",
     "src/impl/DgMath_impl.h",
