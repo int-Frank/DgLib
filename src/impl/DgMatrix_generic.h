@@ -1,3 +1,5 @@
+//@group Math/impl
+
 
 #ifndef DGMATRIX_GENERIC_H
 #define DGMATRIX_GENERIC_H

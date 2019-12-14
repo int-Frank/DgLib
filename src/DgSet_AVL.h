@@ -1,3 +1,5 @@
+//@group Collections
+
 #ifndef DGSET_AVL_H
 #define DGSET_AVL_H
 

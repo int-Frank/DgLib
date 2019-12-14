@@ -1,3 +1,5 @@
+//@group Math/impl
+
 //! @file DgFIQuery.h
 //!
 //! @author: Adapted from http://www.geometrictools.com

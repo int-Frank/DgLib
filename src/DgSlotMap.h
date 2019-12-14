@@ -1,3 +1,5 @@
+//@group Collections
+
 #ifndef DGSLOTMAP_H
 #define DGSLOTMAP_H
 

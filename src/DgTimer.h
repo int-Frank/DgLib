@@ -1,3 +1,5 @@
+//@group Misc
+
 //! @file DgTimer.h
 //!
 //! @author Frank Hart

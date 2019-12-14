@@ -1,3 +1,5 @@
+//@group Math/impl
+
 //! @file DgTriangle_generic.h
 //!
 //! @author: Frank B. Hart

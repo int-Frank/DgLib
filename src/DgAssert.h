@@ -1,3 +1,5 @@
+//@group Misc
+
 #ifndef DG_ASSERT_H
 #define DG_ASSERT_H
 

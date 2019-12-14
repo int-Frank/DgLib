@@ -1,3 +1,5 @@
+//@group Math
+
 //! @file DgMatrix.h
 //!
 //! @author: Frank B. Hart

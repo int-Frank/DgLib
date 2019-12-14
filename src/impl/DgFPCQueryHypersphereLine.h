@@ -1,3 +1,5 @@
+//@group Math/impl
+
 #ifndef DGFPCQUERYHYPERSPHERELINE_H
 #define DGFPCQUERYHYPERSPHERELINE_H
 

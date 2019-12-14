@@ -1,3 +1,5 @@
+//@group Collections
+
 //! @file Dg_list.h
 //!
 //! @author: Frank B. Hart

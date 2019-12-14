@@ -1,3 +1,5 @@
+//@group Misc/io
+
 #ifndef DGBINARYIO_H
 #define DGBINARYIO_H
 

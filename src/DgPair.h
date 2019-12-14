@@ -1,3 +1,5 @@
+//@group Collections
+
 #ifndef DGPAIR_H
 #define DGPAIR_H
 

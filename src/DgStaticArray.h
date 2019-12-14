@@ -1,3 +1,5 @@
+//@group Collections
+
 #ifndef DGSTATICARRAY_H
 #define DGSTATICARRAY_H
 

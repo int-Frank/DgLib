@@ -1,3 +1,5 @@
+//@group Math/impl
+
 #include "../DgBit.h"
 
 namespace Dg

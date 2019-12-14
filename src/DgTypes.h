@@ -1,3 +1,5 @@
+//@group Misc
+
 //! @file DgTypes.h
 //!
 //! @author Frank Hart

@@ -1,3 +1,5 @@
+//@group Math
+
 #ifndef DGBIT_H
 #define DGBIT_H
 

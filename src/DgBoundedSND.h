@@ -1,3 +1,5 @@
+//@group Math
+
 //! @file DgBoundedSND.h
 //!
 //! @author Frank Hart

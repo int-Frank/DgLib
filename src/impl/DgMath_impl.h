@@ -1,3 +1,5 @@
+//@group Math/impl
+
 //! @file DgMath_impl.h
 //!
 //! @author Frank Hart

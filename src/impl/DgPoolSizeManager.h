@@ -1,3 +1,5 @@
+//@group Collections/impl
+
 //! @file DgContainerBase.h
 //!
 //! @author: Frank B. Hart

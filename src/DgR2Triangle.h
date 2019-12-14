@@ -1,3 +1,5 @@
+//@group Math/R2
+
 //! @file DgR2Triangle.h
 //!
 //! @author: Frank B. Hart

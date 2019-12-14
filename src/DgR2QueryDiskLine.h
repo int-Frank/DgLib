@@ -1,3 +1,5 @@
+//@group Math/R2/Queries
+
 //! @file DgR3QueryLineSphere.h
 //!
 //! @author: Adapted from http://www.geometrictools.com

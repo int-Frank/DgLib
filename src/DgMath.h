@@ -1,3 +1,5 @@
+//@group Math
+
 //! @file DgMath.h
 //!
 //! @author Frank Hart
@@ -101,6 +103,12 @@ namespace Dg
   INT ToNextAlignment(INT a_val)
   {
     return a_val + ((ALIGNMENT - (a_val % ALIGNMENT)) % ALIGNMENT);
+  }
+
+  template<typename INT>
+  INT ToNextAlignment(INT a_val, INT a_alignment)
+  {
+    return a_val + ((a_alignment - (a_val % a_alignment)) % a_alignment);
   }
 
   //! Floors a number to the nearest power of 2.

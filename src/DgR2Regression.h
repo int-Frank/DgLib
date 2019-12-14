@@ -1,3 +1,5 @@
+//@group Math/R2
+
 #ifndef DGR2REGRESSION_H
 #define DGR2REGRESSION_H
 

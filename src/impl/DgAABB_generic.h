@@ -1,3 +1,5 @@
+//@group Math/impl
+
 //! @file DgAABB_generic.h
 //!
 //! @author: Frank B. Hart

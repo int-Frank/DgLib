@@ -1,3 +1,5 @@
+//@group Math/R3
+
 //! @file DgR3Vector.h
 //!
 //! @author: Frank B. Hart

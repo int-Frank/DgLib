@@ -1,3 +1,5 @@
+//@group Misc/io
+
 
 #ifndef DGFILESTREAM_H
 #define DGFILESTREAM_H

@@ -1,3 +1,5 @@
+//@group Collections
+
 #ifndef DGHYPERARRAY_H
 #define DGHYPERARRAY_H
 

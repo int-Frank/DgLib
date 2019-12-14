@@ -1,3 +1,5 @@
+//@group Collections
+
 //! @file Dg_vector.h
 //!
 //! @author Frank Hart

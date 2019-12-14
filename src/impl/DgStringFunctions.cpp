@@ -1,3 +1,5 @@
+//@group Misc/impl
+
 //! @file DgStringFunctions.cpp
 //!
 //! @author Frank Hart

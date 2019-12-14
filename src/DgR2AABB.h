@@ -1,3 +1,5 @@
+//@group Math/R2
+
 //! @file DgR2AABB.h
 //!
 //! @author: Frank B. Hart

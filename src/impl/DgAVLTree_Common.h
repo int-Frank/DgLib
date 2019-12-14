@@ -1,3 +1,5 @@
+//@group Collections/impl
+
 #ifndef DGAVLTREE_COMMON_H
 #define DGAVLTREE_COMMON_H
 

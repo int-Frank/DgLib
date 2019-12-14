@@ -1,3 +1,5 @@
+//@group Math/R3/Queries
+
 #ifndef DGR3QUERYRECTANGLESPHERE_H
 #define DGR3QUERYRECTANGLESPHERE_H
 

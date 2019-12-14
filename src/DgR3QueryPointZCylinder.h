@@ -1,3 +1,5 @@
+//@group Math/R3/Queries
+
 //! @file DgQueryPointSegment.h
 //!
 //! @author: Adapted from http://www.geometrictools.com

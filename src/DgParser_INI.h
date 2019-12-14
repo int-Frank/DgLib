@@ -1,3 +1,5 @@
+//@group Misc
+
 //! @file DgParser_INI.h
 //!
 //! @author Frank Hart

@@ -1,3 +1,5 @@
+//@group Math
+
 //! @file DgRNG.h
 //!
 //! @author Frank Hart

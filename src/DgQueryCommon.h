@@ -1,3 +1,5 @@
+//@group Math
+
 //! @file DgQueryCommon.h
 
 #ifndef DGQUERYCOMMON_H

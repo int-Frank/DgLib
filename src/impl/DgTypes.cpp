@@ -1,3 +1,5 @@
+//@group Misc/impl
+
 #include "../DgTypes.h"
 
 namespace Dg

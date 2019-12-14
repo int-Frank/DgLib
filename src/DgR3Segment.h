@@ -1,3 +1,5 @@
+//@group Math/R3
+
 //! @file DgR3Segment.h
 //!
 //! @author: Frank B. Hart

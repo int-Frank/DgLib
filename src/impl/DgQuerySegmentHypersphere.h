@@ -1,3 +1,5 @@
+//@group Math/impl
+
 
 
 #ifndef DGR3QUERYSEGMENTHYPERSPHERE_H

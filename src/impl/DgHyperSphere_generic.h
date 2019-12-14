@@ -1,3 +1,5 @@
+//@group Math/impl
+
 //! @file DgBall_generic.h
 //!
 //! @author: Frank B. Hart

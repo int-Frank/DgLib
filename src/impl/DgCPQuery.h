@@ -1,3 +1,5 @@
+//@group Math/impl
+
 //! @file DgCPQuery.h
 //!
 //! @author: Adapted from http://www.geometrictools.com

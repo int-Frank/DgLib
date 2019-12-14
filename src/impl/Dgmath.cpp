@@ -1,3 +1,5 @@
+//@group Math/impl
+
 //! @file dgmath.cpp
 //!
 //! @author Frank Hart

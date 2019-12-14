@@ -1,3 +1,5 @@
+//@group Misc/io
+
 #ifndef DGBINARYREADER_H
 #define DGBINARYREADER_H
 

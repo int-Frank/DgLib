@@ -1,3 +1,5 @@
+//@group Misc/impl
+
 #include "../DgBinaryReader.h"
 
 namespace Dg

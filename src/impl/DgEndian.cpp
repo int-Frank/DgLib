@@ -1,3 +1,5 @@
+//@group Misc/impl
+
 #include <stdint.h>
 
 #include "../DgEndian.h"

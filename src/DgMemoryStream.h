@@ -1,3 +1,5 @@
+//@group Misc/io
+
 /*
 BStone: A Source port of
 Blake Stone: Aliens of Gold and Blake Stone: Planet Strike

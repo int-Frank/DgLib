@@ -1,3 +1,5 @@
+//@group Misc/impl
+
 #include "../DgBinaryWriter.h"
 
 namespace Dg

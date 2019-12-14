@@ -1,3 +1,5 @@
+//@group Math/impl
+
 
 #ifndef DGVECTOR_GENERIC_H
 #define DGVECTOR_GENERIC_H

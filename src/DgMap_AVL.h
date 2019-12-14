@@ -1,3 +1,5 @@
+//@group Collections
+
 #ifndef DGMAP_AVL_H
 #define DGMAP_AVL_H
 

@@ -1,3 +1,5 @@
+//@group Math/impl
+
 //! @file DgR3QueryRayTriangle.h
 //!
 //! @author: Wikipedia

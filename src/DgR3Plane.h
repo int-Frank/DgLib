@@ -1,3 +1,5 @@
+//@group Math/R3
+
 //! @file DgR3Plane.h
 //!
 //! @author: Frank B. Hart

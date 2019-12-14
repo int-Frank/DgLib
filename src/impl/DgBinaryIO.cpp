@@ -1,3 +1,5 @@
+//@group Misc/impl
+
 #include "../DgBinaryIO.h"
 
 namespace Dg

@@ -1,3 +1,5 @@
+//@group Math/R2
+
 //! @file DgR2Matrix.h
 //!
 //! @author: James M. Van Verth, Lars M. Bishop, Frank B. Hart

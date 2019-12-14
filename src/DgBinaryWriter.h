@@ -1,3 +1,5 @@
+//@group Misc/io
+
 #ifndef DGBINARYWRITER_H
 #define DGBINARYWRITER_H
 

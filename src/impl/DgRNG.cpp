@@ -1,3 +1,5 @@
+//@group Math/impl
+
 //! @file RNG.cpp
 //!
 //! @author Frank Hart

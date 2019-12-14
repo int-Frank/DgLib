@@ -1,3 +1,5 @@
+//@group Math/R3/Queries
+
 #ifndef DGR3QUERYRECTANGLELINE_H
 #define DGR3QUERYRECTANGLELINE_H
 

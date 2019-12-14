@@ -1,3 +1,5 @@
+//@group Misc
+
 //! @file DgIDManager.h
 //!
 //! @author: Frank B. Hart

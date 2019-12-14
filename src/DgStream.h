@@ -1,3 +1,5 @@
+//@group Misc/io
+
 
 #ifndef DGSTREAM_H
 #define DGSTREAM_H

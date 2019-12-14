@@ -1,3 +1,5 @@
+//@group Collections
+
 //! @file Dg_HashTable.h
 //!
 //! @author Frank Hart

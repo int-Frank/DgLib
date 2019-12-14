@@ -1,3 +1,5 @@
+//@group Math/R3
+
 //! @file DgR3Quaternion.h
 //!
 //! @author: James M. Van Verth, Lars M. Bishop, Frank B. Hart

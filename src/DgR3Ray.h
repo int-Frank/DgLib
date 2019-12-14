@@ -1,3 +1,5 @@
+//@group Math/R3
+
 //! @file DgR3Ray.h
 //!
 //! @author: Frank B. Hart

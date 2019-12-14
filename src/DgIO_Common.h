@@ -1,3 +1,5 @@
+//@group Misc/io
+
 #ifndef DGIO_COMMON_H
 #define DGIO_COMMON_H
 
