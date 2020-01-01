@@ -93,20 +93,20 @@ namespace Dg
     return true;
   }
 
-  //! Finds log base 2 of a 32-bit integer.
+  //! Finds (truncated) log base 2 of a 32-bit integer.
   uint32_t Log2_32(uint32_t);
 
-  //! Finds log base 2 of a 64-bit integer.
+  //! Finds (truncated) log base 2 of a 64-bit integer.
   uint64_t Log2_64(uint64_t);
 
   template<typename INT, INT ALIGNMENT>
-  INT ToNextAlignment(INT a_val)
+  INT ForwardAlign(INT a_val)
   {
     return a_val + ((ALIGNMENT - (a_val % ALIGNMENT)) % ALIGNMENT);
   }
 
   template<typename INT>
-  INT ToNextAlignment(INT a_val, INT a_alignment)
+  INT ForwardAlign(INT a_val, INT a_alignment)
   {
     return a_val + ((a_alignment - (a_val % a_alignment)) % a_alignment);
   }
