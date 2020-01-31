@@ -50,7 +50,7 @@ namespace Dg
   }
 
 
-  ErrorCode::Type FileStream::Open(std::string const & a_filePath, uint32_t const a_openMode)
+  ErrorCode FileStream::Open(std::string const & a_filePath, uint32_t const a_openMode)
   {
     Close();
 

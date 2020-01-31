@@ -25,6 +25,8 @@ namespace Dg
     //!
     //! @author: Frank Hart
     //! @date 20/06/2016
+
+    //TODO maybe instead of deriving from CircularDoublyLinkedList, have the container a template parameter.
     template<typename Real>
     class Polygon : public CircularDoublyLinkedList<Vector<Real>>
     {

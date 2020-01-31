@@ -76,7 +76,7 @@ namespace Dg
     return m_pimpl->items;
   }
 
-  ErrorCode::Type Parser_INI::Parse(std::string const & a_file)
+  ErrorCode Parser_INI::Parse(std::string const & a_file)
   {
     m_pimpl->items.clear();
 

@@ -20,8 +20,8 @@ namespace Dg
 
     struct ReturnType
     {
-      ErrorCode::Type error;
-      myInt           value;
+      ErrorCode error;
+      myInt     value;
     };
   }
 }

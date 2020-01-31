@@ -74,9 +74,9 @@ namespace Dg
   }
 
 
-  ErrorCode::Type MemoryStream::Open(uint32_t const a_openMode)
+  ErrorCode MemoryStream::Open(uint32_t const a_openMode)
   {
-    ErrorCode::Type code = CloseAndReset();
+    ErrorCode code = CloseAndReset();
     if (code != ErrorCode::None)
       return code;
 
@@ -85,14 +85,14 @@ namespace Dg
     return code;
   }
 
-  ErrorCode::Type MemoryStream::Open(IO::myInt const a_bufSize,
+  ErrorCode MemoryStream::Open(IO::myInt const a_bufSize,
                                IO::byte const * a_buffer, 
                                uint32_t const a_openMode)
   {
     if (a_bufSize < 0 || a_buffer == nullptr)
       return ErrorCode::BadInput;
 
-    ErrorCode::Type code = CloseAndReset();
+    ErrorCode code = CloseAndReset();
     if (code != ErrorCode::None) 
       return code;
 
@@ -196,7 +196,7 @@ namespace Dg
     return IO::ReturnType{ErrorCode::None, count};
   }
 
-  ErrorCode::Type MemoryStream::SetBufferSize(IO::myInt const a_newSize)
+  ErrorCode MemoryStream::SetBufferSize(IO::myInt const a_newSize)
   {
     if (a_newSize < 0)
       return ErrorCode::BadInput;
@@ -232,7 +232,7 @@ namespace Dg
 
     if (required > static_cast<IO::myInt>(m_bufSize.GetSize()))
     {
-      ErrorCode::Type result = SetBufferSize(required);
+      ErrorCode result = SetBufferSize(required);
       if (result != ErrorCode::None)
         return IO::ReturnType{result, 0};
     }
@@ -307,7 +307,7 @@ namespace Dg
     return IO::ReturnType{ErrorCode::None, m_position};
   }
 
-  ErrorCode::Type MemoryStream::CloseAndReset()
+  ErrorCode MemoryStream::CloseAndReset()
   {
     m_isOpen = false;
     m_isReadable = false;

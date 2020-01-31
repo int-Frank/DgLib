@@ -29,24 +29,19 @@
 
 namespace Dg
 {
-  struct ErrorCode
-  {
-    typedef int Type;
-
-    //! @ingroup DgUtility_constants
-    //! Error codes
+  typedef int ErrorCodeType;
+  //! @ingroup DgUtility_constants
+  //! Error codes
 #undef ITEM
 #define ITEM(x) x,
-    enum : Type
-    {
-      ERRORCODES
-      COUNT
-    };
+  enum class ErrorCode : ErrorCodeType
+  {
+    ERRORCODES
+    COUNT
+  };
 #undef ITEM
 
-    static char const * ErrorCodeStrings[];
-  };
-
+  char const * ErrorCodeToString(ErrorCode);
 }
 
 #endif

@@ -36,7 +36,7 @@ namespace Dg
     return *this;
   }
 
-  ErrorCode::Type BinaryReader::Open(Stream * a_pStream)
+  ErrorCode BinaryReader::Open(Stream * a_pStream)
   {
     Close();
 

@@ -29,7 +29,7 @@ namespace Dg
     BinaryReader(BinaryReader &&) noexcept;
     BinaryReader & operator=(BinaryReader &&) noexcept;
 
-    ErrorCode::Type Open(Stream *) override;
+    ErrorCode Open(Stream *) override;
 
     template<typename T>
     IO::ReturnType Read(T * a_buffer, IO::myInt const a_count = 1);

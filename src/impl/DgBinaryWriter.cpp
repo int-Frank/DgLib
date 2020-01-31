@@ -36,7 +36,7 @@ namespace Dg
     return *this;
   }
 
-  ErrorCode::Type BinaryWriter::Open(Stream * a_pStream)
+  ErrorCode BinaryWriter::Open(Stream * a_pStream)
   {
     Close();
 

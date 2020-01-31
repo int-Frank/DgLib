@@ -28,7 +28,7 @@ namespace Dg
     BinaryWriter(BinaryWriter &&) noexcept;
     BinaryWriter & operator=(BinaryWriter &&) noexcept;
 
-    ErrorCode::Type Open(Stream *) override;
+    ErrorCode Open(Stream *) override;
 
     template<typename T>
     IO::ReturnType Write(T const * a_val, IO::myInt const a_count = 1);

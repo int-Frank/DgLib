@@ -25,7 +25,7 @@ namespace Dg
   //! @param a_nValues Number of values in the table to generate.
   //! @return ErrorCode::None on success.
   template<typename Real>
-  ErrorCode::Type GetSNDValues(Real a_mean,
+  ErrorCode GetSNDValues(Real a_mean,
                          Real a_sd,
                          Real a_lower,
                          Real a_upper,
