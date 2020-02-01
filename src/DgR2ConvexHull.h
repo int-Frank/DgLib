@@ -20,9 +20,9 @@ namespace Dg
         R2::Vector<Real> v_01 = a_p1 - a_p0;
         R2::Vector<Real> v_12 = a_p2 - a_p1;
         Real perpDot = v_01.PerpDot(v_12);
-        if (perpDot > static_cast<Real>(0))
+        if (perpDot > Dg::Constants<Real>::EPSILON)
           return Orientation::CCW;
-        else if (perpDot < static_cast<Real>(0))
+        else if (perpDot < -Dg::Constants<Real>::EPSILON)
           return Orientation::CW;
         return Orientation::Colinear;
       }
@@ -73,10 +73,8 @@ namespace Dg
       // A point p1 comes before p2 in sorted output if p2 
       // has larger polar angle (in counterclockwise 
       // direction) than p1 
-      //p0 = points[0];
       std::sort(&ptrs[1], &ptrs[1] + a_pointCount - 1, [p0 = ptrs[0]](R2::Vector<Real> const * a_p1, R2::Vector<Real> const * a_p2)
       {
-        // Find orientation 
         Orientation o = impl_ConvexHull::GetOrientation(*p0, *a_p1, *a_p2);
         if (o == Orientation::Colinear)
           return p0->SquaredDistance(*a_p1) <= p0->SquaredDistance(*a_p2);
@@ -106,8 +104,6 @@ namespace Dg
       // convex hull is not possible 
       if (m < 3) goto epilogue;
 
-      // Create an empty stack and push first three points 
-      // to it. 
       a_out.push_back(*ptrs[0]);
       a_out.push_back(*ptrs[1]);
       a_out.push_back(*ptrs[2]);
