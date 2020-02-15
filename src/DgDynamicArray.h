@@ -619,7 +619,7 @@ namespace Dg
   template<typename T>
   void DynamicArray<T>::clear()
   {
-    for (size_t i = 0; i < m_poolSize.GetSize(); i++)
+    for (size_t i = 0; i < m_nItems; i++)
       m_pData[i].~T();
     m_nItems = 0;
   }
