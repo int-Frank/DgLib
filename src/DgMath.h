@@ -86,7 +86,7 @@ namespace Dg
     if (a_val <= 3) return true;
     if (a_val % 2 == 0 || a_val % 3 == 0) return false;
 
-    T maxi = (T(1) << ((CHAR_BIT * sizeof(T)) / 2)) - 1; //Root of the highest square T can hold before overflow.
+    T const maxi = (T(1) << ((CHAR_BIT * sizeof(T)) / 2)) - 1; //Root of the highest square T can hold before overflow.
     for (T i = 5; i*i <= a_val && i <= maxi; i += 6)
       if (a_val % i == 0 || a_val % (i + 2) == 0)
         return false;

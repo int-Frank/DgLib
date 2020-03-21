@@ -1116,8 +1116,8 @@ namespace Dg
 
     memcpy(m_pBuckets, a_other.m_pBuckets, a_other.m_poolSizeMngr.GetSize() * sizeof(BucketNode));
     
-    for (size_t i = 0 i < a_other.m_nItems; i++)
-      new (&m_pDataNodes[i]) ValueType(a_other.m_pDataNodes[i]);
+    for (size_t i = 0; i < a_other.m_nItems; i++)
+      new (&m_pDataNodes[i]) DataNode(a_other.m_pDataNodes[i]);
 
     for (size_t i = a_other.m_nItems; i < a_other.DataPoolSize(); i++)
     {

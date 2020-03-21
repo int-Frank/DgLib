@@ -7,7 +7,6 @@
 
 namespace Dg
 {
-  //TODO Add prefix QC_
   enum QueryCode
   {
     QC_Fail = 0,

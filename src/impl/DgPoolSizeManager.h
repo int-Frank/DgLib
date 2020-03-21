@@ -37,6 +37,7 @@ namespace Dg
       0xFFFFFFFFFFFFFFFFull
     };
 
+    //TODO revise values. See https ://planetmath.org/goodhashtableprimes
     size_t const SizeTable_Prime[] =
     {
       0x13, 0x1f, 0x2b, 0x3d, 0x59, 0x7f, 0xb5, 0xfb,
