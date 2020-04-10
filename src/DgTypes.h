@@ -29,6 +29,29 @@
 
 namespace Dg
 {
+  struct Element
+  {
+    enum
+    {
+      //Axis
+      x       = 0,
+      y       = 1,
+      z       = 2,
+      w       = 2,
+
+      //Dimensions
+      width   = 0,
+      height  = 1,
+      depth   = 2,
+
+      //2D box edge
+      xmin    = 0,
+      xmax    = 1,
+      ymin    = 2,
+      ymax    = 3
+    };
+  };
+
   typedef int ErrorCodeType;
   //! @ingroup DgUtility_constants
   //! Error codes
