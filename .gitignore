@@ -32,3 +32,4 @@
 *.app
 *.vcxproj
 *.vcxproj.filters
+/DgLib.vcxproj.user
