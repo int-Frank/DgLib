@@ -88,7 +88,7 @@ namespace Dg
     BinPacker(BinPacker &&);
 
     BinPkr_ItemID RegisterItem(Real w, Real h);
-    size_t Fill(Bin &); //returns number of leftovers
+    size_t Fill(Bin &); //returns number of leftover items
 
     void Clear();
 
