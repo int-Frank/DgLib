@@ -36,6 +36,8 @@ namespace Dg
       Real xy[2];
     };
 
+    typedef bool (*ItemCompare)(Item const &, Item const &);
+
     struct Bin
     {
       Real dimensions[2];
@@ -78,7 +80,9 @@ namespace Dg
 
   public:
 
-    BinPacker();
+    //Items will initially be sorted acoording to ItemCompare.
+    //This deafults to comparing the area of the two input items.
+    BinPacker(ItemCompare fn = nullptr);
     ~BinPacker();
 
     BinPacker & operator=(BinPacker const &);
@@ -88,7 +92,9 @@ namespace Dg
     BinPacker(BinPacker &&);
 
     BinPkr_ItemID RegisterItem(Real w, Real h);
-    size_t Fill(Bin &); //returns number of leftover items
+
+    //Returns number of leftover items.
+    size_t Fill(Bin &);
 
     void Clear();
 
@@ -96,12 +102,14 @@ namespace Dg
 
     bool RecursiveInsert(Item const &, size_t nodeIndex, Real nodeBounds[4], typename BranchNode::Child, Bin &);
     void SetCut(size_t nodeIndex, Real nodeBounds[4]);
-    bool GrowAndInsert(Item const & a_item, Bin &);
+    void Expand(Bin &, int direction, Real x, Real y);
+    bool ExpandAndInsert(Item const & a_item, Bin &);
     void SortInput();
 
   private:
 
     uint64_t m_nextID;
+    ItemCompare m_fnCompare;
     DynamicArray<Item> m_inputItems;
     DynamicArray<BranchNode>  m_nodes;
   };
@@ -164,10 +172,19 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
 
   template<typename Real>
-  BinPacker<Real>::BinPacker()
+  BinPacker<Real>::BinPacker(ItemCompare a_fn)
     : m_nextID(0)
+    , m_fnCompare(a_fn)
   {
-
+    if (m_fnCompare == nullptr)
+    {
+      m_fnCompare = [](Item const & a_left, Item const & a_right) -> bool
+      {
+        Real areaLeft = a_left.xy[Element::width] * a_left.xy[Element::height];
+        Real areaRight = a_right.xy[Element::width] * a_right.xy[Element::height];
+        return areaLeft > areaRight;
+      };
+    }
   }
 
   template<typename Real>
@@ -182,6 +199,7 @@ namespace Dg
     if (this != &a_other)
     {
       m_nextID = a_other.m_nextID;
+      m_fnCompare = a_other.m_fnCompare;
       m_inputItems = a_other.m_inputItems;
       m_nodes = a_other.m_nodes;
     }
@@ -191,6 +209,7 @@ namespace Dg
   template<typename Real>
   BinPacker<Real>::BinPacker(BinPacker const & a_other)
     : m_nextID(a_other.m_nextID)
+    , m_fnCompare(a_other.m_fnCompare)
     , m_inputItems(a_other.m_inputItems)
     , m_nodes(a_other.m_nodes)
   {
@@ -203,6 +222,7 @@ namespace Dg
     if (this != &a_other)
     {
       m_nextID = a_other.m_nextID;
+      m_fnCompare = a_other.m_fnCompare;
       m_inputItems = std::move(a_other.m_inputItems);
       m_nodes = std::move(a_other.m_nodes);
 
@@ -214,6 +234,7 @@ namespace Dg
   template<typename Real>
   BinPacker<Real>::BinPacker(BinPacker && a_other)
     : m_nextID(a_other.m_nextID)
+    , m_fnCompare(std::move(a_other.m_fnCompare))
     , m_inputItems(std::move(a_other.m_inputItems))
     , m_nodes(std::move(a_other.m_nodes))
   {
@@ -274,7 +295,7 @@ namespace Dg
       if (RecursiveInsert(item, 0, binBounds, BranchNode::Child::B, a_bin))
         continue;
 
-      if (GrowAndInsert(item, a_bin))
+      if (ExpandAndInsert(item, a_bin))
         continue;
 
       leftovers.push_back(item);
@@ -374,53 +395,17 @@ namespace Dg
   }
 
   template<typename Real>
-  bool BinPacker<Real>::GrowAndInsert(Item const & a_item, Bin & a_bin)
+  void BinPacker<Real>::Expand(Bin & a_bin, int a_direction, Real a_x, Real a_y)
   {
-    Real width(a_item.xy[Element::width]);
-    Real height(a_item.xy[Element::height]);
-    Real binWidth(a_bin.dimensions[Element::width]);
-    Real binHeight(a_bin.dimensions[Element::height]);
-    Real maxBinWidth(a_bin.maxDimensions[Element::width]);
-    Real maxBinHeight(a_bin.maxDimensions[Element::height]);
-
-    if (width > binWidth && height > binHeight)
-      return false;
-
-    bool canGrowHeight = ((binHeight + height) <= maxBinHeight) && (width <= binWidth);
-    bool canGrowWidth = ((binWidth + width) <= maxBinWidth) && (height <= binHeight);
-
-    if (!canGrowHeight && !canGrowWidth)
-      return false;
-
-    int direction;
-
-    if (!canGrowHeight)
-    {
-      direction = Element::width;
-    }
-    else if (!canGrowWidth)
-    {
-      direction = Element::height;
-    }
-    else
-    {
-      double aH = (static_cast<double>(binHeight) + height) / binWidth;
-      double aW = (static_cast<double>(binWidth) + width) / binHeight;
-
-      if (aH < 1.0) aH = 1.0 / aH;
-      if (aW < 1.0) aW = 1.0 / aW;
-
-      direction = (aH < aW) ? Element::height : Element::width;
-    }
-
+    Real xy[2] = {a_x, a_y};
     for (Item & item : a_bin.items)
-      item.xy[direction] += a_item.xy[direction];
+      item.xy[a_direction] += xy[a_direction];
 
-    a_bin.dimensions[direction] += a_item.xy[direction];
+    a_bin.dimensions[a_direction] += xy[a_direction];
 
     m_nodes.push_back(BranchNode(m_nodes[0]));
 
-    if (direction == Element::width)
+    if (a_direction == Element::width)
     {
       m_nodes[0].SetCut(BranchNode::Cut::Vertical);
       m_nodes[0].SetLeaf(BranchNode::Child::A);
@@ -432,9 +417,58 @@ namespace Dg
       m_nodes[0].SetLeaf(BranchNode::Child::B);
       m_nodes[0].SetChildIndex(BranchNode::Child::A, m_nodes.size() - 1);
     }
-    
-    m_nodes[0].offset[Element::x] = a_item.xy[Element::width];
-    m_nodes[0].offset[Element::y] = a_item.xy[Element::height];
+
+    m_nodes[0].offset[Element::x] = xy[Element::width];
+    m_nodes[0].offset[Element::y] = xy[Element::height];
+  }
+
+  template<typename Real>
+  bool BinPacker<Real>::ExpandAndInsert(Item const & a_item, Bin & a_bin)
+  {
+    Real width(a_item.xy[Element::width]);
+    Real height(a_item.xy[Element::height]);
+    Real binWidth(a_bin.dimensions[Element::width]);
+    Real binHeight(a_bin.dimensions[Element::height]);
+    Real maxBinWidth(a_bin.maxDimensions[Element::width]);
+    Real maxBinHeight(a_bin.maxDimensions[Element::height]);
+
+    bool canExpandHeight = ((binHeight + height) <= maxBinHeight) && (width <= binWidth);
+    bool canExpandWidth = ((binWidth + width) <= maxBinWidth) && (height <= binHeight);
+
+    if (!canExpandHeight && !canExpandWidth)
+      return false;
+
+    int direction;
+
+    //special case where we need to expand in both directions
+    if (width > binWidth && height > binHeight && canExpandHeight && canExpandWidth)
+    {
+      Expand(a_bin, Element::width, a_item.xy[Element::width], static_cast<Real>(0));
+      direction = Element::height;
+    }
+    else
+    {
+      if (!canExpandHeight)
+      {
+        direction = Element::width;
+      }
+      else if (!canExpandWidth)
+      {
+        direction = Element::height;
+      }
+      else
+      {
+        double aH = (static_cast<double>(binHeight) + height) / binWidth;
+        double aW = (static_cast<double>(binWidth) + width) / binHeight;
+
+        if (aH < 1.0) aH = 1.0 / aH;
+        if (aW < 1.0) aW = 1.0 / aW;
+
+        direction = (aH < aW) ? Element::height : Element::width;
+      }
+    }
+
+    Expand(a_bin, direction, a_item.xy[Element::width], a_item.xy[Element::height]);
     
     Item item;
     item.id = a_item.id;
@@ -449,13 +483,7 @@ namespace Dg
   void BinPacker<Real>::SortInput()
   {
     std::sort(m_inputItems.data(), 
-              m_inputItems.data() + m_inputItems.size(),
-      [](Item const & a_left, Item const & a_right)
-      {
-        Real areaLeft = a_left.xy[Element::width] * a_left.xy[Element::height];
-        Real areaRight = a_right.xy[Element::width] * a_right.xy[Element::height];
-        return areaLeft > areaRight;
-      });
+              m_inputItems.data() + m_inputItems.size(), m_fnCompare);
   }
 }
 
