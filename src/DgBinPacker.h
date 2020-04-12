@@ -60,7 +60,7 @@ namespace Dg
     BinPacker(ItemCompare fn = nullptr);
 
     // The algorithm works by partitioning the space in the bin into a tree of rectangular
-    // nodes. When inserting a rectangle, we find and empty node and place the rectangle in 
+    // nodes. When inserting a rectangle, we find an empty node and place the rectangle in 
     // the top left corner. We now need to cut the node to create 2 child nodes. The node is 
     // cut either horizontally or vertically, starting from the bottom right corner of the 
     // placed rectangle. Pictured below is an example of a vertical cut. 
@@ -102,11 +102,7 @@ namespace Dg
     {
     public:
 
-      enum Child
-      {
-        A = 0,
-        B = 1
-      };
+      enum Child { A = 0, B = 1 };
 
       BranchNode();
 
@@ -134,7 +130,7 @@ namespace Dg
 
   private:
 
-    uint64_t m_nextID;
+    BinPkr_ItemID m_nextID;
     ItemCompare m_fnCompare;
     CutNode m_fnCutNode;
     DynamicArray<Item> m_inputItems;
@@ -296,7 +292,7 @@ namespace Dg
   BinPkr_ItemID BinPacker<Real>::RegisterItem(Real a_w, Real a_h)
   {
     if (a_w <= static_cast<Real>(0) || a_h <= static_cast<Real>(0))
-      return static_cast<uint64_t>(BinPkrError::DimensionsLessEqZero);
+      return static_cast<BinPkr_ItemID>(BinPkrError::DimensionsLessEqZero);
 
     Item item;
     item.id = m_nextID;
@@ -319,7 +315,6 @@ namespace Dg
   size_t BinPacker<Real>::Fill(Bin & a_bin)
   {
     DynamicArray<Item> leftovers;
-
     m_nodes.clear();
 
     //Insert root node
@@ -360,11 +355,7 @@ namespace Dg
   template<typename Real>
   bool BinPacker<Real>::RecursiveInsert(Item const & a_item, size_t a_parentNodeIndex, Real a_parentBounds[4], typename BranchNode::Child a_child, Bin & a_bin)
   {
-    Real itemWidth(a_item.xy[Element::width]);
-    Real itemHeight(a_item.xy[Element::height]);
-
     Real nodeBounds[4];
-
     if (a_child == BranchNode::Child::A)
     {
       nodeBounds[Element::xmin] = a_parentBounds[Element::xmin];
@@ -385,7 +376,7 @@ namespace Dg
 
     if (m_nodes[a_parentNodeIndex].IsLeaf(a_child))
     {
-      if ((itemWidth <= nodeSize[Element::width]) && (itemHeight <= nodeSize[Element::height]))
+      if ((a_item.xy[Element::width] <= nodeSize[Element::width]) && (a_item.xy[Element::height] <= nodeSize[Element::height]))
       {
         Item item;
         item.id = a_item.id;
@@ -398,8 +389,8 @@ namespace Dg
 
         m_nodes[a_parentNodeIndex].SetChildIndex(a_child, ind);
 
-        m_nodes[ind].offset[Element::x] = itemWidth;
-        m_nodes[ind].offset[Element::y] = itemHeight;
+        m_nodes[ind].offset[Element::x] = a_item.xy[Element::width];
+        m_nodes[ind].offset[Element::y] = a_item.xy[Element::height];
         m_nodes[ind].SetCut(m_fnCutNode(nodeSize, m_nodes[ind].offset));
 
         return true;
@@ -483,6 +474,7 @@ namespace Dg
       }
       else
       {
+        //Try to keep a 'square' shape
         double aH = (static_cast<double>(binHeight) + height) / binWidth;
         double aW = (static_cast<double>(binWidth) + width) / binHeight;
 
