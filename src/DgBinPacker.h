@@ -94,9 +94,8 @@ namespace Dg
 
   private:
 
-    bool InsertItem(Item const &, Bin &);
-    bool RecursiveInsert(Item const &, BranchNode *, Real nodeBounds[4], typename BranchNode::Child, Bin &);
-    void SetCut(BranchNode *, Real nodeBounds[4]);
+    bool RecursiveInsert(Item const &, size_t nodeIndex, Real nodeBounds[4], typename BranchNode::Child, Bin &);
+    void SetCut(size_t nodeIndex, Real nodeBounds[4]);
     bool GrowAndInsert(Item const & a_item, Bin &);
     void SortInput();
 
@@ -250,12 +249,35 @@ namespace Dg
     DynamicArray<Item> leftovers;
 
     m_nodes.clear();
+
+    //Insert root node
+    m_nodes.push_back(BranchNode());
+    m_nodes.back().offset[Element::x] = static_cast<Real>(0);
+    m_nodes.back().offset[Element::y] = static_cast<Real>(0);
+    m_nodes.back().SetLeaf(BranchNode::Child::A);
+    m_nodes.back().SetLeaf(BranchNode::Child::B);
+    m_nodes.back().SetCut(BranchNode::Cut::Horizontal);
+
     SortInput();
 
     for (Item const & item : m_inputItems)
     {
-      if (!InsertItem(item, a_bin))
-        leftovers.push_back(item);
+      Real binBounds[4];
+      binBounds[Element::xmin] = static_cast<Real>(0);
+      binBounds[Element::ymin] = static_cast<Real>(0);
+      binBounds[Element::xmax] = a_bin.dimensions[Element::width];
+      binBounds[Element::ymax] = a_bin.dimensions[Element::height];
+
+      if (RecursiveInsert(item, 0, binBounds, BranchNode::Child::A, a_bin))
+        continue;
+
+      if (RecursiveInsert(item, 0, binBounds, BranchNode::Child::B, a_bin))
+        continue;
+
+      if (GrowAndInsert(item, a_bin))
+        continue;
+
+      leftovers.push_back(item);
     }
 
     m_inputItems = leftovers;
@@ -264,7 +286,7 @@ namespace Dg
   }
 
   template<typename Real>
-  bool BinPacker<Real>::RecursiveInsert(Item const & a_item, BranchNode * a_pParent, Real a_parentBounds[4], typename BranchNode::Child a_child, Bin & a_bin)
+  bool BinPacker<Real>::RecursiveInsert(Item const & a_item, size_t a_parentNodeIndex, Real a_parentBounds[4], typename BranchNode::Child a_child, Bin & a_bin)
   {
     Real itemWidth(a_item.xy[Element::width]);
     Real itemHeight(a_item.xy[Element::height]);
@@ -274,22 +296,22 @@ namespace Dg
     if (a_child == BranchNode::Child::A)
     {
       nodeBounds[Element::xmin] = a_parentBounds[Element::xmin];
-      nodeBounds[Element::xmax] = a_pParent->GetCut() == BranchNode::Cut::Vertical ? a_parentBounds[Element::xmin] + a_pParent->offset[Element::x] : a_parentBounds[Element::xmax];
-      nodeBounds[Element::ymin] = a_parentBounds[Element::ymin] + a_pParent->offset[Element::y];
+      nodeBounds[Element::xmax] = m_nodes[a_parentNodeIndex].GetCut() == BranchNode::Cut::Vertical ? a_parentBounds[Element::xmin] + m_nodes[a_parentNodeIndex].offset[Element::x] : a_parentBounds[Element::xmax];
+      nodeBounds[Element::ymin] = a_parentBounds[Element::ymin] + m_nodes[a_parentNodeIndex].offset[Element::y];
       nodeBounds[Element::ymax] = a_parentBounds[Element::ymax];
     }
     else
     {
-      nodeBounds[Element::xmin] = a_parentBounds[Element::xmin] + a_pParent->offset[Element::x];
+      nodeBounds[Element::xmin] = a_parentBounds[Element::xmin] + m_nodes[a_parentNodeIndex].offset[Element::x];
       nodeBounds[Element::xmax] = a_parentBounds[Element::xmax];
       nodeBounds[Element::ymin] = a_parentBounds[Element::ymin];
-      nodeBounds[Element::ymax] = a_pParent->GetCut() == BranchNode::Cut::Horizontal ? a_parentBounds[Element::ymin] + a_pParent->offset[Element::y] : a_parentBounds[Element::ymax];
+      nodeBounds[Element::ymax] = m_nodes[a_parentNodeIndex].GetCut() == BranchNode::Cut::Horizontal ? a_parentBounds[Element::ymin] + m_nodes[a_parentNodeIndex].offset[Element::y] : a_parentBounds[Element::ymax];
     }
 
     Real nodeWidth = nodeBounds[Element::xmax] - nodeBounds[Element::xmin];
     Real nodeHeight = nodeBounds[Element::ymax] - nodeBounds[Element::ymin];
 
-    if (a_pParent->IsLeaf(a_child))
+    if (m_nodes[a_parentNodeIndex].IsLeaf(a_child))
     {
       if ((itemWidth <= nodeWidth) && (itemHeight <= nodeHeight))
       {
@@ -301,35 +323,24 @@ namespace Dg
 
         m_nodes.push_back(BranchNode());
         size_t ind = m_nodes.size() - 1;
-        a_pParent->SetChildIndex(a_child, ind);
-        BranchNode * pNewNode = &m_nodes[ind];
 
-        pNewNode->offset[Element::x] = itemWidth;
-        pNewNode->offset[Element::y] = itemHeight;
-        SetCut(pNewNode, nodeBounds);
+        m_nodes[a_parentNodeIndex].SetChildIndex(a_child, ind);
+
+        m_nodes[ind].offset[Element::x] = itemWidth;
+        m_nodes[ind].offset[Element::y] = itemHeight;
+        SetCut(ind, nodeBounds);
 
         return true;
       }
     }
     else
     {
-      BranchNode * pNode = &m_nodes[a_pParent->GetChildIndex(a_child)];
+      size_t ind = m_nodes[a_parentNodeIndex].GetChildIndex(a_child);
 
-      Real childNodeBounds[4];
-      childNodeBounds[Element::xmin] = nodeBounds[Element::xmin];
-      childNodeBounds[Element::xmax] = pNode->GetCut() == BranchNode::Cut::Vertical ? nodeBounds[Element::xmin] + pNode->offset[Element::x] : nodeBounds[Element::xmax];
-      childNodeBounds[Element::ymin] = nodeBounds[Element::ymin] + pNode->offset[Element::y];
-      childNodeBounds[Element::ymax] = nodeBounds[Element::ymax];
-
-      if (RecursiveInsert(a_item, pNode, childNodeBounds, BranchNode::Child::A, a_bin))
+      if (RecursiveInsert(a_item, ind, nodeBounds, BranchNode::Child::A, a_bin))
         return true;
 
-      childNodeBounds[Element::xmin] = nodeBounds[Element::xmin] + pNode->offset[Element::x];
-      childNodeBounds[Element::xmax] = nodeBounds[Element::xmax];
-      childNodeBounds[Element::ymin] = nodeBounds[Element::ymin];
-      childNodeBounds[Element::ymax] = pNode->GetCut() == BranchNode::Cut::Horizontal ? nodeBounds[Element::ymin] + pNode->offset[Element::y] : nodeBounds[Element::ymax];
-
-      if (RecursiveInsert(a_item, pNode, childNodeBounds, BranchNode::Child::B, a_bin))
+      if (RecursiveInsert(a_item, ind, nodeBounds, BranchNode::Child::B, a_bin))
         return true;
     }
 
@@ -337,10 +348,10 @@ namespace Dg
   }
 
   template<typename Real>
-  void BinPacker<Real>::SetCut(BranchNode * a_pNode, Real a_nodeBounds[4])
+  void BinPacker<Real>::SetCut(size_t a_parentNodeIndex, Real a_nodeBounds[4])
   {
-    Real x = a_pNode->offset[Element::x];
-    Real y = a_pNode->offset[Element::y];
+    Real x = m_nodes[a_parentNodeIndex].offset[Element::x];
+    Real y = m_nodes[a_parentNodeIndex].offset[Element::y];
 
     Real nodeWidth = a_nodeBounds[Element::xmax]- a_nodeBounds[Element::xmin];
     Real nodeHeight =  a_nodeBounds[Element::ymax] - a_nodeBounds[Element::ymin];
@@ -357,44 +368,9 @@ namespace Dg
     Bh *= Bh;
 
     if (Av + Bv > Ah + Bh)
-      a_pNode->SetCut(BranchNode::Cut::Vertical);
+      m_nodes[a_parentNodeIndex].SetCut(BranchNode::Cut::Vertical);
     else
-      a_pNode->SetCut(BranchNode::Cut::Horizontal);
-  }
-
-  template<typename Real>
-  bool BinPacker<Real>::InsertItem(Item const & a_item, Bin & a_bin)
-  {
-    Real binBounds[4];
-    binBounds[Element::xmin] = static_cast<Real>(0);
-    binBounds[Element::ymin] = static_cast<Real>(0);
-    binBounds[Element::xmax] = a_bin.dimensions[Element::width];
-    binBounds[Element::ymax] = a_bin.dimensions[Element::height];
-
-    bool result;
-    if (m_nodes.empty())
-    {
-      //Create a dummy node
-      BranchNode node;
-      node.offset[Element::x] = static_cast<Real>(0);
-      node.offset[Element::y] = static_cast<Real>(0);
-      node.SetLeaf(BranchNode::Child::A);
-      node.SetLeaf(BranchNode::Child::B);
-      node.SetCut(BranchNode::Cut::Vertical);
-      result = RecursiveInsert(a_item, &node, binBounds, BranchNode::Child::B, a_bin);
-    }
-    else
-    {
-      result = RecursiveInsert(a_item, &m_nodes[0], binBounds, BranchNode::Child::B, a_bin);
-    }
-
-    if (result)
-      return true;
-
-    if (!GrowAndInsert(a_item, a_bin))
-      return false;
-
-    return true;
+      m_nodes[a_parentNodeIndex].SetCut(BranchNode::Cut::Horizontal);
   }
 
   template<typename Real>
@@ -442,34 +418,24 @@ namespace Dg
 
     a_bin.dimensions[direction] += a_item.xy[direction];
 
-    //Move the root
-    if (m_nodes.size() > 0)
-      m_nodes.push_back(BranchNode(m_nodes[0]));
-    else
-      m_nodes.push_back(BranchNode());
+    m_nodes.push_back(BranchNode(m_nodes[0]));
 
-    m_nodes[0].offset[Element::x] = a_item.xy[Element::width];
-    m_nodes[0].offset[Element::y] = a_item.xy[Element::height];
-    
     if (direction == Element::width)
     {
       m_nodes[0].SetCut(BranchNode::Cut::Vertical);
       m_nodes[0].SetLeaf(BranchNode::Child::A);
-      if (m_nodes.size() == 1)
-        m_nodes[0].SetLeaf(BranchNode::Child::B);
-      else
-        m_nodes[0].SetChildIndex(BranchNode::Child::B, m_nodes.size() - 1);
+      m_nodes[0].SetChildIndex(BranchNode::Child::B, m_nodes.size() - 1);
     }
     else
     {
       m_nodes[0].SetCut(BranchNode::Cut::Horizontal);
       m_nodes[0].SetLeaf(BranchNode::Child::B);
-      if (m_nodes.size() == 1)
-        m_nodes[0].SetLeaf(BranchNode::Child::A);
-      else
-        m_nodes[0].SetChildIndex(BranchNode::Child::A, m_nodes.size() - 1);
+      m_nodes[0].SetChildIndex(BranchNode::Child::A, m_nodes.size() - 1);
     }
-
+    
+    m_nodes[0].offset[Element::x] = a_item.xy[Element::width];
+    m_nodes[0].offset[Element::y] = a_item.xy[Element::height];
+    
     Item item;
     item.id = a_item.id;
     item.xy[0] = static_cast<Real>(0);
