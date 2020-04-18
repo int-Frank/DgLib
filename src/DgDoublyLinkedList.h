@@ -250,7 +250,7 @@ namespace Dg
   private:
 
     template<class Compare>
-    void sort(Node * pFirst, Node * pLast, Compare cmp);
+    void sort(Node * pFirst, Node * pLast, Compare & cmp);
 
     // Increases the size of the underlying memory block
     void Extend();
@@ -787,7 +787,7 @@ namespace Dg
 
    template<typename T>
    template<class Compare>
-   void DoublyLinkedList<T>::sort(Node * a_pFirst, Node * a_pLast, Compare a_cmp)
+   void DoublyLinkedList<T>::sort(Node * a_pFirst, Node * a_pLast, Compare & a_cmp)
    {
      if (a_pFirst == a_pLast)
        return;

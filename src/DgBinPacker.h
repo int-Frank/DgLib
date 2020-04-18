@@ -50,36 +50,14 @@ namespace Dg
       Horizontal = 1
     };
 
-    //TODO these should be classes
-    typedef bool (*ItemCompare)(Item const &, Item const &);
-    typedef Cut (*CutNode)(Real nodeSize[2], Real rectangleSize[2]);
+  private:
+
+    typedef bool (*DefaultItemCompareFn)(Item const &, Item const &);
+    typedef Cut(*DefaultCutNodeFn)(Real nodeSize[2], Real rectangleSize[2]);
 
   public:
 
-    // Before filling a bin, items will be sorted according to ItemCompare. The default
-    // is to compare the area of the two input items, but could also be orientation or 
-    // longest side for example.
-    BinPacker(ItemCompare fn = nullptr);
-
-    // The algorithm works by partitioning the space in the bin into a tree of rectangular
-    // nodes. When inserting a rectangle, we find an empty node and place the rectangle in 
-    // the top left corner (0, 0). We now need to cut the node to create 2 child nodes.
-    // The node is cut either horizontally or vertically, starting from the 
-    // bottom right corner of the placed rectangle. Pictured below is an example of a 
-    // vertical and horizontal cut. Typically the node is cut such that each child node is 
-    // closest to a square, but you might want to define your own method to determine what 
-    // cut should be used. For example, favouring vertical cuts might yield different 
-    // results if most of the rectangles we insert are long, thin and vertical.
-    //    ________________              ________________ 
-    //   |      |         |            |      |         |  
-    //   | Rect |         |            | Rect |         |
-    //   |______|         |            |______|.........|
-    //   |      .         | Node       |         Cut    | Node
-    //   |      .Cut      |            |                |
-    //   |      .         |            |                |
-    //   |______._________|            |________________|
-    //
-    BinPacker(ItemCompare, CutNode);
+    BinPacker();
     ~BinPacker();
 
     BinPacker & operator=(BinPacker const &);
@@ -88,13 +66,38 @@ namespace Dg
     BinPacker & operator=(BinPacker &&);
     BinPacker(BinPacker &&);
 
-    void SetCompareFn(ItemCompare);
-    void SetCutNodeFn(CutNode);
-
     BinPkr_ItemID RegisterItem(Real w, Real h);
 
-    //Returns number of leftover items.
-    size_t Fill(Bin &);
+    //! Fill a bin with currently registered items.
+    //!
+    //! @param cmp Binary predicate taking two values of type 'Item'. This shall return true if the first item
+    //!            goes before the second and false otherwise. Before filling a bin, items will be 
+    //!            sorted according to ItemCompare. The default is to compare the area of the two input items, 
+    //!            but could also be orientation or longest side for example.
+    //!
+    //! @param cutNode Binary predicate taking two arguments of type Real[2] and returning a object of type 'Cut'.
+    //!                where argument 1 is the node size and argument 2 is the inserted rectangle size.
+    //!                The algorithm works by partitioning the space in the bin into a tree of rectangular
+    //!                nodes. When inserting a rectangle, we find an empty node and place the rectangle in 
+    //!                the top left corner (0, 0). We now need to cut the node to create 2 child nodes.
+    //!                The node is cut either horizontally or vertically, starting from the 
+    //!                bottom right corner of the placed rectangle. Pictured below is an example of a 
+    //!                vertical and horizontal cut. Typically the node is cut such that each child node is 
+    //!                closest to a square, but you might want to define your own method to determine what 
+    //!                cut should be used. For example, favouring vertical cuts might yield different 
+    //!                results if most of the rectangles we insert are long, thin and vertical.
+    //!    ________________              ________________ 
+    //!   |      |         |            |      |         |  
+    //!   | Rect |         |            | Rect |         |
+    //!   |______|         |            |______|.........|
+    //!   |      .         | Node       |         Cut    | Node
+    //!   |      .Cut      |            |                |
+    //!   |      .         |            |                |
+    //!   |______._________|            |________________|
+    //!
+    //! @return Number of remaining items.
+    template <typename ItemCompare = DefaultItemCompareFn, typename CutNode = DefaultCutNodeFn>
+    size_t Fill(Bin &, ItemCompare cmp = DefaultCompare, CutNode cutNode = DefaultCutNode);
 
     void Clear();
 
@@ -123,7 +126,8 @@ namespace Dg
 
   private:
 
-    bool RecursiveInsert(Item const &, size_t nodeIndex, Real nodeBounds[4], typename BranchNode::Child, Bin &);
+    template<typename CutNode>
+    bool RecursiveInsert(Item const &, size_t nodeIndex, Real nodeBounds[4], typename BranchNode::Child, Bin &, CutNode &);
     void Expand(Bin &, int direction, Real x, Real y);
     bool ExpandAndInsert(Item const & a_item, Bin &);
 
@@ -133,8 +137,6 @@ namespace Dg
   private:
 
     BinPkr_ItemID m_nextID;
-    ItemCompare m_fnCompare;
-    CutNode m_fnCutNode;
     DoublyLinkedList<Item> m_inputItems;
     DynamicArray<BranchNode>  m_nodes;
   };
@@ -197,25 +199,10 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
 
   template<typename Real>
-  BinPacker<Real>::BinPacker(ItemCompare a_fnCmp)
+  BinPacker<Real>::BinPacker()
     : m_nextID(0)
-    , m_fnCompare(a_fnCmp)
-    , m_fnCutNode(DefaultCutNode)
   {
-    if (m_fnCompare == nullptr)
-      m_fnCompare = DefaultCompare;
-  }
 
-  template<typename Real>
-  BinPacker<Real>::BinPacker(ItemCompare a_fnCmp, CutNode a_fnCut)
-    : m_nextID(0)
-    , m_fnCompare(a_fnCmp)
-    , m_fnCutNode(a_fnCut)
-  {
-    if (m_fnCompare == nullptr)
-      m_fnCompare = DefaultCompare;
-    if (m_fnCutNode == nullptr)
-      m_fnCutNode = DefaultCutNode;
   }
 
   template<typename Real>
@@ -230,8 +217,6 @@ namespace Dg
     if (this != &a_other)
     {
       m_nextID = a_other.m_nextID;
-      m_fnCompare = a_other.m_fnCompare;
-      m_fnCutNode = a_other.m_fnCutNode;
       m_inputItems = a_other.m_inputItems;
       m_nodes = a_other.m_nodes;
     }
@@ -241,8 +226,6 @@ namespace Dg
   template<typename Real>
   BinPacker<Real>::BinPacker(BinPacker const & a_other)
     : m_nextID(a_other.m_nextID)
-    , m_fnCompare(a_other.m_fnCompare)
-    , m_fnCutNode(a_other.m_fnCutNode)
     , m_inputItems(a_other.m_inputItems)
     , m_nodes(a_other.m_nodes)
   {
@@ -255,8 +238,6 @@ namespace Dg
     if (this != &a_other)
     {
       m_nextID = a_other.m_nextID;
-      m_fnCompare = a_other.m_fnCompare;
-      m_fnCutNode = a_other.m_fnCutNode;
       m_inputItems = std::move(a_other.m_inputItems);
       m_nodes = std::move(a_other.m_nodes);
 
@@ -268,26 +249,10 @@ namespace Dg
   template<typename Real>
   BinPacker<Real>::BinPacker(BinPacker && a_other)
     : m_nextID(a_other.m_nextID)
-    , m_fnCompare(std::move(a_other.m_fnCompare))
-    , m_fnCutNode(std::move(a_other.m_fnCutNode))
     , m_inputItems(std::move(a_other.m_inputItems))
     , m_nodes(std::move(a_other.m_nodes))
   {
     a_other.m_pBinGenreator = nullptr;
-  }
-
-  template<typename Real>
-  void BinPacker<Real>::SetCompareFn(ItemCompare a_fn)
-  {
-    if (a_fn != nullptr)
-      m_fnCompare = a_fn;
-  }
-
-  template<typename Real>
-  void BinPacker<Real>::SetCutNodeFn(CutNode a_fn)
-  {
-    if (a_fn != nullptr)
-      m_fnCutNode = a_fn;
   }
 
   template<typename Real>
@@ -314,7 +279,8 @@ namespace Dg
   }
 
   template<typename Real>
-  size_t BinPacker<Real>::Fill(Bin & a_bin)
+  template <typename ItemCompare, typename CutNode>
+  size_t BinPacker<Real>::Fill(Bin & a_bin, ItemCompare a_cmp, CutNode a_cutNode)
   {
     m_nodes.clear();
 
@@ -326,7 +292,7 @@ namespace Dg
     m_nodes.back().SetLeaf(BranchNode::Child::B);
     m_nodes.back().SetCut(Cut::Horizontal);
 
-    m_inputItems.sort(m_fnCompare);
+    m_inputItems.sort(a_cmp);
 
     for (DoublyLinkedList<Item>::iterator it = m_inputItems.begin(); it != m_inputItems.end();)
     {
@@ -336,10 +302,10 @@ namespace Dg
       binBounds[Element::xmax] = a_bin.dimensions[Element::width];
       binBounds[Element::ymax] = a_bin.dimensions[Element::height];
 
-      if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::A, a_bin))
+      if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::A, a_bin, a_cutNode))
         goto success;
 
-      if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::B, a_bin))
+      if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::B, a_bin, a_cutNode))
         goto success;
 
       if (ExpandAndInsert(*it, a_bin))
@@ -356,7 +322,8 @@ namespace Dg
   }
 
   template<typename Real>
-  bool BinPacker<Real>::RecursiveInsert(Item const & a_item, size_t a_parentNodeIndex, Real a_parentBounds[4], typename BranchNode::Child a_child, Bin & a_bin)
+  template<typename CutNode>
+  bool BinPacker<Real>::RecursiveInsert(Item const & a_item, size_t a_parentNodeIndex, Real a_parentBounds[4], typename BranchNode::Child a_child, Bin & a_bin, CutNode & a_cutNode)
   {
     Real nodeBounds[4];
     if (a_child == BranchNode::Child::A)
@@ -394,7 +361,7 @@ namespace Dg
 
         m_nodes[ind].offset[Element::x] = a_item.xy[Element::width];
         m_nodes[ind].offset[Element::y] = a_item.xy[Element::height];
-        m_nodes[ind].SetCut(m_fnCutNode(nodeSize, m_nodes[ind].offset));
+        m_nodes[ind].SetCut(a_cutNode(nodeSize, m_nodes[ind].offset));
 
         return true;
       }
@@ -403,10 +370,10 @@ namespace Dg
     {
       size_t ind = m_nodes[a_parentNodeIndex].GetChildIndex(a_child);
 
-      if (RecursiveInsert(a_item, ind, nodeBounds, BranchNode::Child::A, a_bin))
+      if (RecursiveInsert(a_item, ind, nodeBounds, BranchNode::Child::A, a_bin, a_cutNode))
         return true;
 
-      if (RecursiveInsert(a_item, ind, nodeBounds, BranchNode::Child::B, a_bin))
+      if (RecursiveInsert(a_item, ind, nodeBounds, BranchNode::Child::B, a_bin, a_cutNode))
         return true;
     }
 
