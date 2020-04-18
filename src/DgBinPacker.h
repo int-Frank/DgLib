@@ -9,6 +9,7 @@
 #include "DgTypes.h"
 #include "DgBit.h"
 #include "DgDynamicArray.h"
+#include "DgDoublyLinkedlist.h"
 
 namespace Dg
 {
@@ -49,6 +50,7 @@ namespace Dg
       Horizontal = 1
     };
 
+    //TODO these should be classes
     typedef bool (*ItemCompare)(Item const &, Item const &);
     typedef Cut (*CutNode)(Real nodeSize[2], Real rectangleSize[2]);
 
@@ -61,21 +63,21 @@ namespace Dg
 
     // The algorithm works by partitioning the space in the bin into a tree of rectangular
     // nodes. When inserting a rectangle, we find an empty node and place the rectangle in 
-    // the top left corner. We now need to cut the node to create 2 child nodes. The node is 
-    // cut either horizontally or vertically, starting from the bottom right corner of the 
-    // placed rectangle. Pictured below is an example of a vertical and horizontal cut. 
-    // Typically the node is cut such that each child node is closest to a square, but you 
-    // might want to define your own method to determine what cut should be used. For example,
-    // favouring vertical cuts might yield different results if most of the rectangles we 
-    // insert are long, thin and vertical.
-    //  ________________              ________________ 
-    // |      |         |            |      |         |  
-    // | Rect |         |            | Rect |         |
-    // |______|         |            |______|.........|
-    // |      .         | Node       |         Cut    | Node
-    // |      .Cut      |            |                |
-    // |      .         |            |                |
-    // |______._________|            |________________|
+    // the top left corner (0, 0). We now need to cut the node to create 2 child nodes.
+    // The node is cut either horizontally or vertically, starting from the 
+    // bottom right corner of the placed rectangle. Pictured below is an example of a 
+    // vertical and horizontal cut. Typically the node is cut such that each child node is 
+    // closest to a square, but you might want to define your own method to determine what 
+    // cut should be used. For example, favouring vertical cuts might yield different 
+    // results if most of the rectangles we insert are long, thin and vertical.
+    //    ________________              ________________ 
+    //   |      |         |            |      |         |  
+    //   | Rect |         |            | Rect |         |
+    //   |______|         |            |______|.........|
+    //   |      .         | Node       |         Cut    | Node
+    //   |      .Cut      |            |                |
+    //   |      .         |            |                |
+    //   |______._________|            |________________|
     //
     BinPacker(ItemCompare, CutNode);
     ~BinPacker();
@@ -133,7 +135,7 @@ namespace Dg
     BinPkr_ItemID m_nextID;
     ItemCompare m_fnCompare;
     CutNode m_fnCutNode;
-    DynamicArray<Item> m_inputItems;
+    DoublyLinkedList<Item> m_inputItems;
     DynamicArray<BranchNode>  m_nodes;
   };
 
@@ -314,7 +316,6 @@ namespace Dg
   template<typename Real>
   size_t BinPacker<Real>::Fill(Bin & a_bin)
   {
-    DynamicArray<Item> leftovers;
     m_nodes.clear();
 
     //Insert root node
@@ -325,9 +326,9 @@ namespace Dg
     m_nodes.back().SetLeaf(BranchNode::Child::B);
     m_nodes.back().SetCut(Cut::Horizontal);
 
-    std::sort(m_inputItems.data(), m_inputItems.data() + m_inputItems.size(), m_fnCompare);
+    m_inputItems.sort(m_fnCompare);
 
-    for (Item const & item : m_inputItems)
+    for (DoublyLinkedList<Item>::iterator it = m_inputItems.begin(); it != m_inputItems.end();)
     {
       Real binBounds[4];
       binBounds[Element::xmin] = static_cast<Real>(0);
@@ -335,19 +336,21 @@ namespace Dg
       binBounds[Element::xmax] = a_bin.dimensions[Element::width];
       binBounds[Element::ymax] = a_bin.dimensions[Element::height];
 
-      if (RecursiveInsert(item, 0, binBounds, BranchNode::Child::A, a_bin))
-        continue;
+      if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::A, a_bin))
+        goto success;
 
-      if (RecursiveInsert(item, 0, binBounds, BranchNode::Child::B, a_bin))
-        continue;
+      if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::B, a_bin))
+        goto success;
 
-      if (ExpandAndInsert(item, a_bin))
-        continue;
+      if (ExpandAndInsert(*it, a_bin))
+        goto success;
 
-      leftovers.push_back(item);
+      it++;
+      continue;
+    success:
+      it = m_inputItems.erase(it);
     }
 
-    m_inputItems = leftovers;
     m_nodes.clear();
     return m_inputItems.size();
   }
