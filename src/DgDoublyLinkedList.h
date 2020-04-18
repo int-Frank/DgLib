@@ -16,6 +16,7 @@
 #include <new>
 #include <type_traits>
 #include <exception>
+#include <iostream>
 
 #include "impl/DgPoolSizeManager.h"
 
@@ -43,6 +44,13 @@ namespace Dg
 		  Node* pPrev;
       T data;
 	  };
+
+    typedef bool (*DefaultCompareFn)(T const & t0, T const & t1);
+
+    static bool DefaultCompare(T const & t0, T const & t1)
+    {
+      return t0 < t1;
+    }
 
   public:
 
@@ -234,13 +242,20 @@ namespace Dg
     //! Resizes the DoublyLinkedList. This function also clears the DoublyLinkedList.
 	  void resize(size_t newMemBlockSize);
 
+    template<class Compare = DefaultCompareFn>
+    void sort(Compare a_cmp = DefaultCompare);
+
     //Used to determin if the memory block allocation has changed when reallocating
     void const * data();
 
   private:
 
+    template<class Compare>
+    void sort(Node * pFirst, Node * pLast, Compare cmp);
+
     // Increases the size of the underlying memory block
     void Extend();
+    void Move(Node * a_pDest, Node * a_pSrc);
     Node * InsertNewAfter(Node * a_pNode, T const & a_data);
     void DestructAll();
     void InitMemory();
@@ -762,6 +777,51 @@ namespace Dg
    void const * DoublyLinkedList<T>::data()
    {
      return m_pNodes;
+   }
+
+   template<typename T>
+   template<class Compare>
+   void DoublyLinkedList<T>::sort(Compare a_cmp)
+   {
+     sort(m_pNodes[0].pNext, &m_pNodes[0], a_cmp);
+   }
+
+   template<typename T>
+   template<class Compare>
+   void DoublyLinkedList<T>::sort(Node * a_pFirst, Node * a_pLast, Compare a_cmp)
+   {
+     if (a_pFirst == a_pLast)
+       return;
+   
+     Node * pPrev = a_pFirst->pPrev;
+     for (Node * pNode = a_pFirst->pNext; pNode != a_pLast; pNode = pNode->pNext)
+     {
+       if (a_cmp(pNode->data, a_pFirst->data))
+       {
+         Node * pPrev = pNode->pPrev;
+         Move(a_pFirst, pNode);
+         pNode = pPrev;
+       }
+     }
+   
+     sort(a_pFirst->pNext, a_pLast, a_cmp);
+     sort(pPrev->pNext, a_pFirst, a_cmp);
+   }
+
+   template<typename T>
+   void DoublyLinkedList<T>::Move(Node * a_pDest, Node * a_pSrc)
+   {
+     //Break the src from the chain
+     a_pSrc->pPrev->pNext = a_pSrc->pNext;
+     a_pSrc->pNext->pPrev = a_pSrc->pPrev;
+
+     //set the src pointers
+     a_pSrc->pPrev = a_pDest->pPrev;
+     a_pSrc->pNext = a_pDest;
+
+     //insert src into chain
+     a_pDest->pPrev->pNext = a_pSrc;
+     a_pDest->pPrev = a_pSrc;
    }
 
    template<typename T>
