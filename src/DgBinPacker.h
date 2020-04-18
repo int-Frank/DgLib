@@ -63,19 +63,19 @@ namespace Dg
     // nodes. When inserting a rectangle, we find an empty node and place the rectangle in 
     // the top left corner. We now need to cut the node to create 2 child nodes. The node is 
     // cut either horizontally or vertically, starting from the bottom right corner of the 
-    // placed rectangle. Pictured below is an example of a vertical cut. 
+    // placed rectangle. Pictured below is an example of a vertical and horizontal cut. 
     // Typically the node is cut such that each child node is closest to a square, but you 
     // might want to define your own method to determine what cut should be used. For example,
     // favouring vertical cuts might yield different results if most of the rectangles we 
     // insert are long, thin and vertical.
-    //  ________________
-    // |      |         |
-    // | Rect |         |
-    // |______|         |
-    // |      .         | Node
-    // |      .Cut      |
-    // |      .         |
-    // |______._________|
+    //  ________________              ________________ 
+    // |      |         |            |      |         |  
+    // | Rect |         |            | Rect |         |
+    // |______|         |            |______|.........|
+    // |      .         | Node       |         Cut    | Node
+    // |      .Cut      |            |                |
+    // |      .         |            |                |
+    // |______._________|            |________________|
     //
     BinPacker(ItemCompare, CutNode);
     ~BinPacker();
