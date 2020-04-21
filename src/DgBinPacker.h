@@ -13,18 +13,27 @@
 
 namespace Dg
 {
-  typedef uint64_t BinPkr_ItemID;
-
-  enum class BinPkrError : uint64_t
+  namespace BinPackerCommon
   {
-    None                  = 0,
-    DimensionsLessEqZero  = 1ULL << 60
+    typedef uint64_t ItemID;
+
+    enum class Error : uint64_t
+    {
+      None                  = 0,
+      DimensionsLessEqZero  = 1ULL << 60
+    };
+
+    Error GetError(ItemID a_id)
+    {
+      return static_cast<Error>(a_id & 0xF000'0000'0000'0000);
+    }
+
+    enum class Cut
+    {
+      Vertical   = 0,
+      Horizontal = 1
+    };
   };
-
-  BinPkrError BinPkr_GetError(BinPkr_ItemID a_id)
-  {
-    return static_cast<BinPkrError>(a_id & 0xF000'0000'0000'0000);
-  }
 
   template<typename Real>
   class BinPacker
@@ -33,7 +42,7 @@ namespace Dg
 
     struct Item
     {
-      BinPkr_ItemID id;
+      BinPackerCommon::ItemID id;
       Real xy[2];
     };
 
@@ -44,16 +53,10 @@ namespace Dg
       DynamicArray<Item> items;
     };
 
-    enum class Cut
-    {
-      Vertical   = 0,
-      Horizontal = 1
-    };
-
   private:
 
     typedef bool (*DefaultItemCompareFn)(Item const &, Item const &);
-    typedef Cut(*DefaultCutNodeFn)(Real nodeSize[2], Real rectangleSize[2]);
+    typedef BinPackerCommon::Cut(*DefaultCutNodeFn)(Real nodeSize[2], Real rectangleSize[2]);
 
   public:
 
@@ -66,7 +69,7 @@ namespace Dg
     BinPacker & operator=(BinPacker &&);
     BinPacker(BinPacker &&);
 
-    BinPkr_ItemID RegisterItem(Real w, Real h);
+    BinPackerCommon::ItemID RegisterItem(Real w, Real h);
 
     //! Fill a bin with currently registered items.
     //!
@@ -111,8 +114,8 @@ namespace Dg
 
       BranchNode();
 
-      Cut GetCut() const;
-      void SetCut(Cut);
+      BinPackerCommon::Cut GetCut() const;
+      void SetCut(BinPackerCommon::Cut);
       void SetChildIndex(Child, size_t);
       size_t GetChildIndex(Child) const;
       void SetLeaf(Child);
@@ -132,11 +135,11 @@ namespace Dg
     bool ExpandAndInsert(Item const & a_item, Bin &);
 
     static bool DefaultCompare(Item const &, Item const &);
-    static Cut DefaultCutNode(Real nodeSize[2], Real rectSize[2]);
+    static BinPackerCommon::Cut DefaultCutNode(Real nodeSize[2], Real rectSize[2]);
 
   private:
 
-    BinPkr_ItemID m_nextID;
+    BinPackerCommon::ItemID m_nextID;
     DoublyLinkedList<Item> m_inputItems;
     DynamicArray<BranchNode>  m_nodes;
   };
@@ -155,13 +158,13 @@ namespace Dg
   }
 
   template<typename Real>
-  typename BinPacker<Real>::Cut BinPacker<Real>::BranchNode::GetCut() const
+  typename BinPackerCommon::Cut BinPacker<Real>::BranchNode::GetCut() const
   {
-    return static_cast<Cut>(Dg::GetSubInt<uint64_t, 63, 1>(m_data));
+    return static_cast<BinPackerCommon::Cut>(Dg::GetSubInt<uint64_t, 63, 1>(m_data));
   }
 
   template<typename Real>
-  void BinPacker<Real>::BranchNode::SetCut(Cut a_cut)
+  void BinPacker<Real>::BranchNode::SetCut(BinPackerCommon::Cut a_cut)
   {
     m_data = Dg::SetSubInt<uint64_t, 63, 1>(m_data, static_cast<uint64_t>(a_cut));
   }
@@ -240,8 +243,6 @@ namespace Dg
       m_nextID = a_other.m_nextID;
       m_inputItems = std::move(a_other.m_inputItems);
       m_nodes = std::move(a_other.m_nodes);
-
-      a_other.m_pBinGenreator = nullptr;
     }
     return *this;
   }
@@ -252,14 +253,14 @@ namespace Dg
     , m_inputItems(std::move(a_other.m_inputItems))
     , m_nodes(std::move(a_other.m_nodes))
   {
-    a_other.m_pBinGenreator = nullptr;
+
   }
 
   template<typename Real>
-  BinPkr_ItemID BinPacker<Real>::RegisterItem(Real a_w, Real a_h)
+  BinPackerCommon::ItemID BinPacker<Real>::RegisterItem(Real a_w, Real a_h)
   {
     if (a_w <= static_cast<Real>(0) || a_h <= static_cast<Real>(0))
-      return static_cast<BinPkr_ItemID>(BinPkrError::DimensionsLessEqZero);
+      return static_cast<BinPackerCommon::ItemID>(BinPackerCommon::Error::DimensionsLessEqZero);
 
     Item item;
     item.id = m_nextID;
@@ -290,7 +291,7 @@ namespace Dg
     m_nodes.back().offset[Element::y] = static_cast<Real>(0);
     m_nodes.back().SetLeaf(BranchNode::Child::A);
     m_nodes.back().SetLeaf(BranchNode::Child::B);
-    m_nodes.back().SetCut(Cut::Horizontal);
+    m_nodes.back().SetCut(BinPackerCommon::Cut::Horizontal);
 
     m_inputItems.sort(a_cmp);
 
@@ -329,7 +330,7 @@ namespace Dg
     if (a_child == BranchNode::Child::A)
     {
       nodeBounds[Element::xmin] = a_parentBounds[Element::xmin];
-      nodeBounds[Element::xmax] = m_nodes[a_parentNodeIndex].GetCut() == Cut::Vertical ? a_parentBounds[Element::xmin] + m_nodes[a_parentNodeIndex].offset[Element::x] : a_parentBounds[Element::xmax];
+      nodeBounds[Element::xmax] = m_nodes[a_parentNodeIndex].GetCut() == BinPackerCommon::Cut::Vertical ? a_parentBounds[Element::xmin] + m_nodes[a_parentNodeIndex].offset[Element::x] : a_parentBounds[Element::xmax];
       nodeBounds[Element::ymin] = a_parentBounds[Element::ymin] + m_nodes[a_parentNodeIndex].offset[Element::y];
       nodeBounds[Element::ymax] = a_parentBounds[Element::ymax];
     }
@@ -338,7 +339,7 @@ namespace Dg
       nodeBounds[Element::xmin] = a_parentBounds[Element::xmin] + m_nodes[a_parentNodeIndex].offset[Element::x];
       nodeBounds[Element::xmax] = a_parentBounds[Element::xmax];
       nodeBounds[Element::ymin] = a_parentBounds[Element::ymin];
-      nodeBounds[Element::ymax] = m_nodes[a_parentNodeIndex].GetCut() == Cut::Horizontal ? a_parentBounds[Element::ymin] + m_nodes[a_parentNodeIndex].offset[Element::y] : a_parentBounds[Element::ymax];
+      nodeBounds[Element::ymax] = m_nodes[a_parentNodeIndex].GetCut() == BinPackerCommon::Cut::Horizontal ? a_parentBounds[Element::ymin] + m_nodes[a_parentNodeIndex].offset[Element::y] : a_parentBounds[Element::ymax];
     }
 
     Real nodeSize[2] = {nodeBounds[Element::xmax] - nodeBounds[Element::xmin],
@@ -393,13 +394,13 @@ namespace Dg
 
     if (a_direction == Element::width)
     {
-      m_nodes[0].SetCut(Cut::Vertical);
+      m_nodes[0].SetCut(BinPackerCommon::Cut::Vertical);
       m_nodes[0].SetLeaf(BranchNode::Child::A);
       m_nodes[0].SetChildIndex(BranchNode::Child::B, m_nodes.size() - 1);
     }
     else
     {
-      m_nodes[0].SetCut(Cut::Horizontal);
+      m_nodes[0].SetCut(BinPackerCommon::Cut::Horizontal);
       m_nodes[0].SetLeaf(BranchNode::Child::B);
       m_nodes[0].SetChildIndex(BranchNode::Child::A, m_nodes.size() - 1);
     }
@@ -475,7 +476,7 @@ namespace Dg
   }
 
   template<typename Real>
-  typename BinPacker<Real>::Cut BinPacker<Real>::DefaultCutNode(Real a_nodeSize[2], Real a_rectSize[2])
+  typename BinPackerCommon::Cut BinPacker<Real>::DefaultCutNode(Real a_nodeSize[2], Real a_rectSize[2])
   {
     Real Av = (a_nodeSize[Element::height] - a_rectSize[Element::y]) * a_rectSize[Element::x];
     Real Bv = a_nodeSize[Element::height] * (a_nodeSize[Element::width] - a_rectSize[Element::x]);
@@ -489,8 +490,8 @@ namespace Dg
     Bh *= Bh;
 
     if (Av + Bv > Ah + Bh)
-      return Cut::Vertical;
-    return Cut::Horizontal;
+      return BinPackerCommon::Cut::Vertical;
+    return BinPackerCommon::Cut::Horizontal;
   }
 }
 
