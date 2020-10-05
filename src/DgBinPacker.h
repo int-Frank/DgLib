@@ -23,10 +23,7 @@ namespace Dg
       DimensionsLessEqZero  = 1ULL << 60
     };
 
-    Error GetError(ItemID a_id)
-    {
-      return static_cast<Error>(a_id & 0xF000'0000'0000'0000);
-    }
+    Error GetError(ItemID a_id);
 
     enum class Cut
     {
