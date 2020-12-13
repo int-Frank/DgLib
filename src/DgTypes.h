@@ -10,23 +10,6 @@
 
 #define IS_FLAGGED(x, y) ((x & (1 << y)) != 0)
 
-#define ITEM()
-#define ERRORCODES \
-  ITEM(None) \
-  ITEM(Unknown) \
-  ITEM(Failure) \
-  ITEM(Undefined) \
-  ITEM(OutOfBounds) \
-  ITEM(Duplicate) \
-  ITEM(FailedToOpenFile) \
-  ITEM(BadInput) \
-  ITEM(StreamNotOpen) \
-  ITEM(FailedToAllocMem) \
-  ITEM(Disallowed) \
-  ITEM(InsufficientSpace) \
-  ITEM(NullObject) \
-  ITEM(WriteError)
-
 namespace Dg
 {
   struct Element
@@ -37,7 +20,7 @@ namespace Dg
       x       = 0,
       y       = 1,
       z       = 2,
-      w       = 2,
+      w       = 3,
 
       //Dimensions
       width   = 0,
@@ -51,20 +34,6 @@ namespace Dg
       ymax    = 3
     };
   };
-
-  typedef int ErrorCodeType;
-  //! @ingroup DgUtility_constants
-  //! Error codes
-#undef ITEM
-#define ITEM(x) x,
-  enum class ErrorCode : ErrorCodeType
-  {
-    ERRORCODES
-    COUNT
-  };
-#undef ITEM
-
-  char const * ErrorCodeToString(ErrorCode);
 }
 
 #endif

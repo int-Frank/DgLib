@@ -1,6 +1,6 @@
 //@group Misc/impl
 
-#include "../DgTypes.h"
+#include "../DgError.h"
 
 namespace Dg
 {
@@ -13,7 +13,7 @@ namespace Dg
       ERRORCODES
     };
 #undef ITEM
-    return s_ErrorCodeStrings[static_cast<ErrorCodeType>(a_code)];
+    return s_ErrorCodeStrings[static_cast<uint32_t>(a_code)];
   }
 
 }

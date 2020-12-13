@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include <type_traits>
-#include "DgTypes.h"
+#include "DgError.h"
 
 #define ENSURE_VALID_FUNDAMENTAL_TYPE static_assert(std::is_fundamental<T>::value, "Invalid type.")
 

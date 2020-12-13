@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "DgTypes.h"
+#include "DgError.h"
 #include "DgIO_Common.h"
 
 namespace Dg

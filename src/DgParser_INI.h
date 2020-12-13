@@ -13,7 +13,7 @@
 #include <string>
 #include <map>
 
-#include "DgTypes.h"
+#include "DgError.h"
 
 namespace Dg
 {
