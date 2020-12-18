@@ -10,36 +10,18 @@
 #include "DgBit.h"
 #include "DgDynamicArray.h"
 #include "DgDoublyLinkedlist.h"
+#include "DgError.h"
 
 namespace Dg
 {
-  namespace BinPackerCommon
-  {
-    typedef uint64_t ItemID;
-
-    enum class Error : uint64_t
-    {
-      None                  = 0,
-      DimensionsLessEqZero  = 1ULL << 60
-    };
-
-    Error GetError(ItemID a_id);
-
-    enum class Cut
-    {
-      Vertical   = 0,
-      Horizontal = 1
-    };
-  };
-
-  template<typename Real>
+  template<typename Real, typename IDType>
   class BinPacker
   {
   public:
 
     struct Item
     {
-      BinPackerCommon::ItemID id;
+      IDType id;
       Real xy[2];
     };
 
@@ -50,10 +32,16 @@ namespace Dg
       DynamicArray<Item> items;
     };
 
+    enum class Cut
+    {
+      Vertical   = 0,
+      Horizontal = 1
+    };
+
   private:
 
     typedef bool (*DefaultItemCompareFn)(Item const &, Item const &);
-    typedef BinPackerCommon::Cut(*DefaultCutNodeFn)(Real nodeSize[2], Real rectangleSize[2]);
+    typedef Cut(*DefaultCutNodeFn)(Real nodeSize[2], Real rectangleSize[2]);
 
   public:
 
@@ -66,7 +54,7 @@ namespace Dg
     BinPacker & operator=(BinPacker &&);
     BinPacker(BinPacker &&);
 
-    BinPackerCommon::ItemID RegisterItem(Real w, Real h);
+    ErrorCode RegisterItem(IDType id, Real w, Real h);
 
     //! Fill a bin with currently registered items.
     //!
@@ -111,8 +99,8 @@ namespace Dg
 
       BranchNode();
 
-      BinPackerCommon::Cut GetCut() const;
-      void SetCut(BinPackerCommon::Cut);
+      Cut GetCut() const;
+      void SetCut(Cut);
       void SetChildIndex(Child, size_t);
       size_t GetChildIndex(Child) const;
       void SetLeaf(Child);
@@ -132,11 +120,10 @@ namespace Dg
     bool ExpandAndInsert(Item const & a_item, Bin &);
 
     static bool DefaultCompare(Item const &, Item const &);
-    static BinPackerCommon::Cut DefaultCutNode(Real nodeSize[2], Real rectSize[2]);
+    static Cut DefaultCutNode(Real nodeSize[2], Real rectSize[2]);
 
   private:
 
-    BinPackerCommon::ItemID m_nextID;
     DoublyLinkedList<Item> m_inputItems;
     DynamicArray<BranchNode>  m_nodes;
   };
@@ -145,8 +132,8 @@ namespace Dg
   // BranchNode
   //------------------------------------------------------------------------------------------------
 
-  template<typename Real>
-  BinPacker<Real>::BranchNode::BranchNode()
+  template<typename Real, typename IDType>
+  BinPacker<Real, IDType>::BranchNode::BranchNode()
     : m_data(0)
     , offset{static_cast<Real>(0), static_cast<Real>(0)}
   {
@@ -154,131 +141,130 @@ namespace Dg
     SetLeaf(Child::B);
   }
 
-  template<typename Real>
-  typename BinPackerCommon::Cut BinPacker<Real>::BranchNode::GetCut() const
+  template<typename Real, typename IDType>
+  typename BinPacker<Real, IDType>::Cut BinPacker<Real, IDType>::BranchNode::GetCut() const
   {
-    return static_cast<BinPackerCommon::Cut>(Dg::GetSubInt<uint64_t, 63, 1>(m_data));
+    return static_cast<Cut>(GetSubInt<uint64_t, 63, 1>(m_data));
   }
 
-  template<typename Real>
-  void BinPacker<Real>::BranchNode::SetCut(BinPackerCommon::Cut a_cut)
+  template<typename Real, typename IDType>
+  void BinPacker<Real, IDType>::BranchNode::SetCut(Cut a_cut)
   {
-    m_data = Dg::SetSubInt<uint64_t, 63, 1>(m_data, static_cast<uint64_t>(a_cut));
+    m_data = SetSubInt<uint64_t, 63, 1>(m_data, static_cast<uint64_t>(a_cut));
   }
 
-  template<typename Real>
-  size_t BinPacker<Real>::BranchNode::GetChildIndex(Child a_child) const
+  template<typename Real, typename IDType>
+  size_t BinPacker<Real, IDType>::BranchNode::GetChildIndex(Child a_child) const
   {
     uint64_t shft = 31ull * a_child;
-    return Dg::GetSubInt<uint64_t, 0, 31>(m_data >> shft);
+    return GetSubInt<uint64_t, 0, 31>(m_data >> shft);
   }
 
-  template<typename Real>
-  void BinPacker<Real>::BranchNode::SetChildIndex(Child a_child, size_t a_index)
+  template<typename Real, typename IDType>
+  void BinPacker<Real, IDType>::BranchNode::SetChildIndex(Child a_child, size_t a_index)
   {
     uint64_t shft = 31ull * a_child;
-    m_data = Dg::SetSubInt<uint64_t>(m_data, a_index, shft, 31);
+    m_data = SetSubInt<uint64_t>(m_data, a_index, shft, 31);
   }
 
-  template<typename Real>
-  void BinPacker<Real>::BranchNode::SetLeaf(Child a_child)
+  template<typename Real, typename IDType>
+  void BinPacker<Real, IDType>::BranchNode::SetLeaf(Child a_child)
   {
     uint64_t shft = 31ull * a_child;
-    m_data = Dg::SetSubInt<uint64_t>(m_data, Dg::Mask<uint64_t, 0, 31>::value, shft, 31);
+    m_data = SetSubInt<uint64_t>(m_data, Mask<uint64_t, 0, 31>::value, shft, 31);
   }
 
-  template<typename Real>
-  bool BinPacker<Real>::BranchNode::IsLeaf(Child a_child) const
+  template<typename Real, typename IDType>
+  bool BinPacker<Real, IDType>::BranchNode::IsLeaf(Child a_child) const
   {
     uint64_t shft = 31ull * a_child;
-    return Dg::GetSubInt<uint64_t, 0, 31>(m_data >> shft) == Dg::Mask<uint64_t, 0, 31>::value;
+    return GetSubInt<uint64_t, 0, 31>(m_data >> shft) == Mask<uint64_t, 0, 31>::value;
   }
 
   //------------------------------------------------------------------------------------------------
   // BinPacker
   //------------------------------------------------------------------------------------------------
 
-  template<typename Real>
-  BinPacker<Real>::BinPacker()
-    : m_nextID(0)
+  template<typename Real, typename IDType>
+  BinPacker<Real, IDType>::BinPacker()
   {
 
   }
 
-  template<typename Real>
-  BinPacker<Real>::~BinPacker()
+  template<typename Real, typename IDType>
+  BinPacker<Real, IDType>::~BinPacker()
   {
 
   }
 
-  template<typename Real>
-  BinPacker<Real> & BinPacker<Real>::operator=(BinPacker const & a_other)
+  template<typename Real, typename IDType>
+  BinPacker<Real, IDType> & BinPacker<Real, IDType>::operator=(BinPacker const & a_other)
   {
     if (this != &a_other)
     {
-      m_nextID = a_other.m_nextID;
       m_inputItems = a_other.m_inputItems;
       m_nodes = a_other.m_nodes;
     }
     return *this;
   }
 
-  template<typename Real>
-  BinPacker<Real>::BinPacker(BinPacker const & a_other)
-    : m_nextID(a_other.m_nextID)
-    , m_inputItems(a_other.m_inputItems)
+  template<typename Real, typename IDType>
+  BinPacker<Real, IDType>::BinPacker(BinPacker const & a_other)
+    : m_inputItems(a_other.m_inputItems)
     , m_nodes(a_other.m_nodes)
   {
 
   }
 
-  template<typename Real>
-  BinPacker<Real> & BinPacker<Real>::operator=(BinPacker && a_other)
+  template<typename Real, typename IDType>
+  BinPacker<Real, IDType> & BinPacker<Real, IDType>::operator=(BinPacker && a_other)
   {
     if (this != &a_other)
     {
-      m_nextID = a_other.m_nextID;
       m_inputItems = std::move(a_other.m_inputItems);
       m_nodes = std::move(a_other.m_nodes);
     }
     return *this;
   }
 
-  template<typename Real>
-  BinPacker<Real>::BinPacker(BinPacker && a_other)
-    : m_nextID(a_other.m_nextID)
-    , m_inputItems(std::move(a_other.m_inputItems))
+  template<typename Real, typename IDType>
+  BinPacker<Real, IDType>::BinPacker(BinPacker && a_other)
+    : m_inputItems(std::move(a_other.m_inputItems))
     , m_nodes(std::move(a_other.m_nodes))
   {
 
   }
 
-  template<typename Real>
-  BinPackerCommon::ItemID BinPacker<Real>::RegisterItem(Real a_w, Real a_h)
+  template<typename Real, typename IDType>
+  ErrorCode BinPacker<Real, IDType>::RegisterItem(IDType a_id, Real a_w, Real a_h)
   {
+    ErrorCode result;
+
     if (a_w <= static_cast<Real>(0) || a_h <= static_cast<Real>(0))
-      return static_cast<BinPackerCommon::ItemID>(BinPackerCommon::Error::DimensionsLessEqZero);
+      DG_ERROR_SET(ErrorCode::BadInput);
 
     Item item;
-    item.id = m_nextID;
-    m_nextID++;
+    item.id = a_id;
     item.xy[Element::width] = a_w;
     item.xy[Element::height] = a_h;
 
     m_inputItems.push_back(item);
-    return item.id;
+
+    result = ErrorCode::None;
+  epilogue:
+    return result;
   }
 
-  template<typename Real>
-  void BinPacker<Real>::Clear()
+  template<typename Real, typename IDType>
+  void BinPacker<Real, IDType>::Clear()
   {
     m_inputItems.clear();
     m_nodes.clear();
   }
 
-  template<typename Real>
+  template<typename Real, typename IDType>
   template <typename ItemCompare, typename CutNode>
-  size_t BinPacker<Real>::Fill(Bin & a_bin, ItemCompare a_cmp, CutNode a_cutNode)
+  size_t BinPacker<Real, IDType>::Fill(Bin & a_bin, ItemCompare a_cmp, CutNode a_cutNode)
   {
     m_nodes.clear();
 
@@ -288,7 +274,7 @@ namespace Dg
     m_nodes.back().offset[Element::y] = static_cast<Real>(0);
     m_nodes.back().SetLeaf(BranchNode::Child::A);
     m_nodes.back().SetLeaf(BranchNode::Child::B);
-    m_nodes.back().SetCut(BinPackerCommon::Cut::Horizontal);
+    m_nodes.back().SetCut(Cut::Horizontal);
 
     m_inputItems.sort(a_cmp);
 
@@ -319,15 +305,15 @@ namespace Dg
     return m_inputItems.size();
   }
 
-  template<typename Real>
+  template<typename Real, typename IDType>
   template<typename CutNode>
-  bool BinPacker<Real>::RecursiveInsert(Item const & a_item, size_t a_parentNodeIndex, Real a_parentBounds[4], typename BranchNode::Child a_child, Bin & a_bin, CutNode & a_cutNode)
+  bool BinPacker<Real, IDType>::RecursiveInsert(Item const & a_item, size_t a_parentNodeIndex, Real a_parentBounds[4], typename BranchNode::Child a_child, Bin & a_bin, CutNode & a_cutNode)
   {
     Real nodeBounds[4];
     if (a_child == BranchNode::Child::A)
     {
       nodeBounds[Element::xmin] = a_parentBounds[Element::xmin];
-      nodeBounds[Element::xmax] = m_nodes[a_parentNodeIndex].GetCut() == BinPackerCommon::Cut::Vertical ? a_parentBounds[Element::xmin] + m_nodes[a_parentNodeIndex].offset[Element::x] : a_parentBounds[Element::xmax];
+      nodeBounds[Element::xmax] = m_nodes[a_parentNodeIndex].GetCut() == Cut::Vertical ? a_parentBounds[Element::xmin] + m_nodes[a_parentNodeIndex].offset[Element::x] : a_parentBounds[Element::xmax];
       nodeBounds[Element::ymin] = a_parentBounds[Element::ymin] + m_nodes[a_parentNodeIndex].offset[Element::y];
       nodeBounds[Element::ymax] = a_parentBounds[Element::ymax];
     }
@@ -336,7 +322,7 @@ namespace Dg
       nodeBounds[Element::xmin] = a_parentBounds[Element::xmin] + m_nodes[a_parentNodeIndex].offset[Element::x];
       nodeBounds[Element::xmax] = a_parentBounds[Element::xmax];
       nodeBounds[Element::ymin] = a_parentBounds[Element::ymin];
-      nodeBounds[Element::ymax] = m_nodes[a_parentNodeIndex].GetCut() == BinPackerCommon::Cut::Horizontal ? a_parentBounds[Element::ymin] + m_nodes[a_parentNodeIndex].offset[Element::y] : a_parentBounds[Element::ymax];
+      nodeBounds[Element::ymax] = m_nodes[a_parentNodeIndex].GetCut() == Cut::Horizontal ? a_parentBounds[Element::ymin] + m_nodes[a_parentNodeIndex].offset[Element::y] : a_parentBounds[Element::ymax];
     }
 
     Real nodeSize[2] = {nodeBounds[Element::xmax] - nodeBounds[Element::xmin],
@@ -378,8 +364,8 @@ namespace Dg
     return false;
   }
 
-  template<typename Real>
-  void BinPacker<Real>::Expand(Bin & a_bin, int a_direction, Real a_x, Real a_y)
+  template<typename Real, typename IDType>
+  void BinPacker<Real, IDType>::Expand(Bin & a_bin, int a_direction, Real a_x, Real a_y)
   {
     Real xy[2] = {a_x, a_y};
     for (Item & item : a_bin.items)
@@ -391,13 +377,13 @@ namespace Dg
 
     if (a_direction == Element::width)
     {
-      m_nodes[0].SetCut(BinPackerCommon::Cut::Vertical);
+      m_nodes[0].SetCut(Cut::Vertical);
       m_nodes[0].SetLeaf(BranchNode::Child::A);
       m_nodes[0].SetChildIndex(BranchNode::Child::B, m_nodes.size() - 1);
     }
     else
     {
-      m_nodes[0].SetCut(BinPackerCommon::Cut::Horizontal);
+      m_nodes[0].SetCut(Cut::Horizontal);
       m_nodes[0].SetLeaf(BranchNode::Child::B);
       m_nodes[0].SetChildIndex(BranchNode::Child::A, m_nodes.size() - 1);
     }
@@ -406,8 +392,8 @@ namespace Dg
     m_nodes[0].offset[Element::y] = xy[Element::height];
   }
 
-  template<typename Real>
-  bool BinPacker<Real>::ExpandAndInsert(Item const & a_item, Bin & a_bin)
+  template<typename Real, typename IDType>
+  bool BinPacker<Real, IDType>::ExpandAndInsert(Item const & a_item, Bin & a_bin)
   {
     Real width(a_item.xy[Element::width]);
     Real height(a_item.xy[Element::height]);
@@ -464,16 +450,16 @@ namespace Dg
     return true;
   }
 
-  template<typename Real>
-  bool BinPacker<Real>::DefaultCompare(Item const & a_left, Item const & a_right)
+  template<typename Real, typename IDType>
+  bool BinPacker<Real, IDType>::DefaultCompare(Item const & a_left, Item const & a_right)
   {
     Real areaLeft = a_left.xy[Element::width] * a_left.xy[Element::height];
     Real areaRight = a_right.xy[Element::width] * a_right.xy[Element::height];
     return areaLeft > areaRight;
   }
 
-  template<typename Real>
-  typename BinPackerCommon::Cut BinPacker<Real>::DefaultCutNode(Real a_nodeSize[2], Real a_rectSize[2])
+  template<typename Real, typename IDType>
+  typename BinPacker<Real, IDType>::Cut BinPacker<Real, IDType>::DefaultCutNode(Real a_nodeSize[2], Real a_rectSize[2])
   {
     Real Av = (a_nodeSize[Element::height] - a_rectSize[Element::y]) * a_rectSize[Element::x];
     Real Bv = a_nodeSize[Element::height] * (a_nodeSize[Element::width] - a_rectSize[Element::x]);
@@ -487,8 +473,8 @@ namespace Dg
     Bh *= Bh;
 
     if (Av + Bv > Ah + Bh)
-      return BinPackerCommon::Cut::Vertical;
-    return BinPackerCommon::Cut::Horizontal;
+      return Cut::Vertical;
+    return Cut::Horizontal;
   }
 }
 
