@@ -10,6 +10,7 @@
 #include "DgBit.h"
 #include "DgDynamicArray.h"
 #include "DgDoublyLinkedlist.h"
+#include "DgSet_AVL.h"
 #include "DgError.h"
 
 namespace Dg
@@ -24,24 +25,18 @@ namespace Dg
       IDType id;
       Real xy[2];
     };
-
-    struct Bin
-    {
-      Real dimensions[2]; // TODO Internal use, this does not need to be exposed
-      Real maxDimensions[2];
-      DynamicArray<Item> items;
-    };
-
+    
     enum class Cut
     {
       Vertical   = 0,
       Horizontal = 1
     };
 
-  private:
-
     typedef bool (*DefaultItemCompareFn)(Item const &, Item const &);
     typedef Cut(*DefaultCutNodeFn)(Real nodeSize[2], Real rectangleSize[2]);
+
+    static bool DefaultCompare(Item const &, Item const &);
+    static Cut DefaultCutNode(Real nodeSize[2], Real rectSize[2]);
 
   public:
 
@@ -84,106 +79,36 @@ namespace Dg
     //!   |______._________|            |________________|
     //!
     //! @return Number of remaining items.
-    template <typename ItemCompare = DefaultItemCompareFn, typename CutNode = DefaultCutNodeFn>
-    size_t Fill(Bin &, ItemCompare cmp = DefaultCompare, CutNode cutNode = DefaultCutNode);
+    template <typename Container, typename ItemCompare = DefaultItemCompareFn, typename CutSpace = DefaultCutNodeFn>
+    size_t Fill(Container &, Real width, Real height, ItemCompare cmp = DefaultCompare, CutSpace cutNode = DefaultCutNode);
 
     void Clear();
 
   private:
 
-    class BranchNode
+    struct Rect
     {
-    public:
-
-      enum Child { A = 0, B = 1 };
-
-      BranchNode();
-
-      Cut GetCut() const;
-      void SetCut(Cut);
-      void SetChildIndex(Child, size_t);
-      size_t GetChildIndex(Child) const;
-      void SetLeaf(Child);
-      bool IsLeaf(Child) const;
-
-      Real offset[2];
-
-    private:
-      uint64_t m_data;
+      Real position[2];
+      Real size[2];
     };
 
-  private:
-
-    template<typename CutNode>
-    bool RecursiveInsert(Item const &, size_t nodeIndex, Real nodeBounds[4], typename BranchNode::Child, Bin &, CutNode &);
-    void Expand(Bin &, int direction, Real x, Real y);
-    bool ExpandAndInsert(Item const & a_item, Bin &);
-
-    static bool DefaultCompare(Item const &, Item const &);
-    static Cut DefaultCutNode(Real nodeSize[2], Real rectSize[2]);
+    template<typename Container, typename CutSpace>
+    bool Insert(Container & a_bin, Item const &, Set_AVL<Rect> &spaces, CutSpace a_cutSpace);
 
   private:
 
     DoublyLinkedList<Item> m_inputItems;
-    DynamicArray<BranchNode>  m_nodes;
   };
-
-  //------------------------------------------------------------------------------------------------
-  // BranchNode
-  //------------------------------------------------------------------------------------------------
-
-  template<typename Real, typename IDType>
-  BinPacker<Real, IDType>::BranchNode::BranchNode()
-    : m_data(0)
-    , offset{static_cast<Real>(0), static_cast<Real>(0)}
-  {
-    SetLeaf(Child::A);
-    SetLeaf(Child::B);
-  }
-
-  template<typename Real, typename IDType>
-  typename BinPacker<Real, IDType>::Cut BinPacker<Real, IDType>::BranchNode::GetCut() const
-  {
-    return static_cast<Cut>(GetSubInt<uint64_t, 63, 1>(m_data));
-  }
-
-  template<typename Real, typename IDType>
-  void BinPacker<Real, IDType>::BranchNode::SetCut(Cut a_cut)
-  {
-    m_data = SetSubInt<uint64_t, 63, 1>(m_data, static_cast<uint64_t>(a_cut));
-  }
-
-  template<typename Real, typename IDType>
-  size_t BinPacker<Real, IDType>::BranchNode::GetChildIndex(Child a_child) const
-  {
-    uint64_t shft = 31ull * a_child;
-    return GetSubInt<uint64_t, 0, 31>(m_data >> shft);
-  }
-
-  template<typename Real, typename IDType>
-  void BinPacker<Real, IDType>::BranchNode::SetChildIndex(Child a_child, size_t a_index)
-  {
-    uint64_t shft = 31ull * a_child;
-    m_data = SetSubInt<uint64_t>(m_data, a_index, shft, 31);
-  }
-
-  template<typename Real, typename IDType>
-  void BinPacker<Real, IDType>::BranchNode::SetLeaf(Child a_child)
-  {
-    uint64_t shft = 31ull * a_child;
-    m_data = SetSubInt<uint64_t>(m_data, Mask<uint64_t, 0, 31>::value, shft, 31);
-  }
-
-  template<typename Real, typename IDType>
-  bool BinPacker<Real, IDType>::BranchNode::IsLeaf(Child a_child) const
-  {
-    uint64_t shft = 31ull * a_child;
-    return GetSubInt<uint64_t, 0, 31>(m_data >> shft) == Mask<uint64_t, 0, 31>::value;
-  }
 
   //------------------------------------------------------------------------------------------------
   // BinPacker
   //------------------------------------------------------------------------------------------------
+
+  template<typename Real, typename IDType>
+  bool operator<(BinPacker<Real, IDType>::Rect const & a, BinPacker<Real, IDType>::Rect const & b)
+  {
+    return (a.size[0] * a.size[1]) < (b.size[0] * b.size[1]);
+  }
 
   template<typename Real, typename IDType>
   BinPacker<Real, IDType>::BinPacker()
@@ -263,206 +188,60 @@ namespace Dg
   }
 
   template<typename Real, typename IDType>
-  template <typename ItemCompare, typename CutNode>
-  size_t BinPacker<Real, IDType>::Fill(Bin & a_bin, ItemCompare a_cmp, CutNode a_cutNode)
+  template <typename Container, typename ItemCompare, typename CutSpace>
+  size_t BinPacker<Real, IDType>::Fill(Container & a_bin, Real width, Real height, ItemCompare a_cmp, CutSpace a_cutSpace)
   {
-    m_nodes.clear();
-
-    //Insert root node
-    m_nodes.push_back(BranchNode());
-    m_nodes.back().offset[Element::x] = static_cast<Real>(0);
-    m_nodes.back().offset[Element::y] = static_cast<Real>(0);
-    m_nodes.back().SetLeaf(BranchNode::Child::A);
-    m_nodes.back().SetLeaf(BranchNode::Child::B);
-    m_nodes.back().SetCut(Cut::Horizontal);
-
+    Set_AVL<Rect> spaces;
+    spaces.push_back({static_cast<Real>(0), static_cast<Real>(0), width, height});
     m_inputItems.sort(a_cmp);
 
-    // Begin at the size of the largest item this bin can fit
-    bool boundsSet = false;
-    for (Item const & i : m_inputItems)
+    for (DoublyLinkedList<Item>::iterator it = m_inputItems.begin(); it != m_inputItems.end();)
     {
-      if ((i.xy[Element::x] <= a_bin.maxDimensions[Element::x]) && (i.xy[Element::y] <= a_bin.maxDimensions[Element::y]))
+      if (Insert(a_bin, *it, spaces, a_cutSpace))
       {
-        a_bin.dimensions[Element::width] = i.xy[Element::x];
-        a_bin.dimensions[Element::height] = i.xy[Element::y];
-        boundsSet = true;
-        break;
-      }
-    }
-
-    if (boundsSet)
-    {
-      for (DoublyLinkedList<Item>::iterator it = m_inputItems.begin(); it != m_inputItems.end();)
-      {
-        Real binBounds[4];
-        binBounds[Element::xmin] = static_cast<Real>(0);
-        binBounds[Element::ymin] = static_cast<Real>(0);
-        binBounds[Element::xmax] = a_bin.dimensions[Element::width];
-        binBounds[Element::ymax] = a_bin.dimensions[Element::height];
-
-        if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::A, a_bin, a_cutNode))
-          goto success;
-
-        if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::B, a_bin, a_cutNode))
-          goto success;
-
-        if (ExpandAndInsert(*it, a_bin))
-          goto success;
-
-        it++;
-        continue;
-      success:
+        a_bin.push_back(*it);
         it = m_inputItems.erase(it);
       }
+      else
+      {
+        it++;
+      }
     }
-
-    m_nodes.clear();
     return m_inputItems.size();
   }
 
   template<typename Real, typename IDType>
-  template<typename CutNode>
-  bool BinPacker<Real, IDType>::RecursiveInsert(Item const & a_item, size_t a_parentNodeIndex, Real a_parentBounds[4], typename BranchNode::Child a_child, Bin & a_bin, CutNode & a_cutNode)
+  template<typename Container, typename CutSpace>
+  bool BinPacker<Real, IDType>::Insert(Container & a_bin, Item const & item, Set_AVL<Rect> & spaces, CutSpace a_cutSpace)
   {
-    Real nodeBounds[4];
-    if (a_child == BranchNode::Child::A)
-    {
-      nodeBounds[Element::xmin] = a_parentBounds[Element::xmin];
-      nodeBounds[Element::xmax] = m_nodes[a_parentNodeIndex].GetCut() == Cut::Vertical ? a_parentBounds[Element::xmin] + m_nodes[a_parentNodeIndex].offset[Element::x] : a_parentBounds[Element::xmax];
-      nodeBounds[Element::ymin] = a_parentBounds[Element::ymin] + m_nodes[a_parentNodeIndex].offset[Element::y];
-      nodeBounds[Element::ymax] = a_parentBounds[Element::ymax];
-    }
-    else
-    {
-      nodeBounds[Element::xmin] = a_parentBounds[Element::xmin] + m_nodes[a_parentNodeIndex].offset[Element::x];
-      nodeBounds[Element::xmax] = a_parentBounds[Element::xmax];
-      nodeBounds[Element::ymin] = a_parentBounds[Element::ymin];
-      nodeBounds[Element::ymax] = m_nodes[a_parentNodeIndex].GetCut() == Cut::Horizontal ? a_parentBounds[Element::ymin] + m_nodes[a_parentNodeIndex].offset[Element::y] : a_parentBounds[Element::ymax];
-    }
+    Rect r{static_cast<Real>(0), static_cast<Real>(0), item.xy[0], item.xy[1]};
+    Set_AVL<Rect>::iterator it = spaces.lower_bound(r);
 
-    Real nodeSize[2] = {nodeBounds[Element::xmax] - nodeBounds[Element::xmin],
-                        nodeBounds[Element::ymax] - nodeBounds[Element::ymin]};
-
-    if (m_nodes[a_parentNodeIndex].IsLeaf(a_child))
-    {
-      if ((a_item.xy[Element::width] <= nodeSize[Element::width]) && (a_item.xy[Element::height] <= nodeSize[Element::height]))
-      {
-        Item item;
-        item.id = a_item.id;
-        item.xy[Element::x] = nodeBounds[Element::xmin];
-        item.xy[Element::y] = nodeBounds[Element::ymin];
-        a_bin.items.push_back(item);
-
-        m_nodes.push_back(BranchNode());
-        size_t ind = m_nodes.size() - 1;
-
-        m_nodes[a_parentNodeIndex].SetChildIndex(a_child, ind);
-
-        m_nodes[ind].offset[Element::x] = a_item.xy[Element::width];
-        m_nodes[ind].offset[Element::y] = a_item.xy[Element::height];
-        m_nodes[ind].SetCut(a_cutNode(nodeSize, m_nodes[ind].offset));
-
-        return true;
-      }
-    }
-    else
-    {
-      size_t ind = m_nodes[a_parentNodeIndex].GetChildIndex(a_child);
-
-      if (RecursiveInsert(a_item, ind, nodeBounds, BranchNode::Child::A, a_bin, a_cutNode))
-        return true;
-
-      if (RecursiveInsert(a_item, ind, nodeBounds, BranchNode::Child::B, a_bin, a_cutNode))
-        return true;
-    }
-
-    return false;
-  }
-
-  template<typename Real, typename IDType>
-  void BinPacker<Real, IDType>::Expand(Bin & a_bin, int a_direction, Real a_x, Real a_y)
-  {
-    Real xy[2] = {a_x, a_y};
-    for (Item & item : a_bin.items)
-      item.xy[a_direction] += xy[a_direction];
-
-    a_bin.dimensions[a_direction] += xy[a_direction];
-
-    m_nodes.push_back(BranchNode(m_nodes[0]));
-
-    if (a_direction == Element::width)
-    {
-      m_nodes[0].SetCut(Cut::Vertical);
-      m_nodes[0].SetLeaf(BranchNode::Child::A);
-      m_nodes[0].SetChildIndex(BranchNode::Child::B, m_nodes.size() - 1);
-    }
-    else
-    {
-      m_nodes[0].SetCut(Cut::Horizontal);
-      m_nodes[0].SetLeaf(BranchNode::Child::B);
-      m_nodes[0].SetChildIndex(BranchNode::Child::A, m_nodes.size() - 1);
-    }
-
-    m_nodes[0].offset[Element::x] = xy[Element::width];
-    m_nodes[0].offset[Element::y] = xy[Element::height];
-  }
-
-  template<typename Real, typename IDType>
-  bool BinPacker<Real, IDType>::ExpandAndInsert(Item const & a_item, Bin & a_bin)
-  {
-    Real width(a_item.xy[Element::width]);
-    Real height(a_item.xy[Element::height]);
-    Real binWidth(a_bin.dimensions[Element::width]);
-    Real binHeight(a_bin.dimensions[Element::height]);
-    Real maxBinWidth(a_bin.maxDimensions[Element::width]);
-    Real maxBinHeight(a_bin.maxDimensions[Element::height]);
-
-    bool canExpandHeight = ((binHeight + height) <= maxBinHeight) && (width <= binWidth);
-    bool canExpandWidth = ((binWidth + width) <= maxBinWidth) && (height <= binHeight);
-
-    if (!canExpandHeight && !canExpandWidth)
+    if (it == spaces.end())
       return false;
 
-    int direction;
+    Rect ra = {it->position[0], it->position[1] + item.xy[1], static_cast<Real>(0), it->size[1] - item.xy[1]};
+    Rect rb = {it->position[0] + item.xy[0], it->position[1], it->size[0] - item.xy[0], static_cast<Real>(0)};
 
-    //special case where we need to expand in both directions
-    if (width > binWidth && height > binHeight && canExpandHeight && canExpandWidth)
+    Cut cut = a_cutSpace(it->size, item.xy);
+
+    if (cut == Cut::Vertical)
     {
-      Expand(a_bin, Element::width, a_item.xy[Element::width], static_cast<Real>(0));
-      direction = Element::height;
+      ra.size[0] = item.xy[0];
+      rb.size[1] = it->size[1];
     }
     else
     {
-      if (!canExpandHeight)
-      {
-        direction = Element::width;
-      }
-      else if (!canExpandWidth)
-      {
-        direction = Element::height;
-      }
-      else
-      {
-        //Try to keep a 'square' shape
-        double aH = (static_cast<double>(binHeight) + height) / binWidth;
-        double aW = (static_cast<double>(binWidth) + width) / binHeight;
-
-        if (aH < 1.0) aH = 1.0 / aH;
-        if (aW < 1.0) aW = 1.0 / aW;
-
-        direction = (aH < aW) ? Element::height : Element::width;
-      }
+      ra.size[0] = it->size[0];
+      rb.size[1] = item.xy[1];
     }
 
-    Expand(a_bin, direction, a_item.xy[Element::width], a_item.xy[Element::height]);
-    
-    Item item;
-    item.id = a_item.id;
-    item.xy[0] = static_cast<Real>(0);
-    item.xy[1] = static_cast<Real>(0);
+    spaces.erase(it);
+    if (ra.size[0] * ra.size[1] != static_cast<Real>(0))
+      spaces.insert(ra);
+    if (rb.size[0] * rb.size[1] != static_cast<Real>(0))
+      spaces.insert(rb);
 
-    a_bin.items.push_back(item);
     return true;
   }
 
