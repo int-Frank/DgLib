@@ -3,8 +3,7 @@
 #ifndef DGBINPACKER_H
 #define DGBINPACKER_H
 
-#include <stdint.h>
-#include <algorithm>
+#include <functional>
 
 #include "DgTypes.h"
 #include "DgBit.h"
@@ -78,8 +77,8 @@ namespace Dg
     //!   |______._________|            |________________|
     //!
     //! @return Number of remaining items.
-    template <typename Container, typename ItemCompare = DefaultItemCompareFn, typename CutSpace = DefaultCutNodeFn>
-    size_t Fill(Container &, Real width, Real height, ItemCompare cmp = DefaultCompare, CutSpace cutNode = DefaultCutNode);
+    template <typename ItemCompare = DefaultItemCompareFn, typename CutSpace = DefaultCutNodeFn>
+    size_t Fill(std::function<void(Item const &)>, Real width, Real height, ItemCompare cmp = DefaultCompare, CutSpace cutNode = DefaultCutNode);
 
     void Clear();
 
@@ -101,8 +100,8 @@ namespace Dg
       }
     };
 
-    template<typename Container, typename CutSpace>
-    bool Insert(Container & a_bin, Item &, Set_AVL<Rect> &spaces, CutSpace a_cutSpace);
+    template<typename CutSpace>
+    bool Insert(Item &, Set_AVL<Rect> &spaces, CutSpace a_cutSpace);
 
   private:
 
@@ -191,8 +190,8 @@ namespace Dg
   }
 
   template<typename Real, typename IDType>
-  template <typename Container, typename ItemCompare, typename CutSpace>
-  size_t BinPacker<Real, IDType>::Fill(Container & a_bin, Real width, Real height, ItemCompare a_cmp, CutSpace a_cutSpace)
+  template <typename ItemCompare, typename CutSpace>
+  size_t BinPacker<Real, IDType>::Fill(std::function<void(Item const &)> a_callback, Real width, Real height, ItemCompare a_cmp, CutSpace a_cutSpace)
   {
     Set_AVL<Rect> spaces;
     spaces.insert({static_cast<Real>(0), static_cast<Real>(0), width, height});
@@ -200,9 +199,9 @@ namespace Dg
 
     for (DoublyLinkedList<Item>::iterator it = m_inputItems.begin(); it != m_inputItems.end();)
     {
-      if (Insert(a_bin, *it, spaces, a_cutSpace))
+      if (Insert(*it, spaces, a_cutSpace))
       {
-        a_bin.push_back(*it);
+        a_callback(*it);
         it = m_inputItems.erase(it);
       }
       else
@@ -214,8 +213,8 @@ namespace Dg
   }
 
   template<typename Real, typename IDType>
-  template<typename Container, typename CutSpace>
-  bool BinPacker<Real, IDType>::Insert(Container & a_bin, Item & item, Set_AVL<Rect> & spaces, CutSpace a_cutSpace)
+  template<typename CutSpace>
+  bool BinPacker<Real, IDType>::Insert(Item & item, Set_AVL<Rect> & spaces, CutSpace a_cutSpace)
   {
     Rect r{static_cast<Real>(0), static_cast<Real>(0), item.xy[0], item.xy[1]};
     Set_AVL<Rect>::iterator it = spaces.lower_bound(r);
