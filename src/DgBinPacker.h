@@ -27,7 +27,7 @@ namespace Dg
 
     struct Bin
     {
-      Real dimensions[2];
+      Real dimensions[2]; // TODO Internal use, this does not need to be exposed
       Real maxDimensions[2];
       DynamicArray<Item> items;
     };
@@ -278,27 +278,43 @@ namespace Dg
 
     m_inputItems.sort(a_cmp);
 
-    for (DoublyLinkedList<Item>::iterator it = m_inputItems.begin(); it != m_inputItems.end();)
+    // Begin at the size of the largest item this bin can fit
+    bool boundsSet = false;
+    for (Item const & i : m_inputItems)
     {
-      Real binBounds[4];
-      binBounds[Element::xmin] = static_cast<Real>(0);
-      binBounds[Element::ymin] = static_cast<Real>(0);
-      binBounds[Element::xmax] = a_bin.dimensions[Element::width];
-      binBounds[Element::ymax] = a_bin.dimensions[Element::height];
+      if ((i.xy[Element::x] <= a_bin.maxDimensions[Element::x]) && (i.xy[Element::y] <= a_bin.maxDimensions[Element::y]))
+      {
+        a_bin.dimensions[Element::width] = i.xy[Element::x];
+        a_bin.dimensions[Element::height] = i.xy[Element::y];
+        boundsSet = true;
+        break;
+      }
+    }
 
-      if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::A, a_bin, a_cutNode))
-        goto success;
+    if (boundsSet)
+    {
+      for (DoublyLinkedList<Item>::iterator it = m_inputItems.begin(); it != m_inputItems.end();)
+      {
+        Real binBounds[4];
+        binBounds[Element::xmin] = static_cast<Real>(0);
+        binBounds[Element::ymin] = static_cast<Real>(0);
+        binBounds[Element::xmax] = a_bin.dimensions[Element::width];
+        binBounds[Element::ymax] = a_bin.dimensions[Element::height];
 
-      if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::B, a_bin, a_cutNode))
-        goto success;
+        if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::A, a_bin, a_cutNode))
+          goto success;
 
-      if (ExpandAndInsert(*it, a_bin))
-        goto success;
+        if (RecursiveInsert(*it, 0, binBounds, BranchNode::Child::B, a_bin, a_cutNode))
+          goto success;
 
-      it++;
-      continue;
-    success:
-      it = m_inputItems.erase(it);
+        if (ExpandAndInsert(*it, a_bin))
+          goto success;
+
+        it++;
+        continue;
+      success:
+        it = m_inputItems.erase(it);
+      }
     }
 
     m_nodes.clear();
