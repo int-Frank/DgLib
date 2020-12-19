@@ -13,7 +13,6 @@
 #include <stdint.h>
 #include <limits>
 
-#include "DgTypes.h"
 #include "impl/DgMath_impl.h"
 
 namespace Dg

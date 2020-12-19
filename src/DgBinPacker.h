@@ -5,7 +5,6 @@
 
 #include <functional>
 
-#include "DgTypes.h"
 #include "DgBit.h"
 #include "DgDoublyLinkedlist.h"
 #include "DgSet_AVL.h"
@@ -128,17 +127,13 @@ namespace Dg
   BinPacker<Real, IDType> & BinPacker<Real, IDType>::operator=(BinPacker const & a_other)
   {
     if (this != &a_other)
-    {
       m_inputItems = a_other.m_inputItems;
-      m_nodes = a_other.m_nodes;
-    }
     return *this;
   }
 
   template<typename Real, typename IDType>
   BinPacker<Real, IDType>::BinPacker(BinPacker const & a_other)
     : m_inputItems(a_other.m_inputItems)
-    , m_nodes(a_other.m_nodes)
   {
 
   }
@@ -147,17 +142,13 @@ namespace Dg
   BinPacker<Real, IDType> & BinPacker<Real, IDType>::operator=(BinPacker && a_other)
   {
     if (this != &a_other)
-    {
       m_inputItems = std::move(a_other.m_inputItems);
-      m_nodes = std::move(a_other.m_nodes);
-    }
     return *this;
   }
 
   template<typename Real, typename IDType>
   BinPacker<Real, IDType>::BinPacker(BinPacker && a_other)
     : m_inputItems(std::move(a_other.m_inputItems))
-    , m_nodes(std::move(a_other.m_nodes))
   {
 
   }
@@ -172,8 +163,8 @@ namespace Dg
 
     Item item;
     item.id = a_id;
-    item.xy[Element::width] = a_w;
-    item.xy[Element::height] = a_h;
+    item.xy[0] = a_w;
+    item.xy[1] = a_h;
 
     m_inputItems.push_back(item);
 
@@ -186,7 +177,6 @@ namespace Dg
   void BinPacker<Real, IDType>::Clear()
   {
     m_inputItems.clear();
-    m_nodes.clear();
   }
 
   template<typename Real, typename IDType>
@@ -259,19 +249,19 @@ namespace Dg
   template<typename Real, typename IDType>
   bool BinPacker<Real, IDType>::DefaultCompare(Item const & a_left, Item const & a_right)
   {
-    Real areaLeft = a_left.xy[Element::width] * a_left.xy[Element::height];
-    Real areaRight = a_right.xy[Element::width] * a_right.xy[Element::height];
+    Real areaLeft = a_left.xy[0] * a_left.xy[1];
+    Real areaRight = a_right.xy[0] * a_right.xy[1];
     return areaLeft > areaRight;
   }
 
   template<typename Real, typename IDType>
   typename BinPacker<Real, IDType>::Cut BinPacker<Real, IDType>::DefaultCutNode(Real const a_nodeSize[2], Real const a_rectSize[2])
   {
-    Real Av = (a_nodeSize[Element::height] - a_rectSize[Element::y]) * a_rectSize[Element::x];
-    Real Bv = a_nodeSize[Element::height] * (a_nodeSize[Element::width] - a_rectSize[Element::x]);
+    Real Av = (a_nodeSize[1] - a_rectSize[1]) * a_rectSize[0];
+    Real Bv = a_nodeSize[1] * (a_nodeSize[0] - a_rectSize[0]);
 
-    Real Ah = (a_nodeSize[Element::height] - a_rectSize[Element::y]) * a_nodeSize[Element::width];
-    Real Bh = a_rectSize[Element::y] * (a_nodeSize[Element::width] - a_rectSize[Element::x]);
+    Real Ah = (a_nodeSize[1] - a_rectSize[1]) * a_nodeSize[0];
+    Real Bh = a_rectSize[1] * (a_nodeSize[0] - a_rectSize[0]);
 
     Av *= Av;
     Bv *= Bv;
