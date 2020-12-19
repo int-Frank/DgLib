@@ -242,6 +242,8 @@ namespace Dg
 
     bool exists(ValueType const &) const;
 
+    iterator lower_bound(ValueType const &) const;
+
     void clear();
 #ifdef DEBUG
   public:
@@ -1013,6 +1015,38 @@ namespace Dg
   {
     Node * pNode;
     return ValueExists(a_value, pNode);
+  }
+
+  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
+  typename Set_AVL<ValueType, Compare>::iterator Set_AVL<ValueType, Compare>::Set_AVL::lower_bound(ValueType const & a_value) const
+  {
+    Node * pNode = m_pRoot;
+    Node const * pNodeGreater = EndNode();
+
+    while (pNode != EndNode())
+    {
+      if (Compare(a_value, pNode->data))
+      {
+        pNodeGreater = pNode;
+        if (pNode->pLeft != nullptr)
+          pNode = pNode->pLeft;
+        else
+          break;
+      }
+      else if (pNode->data == a_value)
+      {
+        pNodeGreater = pNode;
+        break;
+      }
+      else
+      {
+        if (pNode->pRight != nullptr)
+          pNode = pNode->pRight;
+        else
+          break;
+      }
+    }
+    return iterator(const_cast<Node *>(pNodeGreater));
   }
 
   template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &)>
