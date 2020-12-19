@@ -8,7 +8,6 @@
 
 #include "DgTypes.h"
 #include "DgBit.h"
-#include "DgDynamicArray.h"
 #include "DgDoublyLinkedlist.h"
 #include "DgSet_AVL.h"
 #include "DgError.h"
@@ -33,10 +32,10 @@ namespace Dg
     };
 
     typedef bool (*DefaultItemCompareFn)(Item const &, Item const &);
-    typedef Cut(*DefaultCutNodeFn)(Real nodeSize[2], Real rectangleSize[2]);
+    typedef Cut(*DefaultCutNodeFn)(Real const nodeSize[2], Real const rectangleSize[2]);
 
     static bool DefaultCompare(Item const &, Item const &);
-    static Cut DefaultCutNode(Real nodeSize[2], Real rectSize[2]);
+    static Cut DefaultCutNode(Real const nodeSize[2], Real const rectSize[2]);
 
   public:
 
@@ -90,10 +89,20 @@ namespace Dg
     {
       Real position[2];
       Real size[2];
+
+      friend bool operator<(Rect const & a, Rect const & b)
+      {
+        return (a.size[0] * a.size[1]) < (b.size[0] * b.size[1]);
+      }
+
+      friend bool operator==(Rect const & a, Rect const & b)
+      {
+        return (a.size[0] == b.size[0]) && (a.size[1] == b.size[1]);
+      }
     };
 
     template<typename Container, typename CutSpace>
-    bool Insert(Container & a_bin, Item const &, Set_AVL<Rect> &spaces, CutSpace a_cutSpace);
+    bool Insert(Container & a_bin, Item &, Set_AVL<Rect> &spaces, CutSpace a_cutSpace);
 
   private:
 
@@ -103,12 +112,6 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
   // BinPacker
   //------------------------------------------------------------------------------------------------
-
-  template<typename Real, typename IDType>
-  bool operator<(BinPacker<Real, IDType>::Rect const & a, BinPacker<Real, IDType>::Rect const & b)
-  {
-    return (a.size[0] * a.size[1]) < (b.size[0] * b.size[1]);
-  }
 
   template<typename Real, typename IDType>
   BinPacker<Real, IDType>::BinPacker()
@@ -192,7 +195,7 @@ namespace Dg
   size_t BinPacker<Real, IDType>::Fill(Container & a_bin, Real width, Real height, ItemCompare a_cmp, CutSpace a_cutSpace)
   {
     Set_AVL<Rect> spaces;
-    spaces.push_back({static_cast<Real>(0), static_cast<Real>(0), width, height});
+    spaces.insert({static_cast<Real>(0), static_cast<Real>(0), width, height});
     m_inputItems.sort(a_cmp);
 
     for (DoublyLinkedList<Item>::iterator it = m_inputItems.begin(); it != m_inputItems.end();)
@@ -212,10 +215,16 @@ namespace Dg
 
   template<typename Real, typename IDType>
   template<typename Container, typename CutSpace>
-  bool BinPacker<Real, IDType>::Insert(Container & a_bin, Item const & item, Set_AVL<Rect> & spaces, CutSpace a_cutSpace)
+  bool BinPacker<Real, IDType>::Insert(Container & a_bin, Item & item, Set_AVL<Rect> & spaces, CutSpace a_cutSpace)
   {
     Rect r{static_cast<Real>(0), static_cast<Real>(0), item.xy[0], item.xy[1]};
     Set_AVL<Rect>::iterator it = spaces.lower_bound(r);
+
+    for (; it != spaces.end(); it++)
+    {
+      if ((item.xy[0] <= it->size[0]) && (item.xy[1] <= it->size[1]))
+        break;
+    }
 
     if (it == spaces.end())
       return false;
@@ -236,6 +245,9 @@ namespace Dg
       rb.size[1] = item.xy[1];
     }
 
+    item.xy[0] = it->position[0];
+    item.xy[1] = it->position[1];
+
     spaces.erase(it);
     if (ra.size[0] * ra.size[1] != static_cast<Real>(0))
       spaces.insert(ra);
@@ -254,7 +266,7 @@ namespace Dg
   }
 
   template<typename Real, typename IDType>
-  typename BinPacker<Real, IDType>::Cut BinPacker<Real, IDType>::DefaultCutNode(Real a_nodeSize[2], Real a_rectSize[2])
+  typename BinPacker<Real, IDType>::Cut BinPacker<Real, IDType>::DefaultCutNode(Real const a_nodeSize[2], Real const a_rectSize[2])
   {
     Real Av = (a_nodeSize[Element::height] - a_rectSize[Element::y]) * a_rectSize[Element::x];
     Real Bv = a_nodeSize[Element::height] * (a_nodeSize[Element::width] - a_rectSize[Element::x]);
