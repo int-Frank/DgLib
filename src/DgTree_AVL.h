@@ -229,15 +229,15 @@ namespace Dg
 
     //Searches the container for an element with a key equivalent to a_value and returns 
     //a handle to it if found, otherwise it returns an iterator to end().
-    const_iterator find(KeyType const &) const; // SPEC
+    const_iterator find(KeyType const &) const;
 
     //Searches the container for an element with a key equivalent to a_value and returns 
     //a handle to it if found, otherwise it returns an iterator to end().
-    iterator find(KeyType const &); // SPEC
+    iterator find(KeyType const &);
 
-    bool exists(KeyType const &) const; // SPEC
+    bool exists(KeyType const &) const;
 
-    iterator lower_bound(KeyType const &) const; // SPEC
+    iterator lower_bound(KeyType const &) const;
 
     void clear();
     

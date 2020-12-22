@@ -92,11 +92,6 @@ namespace Dg
       {
         return (a.size[0] * a.size[1]) < (b.size[0] * b.size[1]);
       }
-
-      friend bool operator==(Rect const & a, Rect const & b)
-      {
-        return (a.size[0] == b.size[0]) && (a.size[1] == b.size[1]);
-      }
     };
 
     template<typename CutSpace>

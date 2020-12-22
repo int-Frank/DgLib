@@ -10,10 +10,11 @@
 
 #include <stdint.h>
 
-#define DG_ERROR_IF(cond, code)     do { if (cond)           { result = code; if (result != ::Dg::ErrorCode::None) goto epilogue; }} while(0)
-#define DG_ERROR_NULL(ptr, code)    do { if (ptr == nullptr) { result = code; if (result != ::Dg::ErrorCode::None) goto epilogue; }} while(0)
-#define DG_ERROR_SET(code)          do { result = code;                       if (result != ::Dg::ErrorCode::None) goto epilogue; } while(0)
-#define DG_ERROR_CHECK(funcCall)    do { result = funcCall; if (result != ::Dg::ErrorCode::None) goto epilogue; } while(0)
+#define DG_ERROR_IF(cond, code)       do { if (cond)           { result = code; if (result != ::Dg::ErrorCode::None) goto epilogue; }} while(0)
+#define DG_ERROR_NULL(ptr, code)      do { if (ptr == nullptr) { result = code; if (result != ::Dg::ErrorCode::None) goto epilogue; }} while(0)
+#define DG_ERROR_SET(code)            do { result = code;                       if (result != ::Dg::ErrorCode::None) goto epilogue; } while(0)
+#define DG_ERROR_CHECK(funcCall)      do { result = funcCall; if (result != ::Dg::ErrorCode::None) goto epilogue; } while(0)
+#define UD_ERROR_SET_AND_BREAK(code)  do { result = code; goto epilogue; } while(0)
 
 #define ITEM()
 #define ERRORCODES \
