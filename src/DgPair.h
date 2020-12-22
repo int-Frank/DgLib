@@ -25,7 +25,7 @@ namespace Dg
     }
 
     T0 first;
-    mutable T1 second;
+    T1 second;
   };
 }
 

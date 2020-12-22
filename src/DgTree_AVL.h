@@ -6,10 +6,8 @@
 #include <exception>
 #include <new>
 #include <cstring>
-#include <exception>
 
 #include "impl/DgPoolSizeManager.h"
-#include "impl/DgAVLTree_Common.h"
 
 #ifdef DEBUG
 #include <sstream>
@@ -18,6 +16,21 @@
 
 namespace Dg
 {
+  namespace impl
+  {
+    template<typename ValueType>
+    bool Less(ValueType const & t0, ValueType const & t1)
+    {
+      return t0 < t1;
+    }
+
+    template<typename ValueType>
+    ValueType Max(ValueType a, ValueType b)
+    {
+      return a > b ? a : b;
+    }
+  }
+
   //AVL tree implemented with an object pool. 
   //Objectives:
   // 1) Fast searching
@@ -28,36 +41,9 @@ namespace Dg
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &) = impl::Less<KeyType>>
   class Tree_AVL
   {
-  protected:
-
-    struct Node
-    {
-      Node * pParent;
-      Node * pLeft;
-      Node * pRight;
-      int32_t      height;
-      ValueType    data;
-
-      Node * GetNext() const;
-      Node * GetPrevious() const;
-    };
-
-  protected:
-
     typedef size_t sizeType;
-
-    class EraseData
-    {
-    public:
-
-      EraseData();
-
-      Node * oldNodeAdd;
-      Node * newNodeAdd;
-      Node * pNext;
-      bool   firstSuccDeleted;
-    };
-
+  protected:
+    struct Node;
   public:
 
     //Iterates through the map as it appears in memory. 
@@ -268,6 +254,30 @@ namespace Dg
     virtual const KeyType & GetKeyType(ValueType const & a_val) const = 0;
 
   protected:
+
+    class EraseData
+    {
+    public:
+
+      EraseData();
+
+      Node * oldNodeAdd;
+      Node * newNodeAdd;
+      Node * pNext;
+      bool   firstSuccDeleted;
+    };
+
+    struct Node
+    {
+      Node * pParent;
+      Node * pLeft;
+      Node * pRight;
+      int32_t   height;
+      ValueType data;
+
+      Node * GetNext() const;
+      Node * GetPrevious() const;
+    };
 
     void DestructAll();
     void InitMemory();
