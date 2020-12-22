@@ -8,9 +8,7 @@ namespace Dg
   template<typename T0, typename T1>
   struct Pair
   {
-    Pair()
-    {
-    }
+    Pair(): first() {}
 
     Pair(T0 const & t0)
       : first(t0)
@@ -24,7 +22,7 @@ namespace Dg
     
     }
 
-    T0 first;
+    T0 const first;
     T1 second;
   };
 }

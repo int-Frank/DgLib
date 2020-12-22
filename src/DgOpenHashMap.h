@@ -789,7 +789,8 @@ namespace Dg
       PoolSizeMngr_Prime psm(m_poolSizeMngr);
       psm.SetNextPoolSize();
       Rehash(psm, m_maxLoadFactor);
-      result = FindNode(a_key);
+      result.~Pair<bool, NodeIndex>();
+      new (&result) Pair<bool, NodeIndex>(FindNode(a_key));
     }
 
     //Get a free node

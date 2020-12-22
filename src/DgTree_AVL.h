@@ -108,8 +108,8 @@ namespace Dg
 
       operator const_iterator_rand() const;
 
-      ValueType const * operator->();
-      ValueType const & operator*();
+      ValueType * operator->();
+      ValueType & operator*();
 
     private:
       Node * m_pNode;
@@ -172,8 +172,8 @@ namespace Dg
       bool operator==(iterator const & a_it) const;
       bool operator!=(iterator const & a_it) const;
 
-      ValueType const * operator->();
-      ValueType const & operator*();
+      ValueType * operator->();
+      ValueType & operator*();
 
       iterator operator+(size_t) const;
       iterator operator-(size_t) const;
@@ -522,14 +522,14 @@ namespace Dg
   }
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  ValueType const * 
+  ValueType * 
     Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator->()
   {
     return &(m_pNode->data);
   }
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  ValueType const & 
+  ValueType & 
     Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator*()
   {
     return m_pNode->data;
@@ -795,14 +795,14 @@ namespace Dg
   }
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  ValueType const * 
+  ValueType * 
     Tree_AVL<KeyType, ValueType, Compare>::iterator::operator->()
   {
     return &(m_pNode->data);
   }
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  ValueType const & 
+  ValueType & 
     Tree_AVL<KeyType, ValueType, Compare>::iterator::operator*()
   {
     return m_pNode->data;
