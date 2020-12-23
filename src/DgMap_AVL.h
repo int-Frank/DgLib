@@ -39,13 +39,6 @@ namespace Dg
         throw std::out_of_range("Invalid key!");
       return pResult->data.second;
     }
-
-  private:
-
-    KeyType const & GetKeyType(ValueType const & a_val) const override
-    {
-      return a_val.first;
-    }
   };
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &) = impl::Less<KeyType>>

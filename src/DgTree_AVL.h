@@ -7,12 +7,8 @@
 #include <new>
 #include <cstring>
 
+#include "DgPair.h"
 #include "impl/DgPoolSizeManager.h"
-
-#ifdef DEBUG
-#include <sstream>
-#include <iostream>
-#endif
 
 namespace Dg
 {
@@ -31,13 +27,19 @@ namespace Dg
     }
   }
 
-  //AVL tree implemented with an object pool. 
-  //Objectives:
-  // 1) Fast searching
-  // 2) No memory allocation on insert. Only caveat is on extending the object pool
-  // 3) No memory deallocation on erasing elements
-  // 4) Fast iteration over elements if order is not important (iterator_rand)
-  //An end node will follow the last element in the tree.
+  // AVL tree implemented with an object pool. 
+  // Objectives:
+  //  1) Fast searching
+  //  2) No memory allocation on insert. Only caveat is on extending the object pool
+  //  3) No memory deallocation on erasing elements
+  //  4) Fast iteration over elements if order is not important (iterator_rand)
+  // An end node will follow the last element in the tree.
+  //
+  // The Tree_AVL uses two template types: KeyType and ValueType. This allows us to attach data
+  // to keys in the tree. For example, the ValueType of a set is the KeyType, but the ValueType
+  // of a map is Dg::Pair<KeyType, U>.To make this work, we need the function
+  //        'KeyType const & GetKeyType(U const &)'
+  // for each container that derives from the Tree_AVL that extacts the KeyType from the ValueType.
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &) = impl::Less<KeyType>>
   class Tree_AVL
   {
@@ -237,22 +239,11 @@ namespace Dg
 
     bool exists(KeyType const &) const;
 
-    iterator lower_bound(KeyType const &) const;
+    // Return iterator to the first element that does not compare less than a_key
+    iterator lower_bound(KeyType const & a_key) const;
 
     void clear();
     
-#ifdef DEBUG
-  public:
-    void Print() const;
-  private:
-    sizeType Ind(Node const *) const;
-    std::string ToString(Node const *) const;
-    void PrintNode(Node const *) const;
-#endif
-  protected:
-
-    virtual const KeyType & GetKeyType(ValueType const & a_val) const = 0;
-
   protected:
 
     class EraseData
@@ -278,6 +269,10 @@ namespace Dg
       Node * GetNext() const;
       Node * GetPrevious() const;
     };
+    
+    // TODO How can I push these back to the map and set derived classes?
+    template<typename U> constexpr KeyType const & GetKeyType(U const & a_val) const  { return a_val.first; } // For maps, when ValueType is a Pair
+    template<> constexpr KeyType const & GetKeyType(KeyType const & a_val) const { return a_val; }            // For sets
 
     void DestructAll();
     void InitMemory();
@@ -287,7 +282,7 @@ namespace Dg
     //Sets a_out to the node index which references the key, or
     //if the key does not exist, the node at which the key should be
     //added
-    bool ValueExists(KeyType const & a_value, Node *& a_out) const; // SPEC
+    bool ValueExists(KeyType const & a_value, Node *& a_out) const;
 
     void Extend();
     int GetBalance(Node *) const;
@@ -1080,60 +1075,6 @@ namespace Dg
     m_nItems = 0;
     InitDefaultNode();
   }
-
-#ifdef DEBUG
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::sizeType
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::Ind(Node const * a_pNode) const
-  {
-    return a_pNode - m_pNodes;
-  }
-
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  std::string 
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::ToString(Node const * a_pNode) const
-  {
-    std::stringstream ss;
-    if (a_pNode == nullptr)
-      ss << "NULL";
-    else
-      ss << Ind(a_pNode);
-    return ss.str();
-  }
-
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  void Tree_AVL<KeyType, ValueType, Compare>::PrintNode(Node const * a_pNode) const
-  {
-    std::cout << "Index: " << ToString(a_pNode)
-      << ", Parent: "  << ToString(a_pNode->pParent)
-      << ", Left: "  << ToString(a_pNode->pLeft)
-      << ", Right: "  << ToString(a_pNode->pRight)
-      << ", Key: ";
-    if (a_pNode == EndNode())
-      std::cout << " NONE";
-    else
-      std::cout << a_pNode->data.first;
-
-    std::cout << ", Height: " << a_pNode->height << "\n";
-  }
-
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  void Tree_AVL<KeyType, ValueType, Compare>::Print() const
-  {
-    std::cout << "nItems: " << m_nItems << '\n';
-    std::cout << "Root:\n";
-    PrintNode(m_pRoot);
-    std::cout << "\nItems:\n";
-    for (sizeType i = 1; i <= m_nItems; i++)
-    {
-      PrintNode(&m_pNodes[i]);
-    } 
-    std::cout << '\n';
-    std::cout << "End:\n";
-    PrintNode(EndNode());
-    std::cout << '\n';
-  }
-#endif
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
   void Tree_AVL<KeyType, ValueType, Compare>::DestructAll()

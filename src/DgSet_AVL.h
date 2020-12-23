@@ -7,16 +7,8 @@
 
 namespace Dg
 {
-  template<typename ValueType, bool (*Compare)(ValueType const &, ValueType const &) = impl::Less<ValueType>>
-  class Set_AVL : public Tree_AVL<ValueType, ValueType, Compare>
-  {
-  private:
-
-    ValueType const & GetKeyType(ValueType const & a_val) const override
-    {
-      return a_val;
-    }
-  };
+  template<typename KeyType, bool (*Compare)(KeyType const &, KeyType const &) = impl::Less<KeyType>>
+  using Set_AVL = Tree_AVL<KeyType, KeyType, Compare>;
 }
 
 #endif
