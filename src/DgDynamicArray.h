@@ -19,8 +19,7 @@
 
 #include "impl/DgPoolSizeManager.h"
 
-//TODO add iterator class
-//TODO use std::move for all && in all classes
+//TODO Deprecated. Just use std::vector. 
 namespace Dg
 {
   template<typename T>
