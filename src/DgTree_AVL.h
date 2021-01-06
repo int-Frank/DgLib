@@ -886,7 +886,7 @@ namespace Dg
   {
     a_other.m_pNodes = nullptr;
     a_other.m_nItems = 0;
-    a_other.m_pRoot = s_nullValue;
+    a_other.m_pRoot = nullptr;
   }
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
@@ -902,7 +902,7 @@ namespace Dg
 
       a_other.m_pNodes = nullptr;
       a_other.m_nItems = 0;
-      a_other.m_pRoot = s_nullValue;
+      a_other.m_pRoot = nullptr;
     }
     return *this;
   }
