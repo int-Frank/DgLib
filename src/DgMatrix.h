@@ -14,15 +14,6 @@
 
 namespace Dg
 {
-  namespace impl
-  {
-    template<typename Real, int R>
-    class Matrix_generic;
-
-    template<typename Real, int R>
-    class Vector_generic;
-  }
-
   template<size_t M, size_t N, typename Real> class Matrix;
 
   //! Compute the transpose matrix.
@@ -67,14 +58,37 @@ namespace Dg
   class Matrix
   {
     static_assert(M > 0 && N > 0, "Matrix cannot have a zero dimension.");
-
     template<size_t _M, size_t _N, typename _Real> friend class Matrix;
-    template<typename _Real, int R> friend class impl::Matrix_generic;
-    template<typename _Real, int R> friend class impl::Vector_generic;
-
   public:
     //! Default constructor. Elements are not initialised.
     Matrix();
+
+    template <typename ...Args>
+    constexpr Matrix(const Args&... args)
+      : m_V{args...}
+    {
+      static_assert(sizeof...(Args) == M * N, "Invalid number of arguments!");
+    }
+
+    Matrix(Matrix<M, N - 1, Real> const & a_vec, Real a_w)
+    {
+      static_assert(M == 1, "Can only expand single-row matrices");
+
+      for (size_t i = 0; (i + 1) < N; i++)
+        m_V[i] = a_vec.m_V[i];
+      m_V[N - 1] = a_w;
+    }
+
+    template<size_t _N>
+    Matrix(Matrix<M, _N, Real> const & a_vec)
+    {
+      static_assert(M == 1, "Can only contract single-row matrices");
+      static_assert(_N > N, "Input matrix must be larger than N");
+
+      for (size_t i = 0; i < N; i++)
+        m_V[i] = a_vec.m_V[i];
+    }
+
     ~Matrix() {}
 
     //! Copy constructor
@@ -145,9 +159,6 @@ namespace Dg
     //! Uses recursive algorithm.
     Real Determinant() const;
 
-    //! Element-wise dot product.
-	  Real Dot(Matrix const &) const;
-
     //! Matrix-matrix addition
     Matrix operator+ (Matrix const &) const;
 
@@ -191,17 +202,64 @@ namespace Dg
     //! Element-wise product, asign to self
     Matrix & ElementwiseProductSelf(Matrix const &);
 
-    //! Get pointer to internal data
-    Real * GetData() { return &m_V[0]; }
+    template <size_t _M = M, size_t _N = N>
+    typename std::enable_if<(_M == 1) && (_N >= 1), Real &>::type
+      x()
+    {
+      return m_V[0];
+    }
 
-    //! Get pointer to internal data
-    Real const * GetData() const { return &m_V[0]; }
+    template <size_t _M = M, size_t _N = N>
+    typename std::enable_if<(_M == 1) && (_N >= 2), Real &>::type
+      y()
+    {
+      return m_V[1];
+    }
+
+    template <size_t _M = M, size_t _N = N>
+    typename std::enable_if<(_M == 1) && (_N >= 3), Real &>::type
+      z()
+    {
+      return m_V[2];
+    }
+
+    template <size_t _M = M, size_t _N = N>
+    typename std::enable_if<(_M == 1) && (_N >= 4), Real &>::type
+      w()
+    {
+      return m_V[3];
+    }
+
+    template <size_t _M = M, size_t _N = N>
+    typename std::enable_if<(_M == 1) && (_N >= 1), Real>::type
+      x() const
+    {
+      return m_V[0];
+    }
+
+    template <size_t _M = M, size_t _N = N>
+    typename std::enable_if<(_M == 1) && (_N >= 2), Real>::type
+      y() const
+    {
+      return m_V[1];
+    }
+
+    template <size_t _M = M, size_t _N = N>
+    typename std::enable_if<(_M == 1) && (_N >= 3), Real>::type
+      z() const
+    {
+      return m_V[2];
+    }
+
+    template <size_t _M = M, size_t _N = N>
+    typename std::enable_if<(_M == 1) && (_N >= 4), Real>::type
+      w() const
+    {
+      return m_V[3];
+    }
 
   protected:
-
-    //! Data
     Real m_V[M * N];
-
   };
 
   //--------------------------------------------------------------------------------
@@ -620,24 +678,12 @@ namespace Dg
   //	@	Dot()
   //-------------------------------------------------------------------------------
   template<size_t M, size_t N, typename Real>
-  Real Matrix<M, N, Real>::Dot(Matrix<M, N, Real> const & a_mat) const
-  {
-	  Real result = static_cast<Real>(0.0);
-	  for (size_t i = 0; i < M * N; i++)
-	  {
-		  result += (a_mat.m_V[i] * m_V[i]);
-	  }
-	  return result;
-  }	// End: Dot()
-
-
-  //-------------------------------------------------------------------------------
-  //	@	Dot()
-  //-------------------------------------------------------------------------------
-  template<size_t M, size_t N, typename Real>
   Real Dot(Matrix<M, N, Real> const & a_mat0, Matrix<M, N, Real> const & a_mat1)
   {
-	  return a_mat0.Dot(a_mat1);
+    Real result = static_cast<Real>(0);
+    for (size_t i = 0; i < M * N; i++)
+      result += (a_mat0[i] * a_mat1[i]);
+    return result;
   }	// End: Dot()
 
 

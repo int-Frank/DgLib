@@ -228,48 +228,48 @@ namespace Dg
     //!
     //! The conversion is done by multiplication with 2^F and rounding to the 
     //! next integer.
-    FixedPoint(float a_val)       : m_val(static_cast<I>(a_val * static_cast<float>(Power2<F>::value) + (a_val >= 0.0f ? 0.5f : -0.5f))) {}
+    constexpr FixedPoint(float a_val)       : m_val(static_cast<I>(a_val * static_cast<float>(Power2<F>::value) + (a_val >= 0.0f ? 0.5f : -0.5f))) {}
     
     //! This constructor takes a numeric value of type double and converts it to 
     //! this fixed_point type.
     //!
     //! The conversion is done by multiplication with 2^F and rounding to the 
     //! next integer.
-    FixedPoint(double a_val)      : m_val(static_cast<I>(a_val * static_cast<double>(Power2<F>::value) + (a_val >= 0.0 ? 0.5 : -0.5))) {}
+    constexpr FixedPoint(double a_val)      : m_val(static_cast<I>(a_val * static_cast<double>(Power2<F>::value) + (a_val >= 0.0 ? 0.5 : -0.5))) {}
     
     //! This constructor takes a numeric value of type long double and converts it to 
     //! this fixed_point type.
     //!
     //! The conversion is done by multiplication with 2^F and rounding to the 
     //! next integer.
-    FixedPoint(long double a_val) : m_val(static_cast<I>(a_val * static_cast<long double>(Power2<F>::value) + (a_val >= 0.0L ? 0.5L : -0.5L))) {}
+    constexpr FixedPoint(long double a_val) : m_val(static_cast<I>(a_val * static_cast<long double>(Power2<F>::value) + (a_val >= 0.0L ? 0.5L : -0.5L))) {}
 
     //! This constructor takes a numeric value of type bool and converts it to this fixed_point type.
-    FixedPoint(bool a_val)     : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
+    constexpr FixedPoint(bool a_val)     : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
 
     //! This constructor takes a numeric value of type int8_t and converts it to this fixed_point type.
-    FixedPoint(int8_t a_val)   : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
+    constexpr FixedPoint(int8_t a_val)   : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
 
     //! This constructor takes a numeric value of type uint8_t and converts it to this fixed_point type.
-    FixedPoint(uint8_t a_val)  : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
+    constexpr FixedPoint(uint8_t a_val)  : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
 
     //! This constructor takes a numeric value of type int16_t and converts it to this fixed_point type.
-    FixedPoint(int16_t a_val)  : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
+    constexpr FixedPoint(int16_t a_val)  : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
 
     //! This constructor takes a numeric value of type uint16_t and converts it to this fixed_point type.
-    FixedPoint(uint16_t a_val) : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
+    constexpr FixedPoint(uint16_t a_val) : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
 
     //! This constructor takes a numeric value of type int32_t and converts it to this fixed_point type.
-    FixedPoint(int32_t a_val)  : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
+    constexpr FixedPoint(int32_t a_val)  : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
 
     //! This constructor takes a numeric value of type uint32_t and converts it to this fixed_point type.
-    FixedPoint(uint32_t a_val) : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
+    constexpr FixedPoint(uint32_t a_val) : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
 
     //! This constructor takes a numeric value of type int64_t and converts it to this fixed_point type.
-    FixedPoint(int64_t a_val)  : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
+    constexpr FixedPoint(int64_t a_val)  : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
 
     //! This constructor takes a numeric value of type uint64_t and converts it to this fixed_point type.
-    FixedPoint(uint64_t a_val) : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
+    constexpr FixedPoint(uint64_t a_val) : m_val((F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<I>(a_val) << F) {}
 
     //! Constructor from another fixed point type.
     template<typename I2, uint8_t F2>
@@ -282,40 +282,40 @@ namespace Dg
     FixedPoint & operator=(FixedPoint const &);
 
     //! @return The value converted to float
-    operator float()        const { return static_cast<float>(m_val) / Power2<F>::value; }
+    constexpr operator float()        const { return static_cast<float>(m_val) / Power2<F>::value; }
     
     //! @return The value converted to double
-    operator double()       const { return static_cast<double>(m_val) / Power2<F>::value; }
+    constexpr operator double()       const { return static_cast<double>(m_val) / Power2<F>::value; }
     
     //! @return The value converted to long double
-    operator long double()  const { return static_cast<long double>(m_val) / Power2<F>::value; }
+    constexpr operator long double()  const { return static_cast<long double>(m_val) / Power2<F>::value; }
 
     //! @return The value converted to bool
-    operator bool()         const { return m_val != 0; }
+    constexpr operator bool()         const { return m_val != 0; }
     
     //! @return The value converted to int8_t
-    operator int8_t()       const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<int8_t>(m_val >> F); }
+    constexpr operator int8_t()       const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<int8_t>(m_val >> F); }
     
     //! @return The value converted to uint8_t
-    operator uint8_t()      const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<uint8_t>(m_val >> F); }
+    constexpr operator uint8_t()      const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<uint8_t>(m_val >> F); }
     
     //! @return The value converted to int16_t
-    operator int16_t()      const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<int16_t>(m_val >> F); }
+    constexpr operator int16_t()      const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<int16_t>(m_val >> F); }
     
     //! @return The value converted to uint16_t
-    operator uint16_t()     const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<uint16_t>(m_val >> F); }
+    constexpr operator uint16_t()     const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<uint16_t>(m_val >> F); }
     
     //! @return The value converted to int32_t
-    operator int32_t()      const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<int32_t>(m_val >> F); }
+    constexpr operator int32_t()      const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<int32_t>(m_val >> F); }
     
     //! @return The value converted to uint32_t
-    operator uint32_t()     const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<uint32_t>(m_val >> F); }
+    constexpr operator uint32_t()     const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<uint32_t>(m_val >> F); }
     
     //! @return The value converted to int64_t
-    operator int64_t()      const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<int64_t>(m_val >> F); }
+    constexpr operator int64_t()      const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<int64_t>(m_val >> F); }
     
     //! @return The value converted to uint64_t
-    operator uint64_t()     const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<uint64_t>(m_val >> F); }
+    constexpr operator uint64_t()     const { return (F >= sizeof(I) * CHAR_BIT)  ? 0 : static_cast<uint64_t>(m_val >> F); }
 
     bool operator==(FixedPoint const & a_other) const {return m_val == a_other.m_val;}
     bool operator!=(FixedPoint const & a_other) const {return m_val != a_other.m_val;}
