@@ -257,6 +257,9 @@ namespace Dg
     {
       return m_V[3];
     }
+    
+    Real * GetData() {return m_V;}
+    Real const * GetData() const {return m_V;}
 
   protected:
     Real m_V[M * N];
