@@ -13,8 +13,6 @@
 #include <stdint.h>
 #include <limits>
 
-#include "impl/DgMath_impl.h"
-
 namespace Dg
 {
 	
@@ -23,18 +21,9 @@ namespace Dg
 
   enum class EulerOrder
   {
-    XYZ,
-    XZY,
-    YXZ,
-    YZX,
-    ZYX,
-    ZXY,
-    XYX,
-    XZX,
-    YXY,
-    YZY,
-    ZYZ,
-    ZXZ
+    XYZ, XZY, XYX, XZX,
+    YXZ, YZX, YXY, YZY,
+    ZYX, ZXY, ZYZ, ZXZ
   };
 
   enum class Orientation
