@@ -1,7 +1,7 @@
-//@group Math/R3/Queries
+//@group Math/Geometry/Query
 
-#ifndef DGR3QUERYRECTANGLESEGMENT_H
-#define DGR3QUERYRECTANGLESEGMENT_H
+#ifndef DGQUERYRECTANGLESEGMENT_H
+#define DGQUERYRECTANGLESEGMENT_H
 
 #include <limits>
 

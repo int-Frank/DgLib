@@ -1,7 +1,7 @@
-//@group Math/R3/Queries
+//@group Math/Geometry/Query
 
-#ifndef DGR3QUERYRECTANGLEPOINT_H
-#define DGR3QUERYRECTANGLEPOINT_H
+#ifndef DGQUERYRECTANGLEPOINT_H
+#define DGQUERYRECTANGLEPOINT_H
 
 #include "DgQuery.h"
 #include "DgRectangle.h"

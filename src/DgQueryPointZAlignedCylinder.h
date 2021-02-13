@@ -1,4 +1,4 @@
-//@group Math/GeometryQuery
+//@group Math/Geometry/Query
 
 #ifndef DGQUERYPOINTZALIGNEDCYLINDER_H
 #define DGQUERYPOINTZALIGNEDCYLINDER_H

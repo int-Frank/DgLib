@@ -1,4 +1,4 @@
-//@group Math/R2
+//@group Math/Geometry
 
 /*
   Derived from https://www.geeksforgeeks.org/convex-hull-set-2-graham-scan/

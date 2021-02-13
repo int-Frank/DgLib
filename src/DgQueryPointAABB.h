@@ -1,4 +1,4 @@
-//@group Math/impl
+//@group Math/Geometry/Query
 
 #ifndef DGQUERYPOINTAABB_H
 #define DGQUERYPOINTAABB_H

@@ -1,4 +1,4 @@
-////@group Math/R2
+//@group Math/Geometry
 //
 ////! @file DgR2Polygon.h
 ////!

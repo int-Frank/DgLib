@@ -1,4 +1,4 @@
-//@group Math/R3
+//@group Math/Geometry
 
 //! @file DgR3OBB.h
 //!

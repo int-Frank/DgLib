@@ -883,9 +883,10 @@ namespace Dg
    template<typename T>
    void DoublyLinkedList<T>::InitMemory()
    {
-     m_pNodes = static_cast<Node*> (realloc(m_pNodes, m_poolSize.GetSize() * sizeof(Node)));
-     if (m_pNodes == nullptr)
+     Node * pTemp = static_cast<Node*> (realloc(m_pNodes, m_poolSize.GetSize() * sizeof(Node)));
+     if (pTemp == nullptr)
        throw std::bad_alloc();
+     m_pNodes = pTemp;
    }
 
    template<typename T>

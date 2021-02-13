@@ -267,6 +267,7 @@ namespace Dg
   //--------------------------------------------------------------------------------
   template<size_t M, size_t N, typename Real>
   Matrix<M, N, Real>::Matrix()
+    : m_V{}
   {
   }	//End: Matrix::Matrix()
 

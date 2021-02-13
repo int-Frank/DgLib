@@ -1,4 +1,4 @@
-//@group Math/impl
+//@group Math/Geometry/Query
 
 //Copyright (c) 2015, James M. Van Verth and Lars M. Bishop.
 //All rights reserved.

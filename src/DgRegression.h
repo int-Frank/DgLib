@@ -1,7 +1,7 @@
-//@group Math/R2
+//@group Math
 
-#ifndef DGR2REGRESSION_H
-#define DGR2REGRESSION_H
+#ifndef DGREGRESSION_H
+#define DGREGRESSION_H
 
 #include "DgVector.h"
 #include "DgLine.h"

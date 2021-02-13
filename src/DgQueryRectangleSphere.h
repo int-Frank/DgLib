@@ -1,7 +1,7 @@
-//@group Math/R3/Queries
+//@group Math/Geometry/Query
 
-#ifndef DGR3QUERYRECTANGLESPHERE_H
-#define DGR3QUERYRECTANGLESPHERE_H
+#ifndef DGQUERYRECTANGLESPHERE_H
+#define DGQUERYRECTANGLESPHERE_H
 
 #include "DgQuery.h"
 #include "DgRectangle.h"
