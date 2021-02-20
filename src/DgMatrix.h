@@ -20,10 +20,6 @@ namespace Dg
   template<size_t M, size_t N, typename Real>
   Matrix<N, M, Real> Transpose(Matrix<M, N, Real> const &);
 
-  //! Element-wise dot product.
-  template<size_t M, size_t N, typename Real>
-  Real Dot(Matrix<M, N, Real> const &, Matrix<M, N, Real> const &);
-
   //! Scalar multiplication
   template<size_t M, size_t N, typename Real>
   Matrix<M, N, Real> operator*(Real, Matrix<M, N, Real> const &);
@@ -676,20 +672,6 @@ namespace Dg
     return *this;
 
   }   // End: Transpose()
-
-
-  //-------------------------------------------------------------------------------
-  //	@	Dot()
-  //-------------------------------------------------------------------------------
-  template<size_t M, size_t N, typename Real>
-  Real Dot(Matrix<M, N, Real> const & a_mat0, Matrix<M, N, Real> const & a_mat1)
-  {
-    Real result = static_cast<Real>(0);
-    for (size_t i = 0; i < M * N; i++)
-      result += (a_mat0[i] * a_mat1[i]);
-    return result;
-  }	// End: Dot()
-
 
   //-------------------------------------------------------------------------------
   //	@	Matrix::operator+()

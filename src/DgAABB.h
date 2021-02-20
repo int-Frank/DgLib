@@ -8,7 +8,6 @@
 #include "DgVector.h"
 #include "dgmath.h"
 
-//TODO Queries
 namespace Dg
 {
   template<typename Real, int R>

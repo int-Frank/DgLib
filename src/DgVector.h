@@ -46,20 +46,34 @@
 
 namespace Dg
 {
+  template<typename Real, int R> using Vector = ::Dg::Matrix<1, R, Real>;
+  template<typename Real> using Vector2 = ::Dg::Vector<Real, 2>;
+  template<typename Real> using Vector3 = ::Dg::Vector<Real, 3>;
+  template<typename Real> using Vector4 = ::Dg::Vector<Real, 4>;
+
+  template<typename Real, int R> Real MagSq(Vector<Real, R> const & a_vec);
+  template<typename Real, int R> Real Mag(Vector<Real, R> const & a_vec);
+  template<typename Real, int R> bool IsUnit(Vector<Real, R> const & a_vec);
+  template<typename Real, int R> Vector<Real, R> XAxis();
+  template<typename Real, int R> Vector<Real, R> YAxis();
+  template<typename Real, int R> Vector<Real, R> ZAxis();
+  template<typename Real, int R> Vector<Real, R> WAxis();
+  template<typename Real, int R> Vector<Real, R> Zeros();
+  template<typename Real, int R> Vector<Real, R> Normalize(Vector<Real, R> const & a_vec);
+
+  template<size_t M, size_t N, typename Real> Real Dot(Matrix<M, N, Real> const &, Matrix<M, N, Real> const &);
+  template<typename Real, int R> Vector<Real, R> Cross(Vector<Real, R> const & a_v0, Vector<Real, R> const & a_v1);
+
+  template<typename Real> Real PerpDot(Vector2<Real> const & a_v0, Vector2<Real> const & a_v1);
+  template<typename Real> Vector2<Real> Perpendicular(Vector2<Real> const & a_vec);
+  template<typename Real> Vector3<Real> Perpendicular(Vector3<Real> const & a_vec);
+
+  //------------------------------------------------------------------------------
+  // Implementation
+  //------------------------------------------------------------------------------
+
   template<typename Real, int R>
-  using Vector = ::Dg::Matrix<1, R, Real>;
-
-  template<typename Real>
-  using Vector2 = ::Dg::Matrix<1, 2, Real>;
-
-  template<typename Real>
-  using Vector3 = ::Dg::Matrix<1, 3, Real>;
-
-  template<typename Real>
-  using Vector4 = ::Dg::Matrix<1, 4, Real>;
-
-  template<typename Real, int R>
-  Real MagSq(Matrix<1, R, Real> const & a_vec)
+  Real MagSq(Vector<Real, R> const & a_vec)
   {
     Real result = static_cast<Real>(0);
     for (int i = 0; i < R; i++)
@@ -68,23 +82,23 @@ namespace Dg
   }
 
   template<typename Real, int R>
-  Real Mag(Matrix<1, R, Real> const & a_vec)
+  Real Mag(Vector<Real, R> const & a_vec)
   {
     return sqrt(MagSq(a_vec));
   }
 
   template<typename Real, int R>
-  bool IsUnit(Matrix<1, R, Real> const & a_vec)
+  bool IsUnit(Vector<Real, R> const & a_vec)
   {
     return Dg::IsZero(static_cast<Real>(1) - MagSq(a_vec));
   }
 
   template<typename Real, int R>
-  Matrix<1, R, Real> XAxis()
+  Vector<Real, R> XAxis()
   {
     static_assert(R > 0);
 
-    Matrix<1, R, Real> result;
+    Vector<Real, R> result;
     result[0] = static_cast<Real>(1);
 
     for (int i = 1; i < R; i++)
@@ -93,11 +107,11 @@ namespace Dg
   }
 
   template<typename Real, int R>
-  Matrix<1, R, Real> YAxis()
+  Vector<Real, R> YAxis()
   {
     static_assert(R > 1);
 
-    Matrix<1, R, Real> result;
+    Vector<Real, R> result;
     result[0] = static_cast<Real>(0);
     result[1] = static_cast<Real>(1);
 
@@ -107,11 +121,11 @@ namespace Dg
   }
 
   template<typename Real, int R>
-  Matrix<1, R, Real> ZAxis()
+  Vector<Real, R> ZAxis()
   {
     static_assert(R > 2);
 
-    Matrix<1, R, Real> result;
+    Vector<Real, R> result;
     result[0] = static_cast<Real>(0);
     result[1] = static_cast<Real>(0);
     result[2] = static_cast<Real>(1);
@@ -122,11 +136,11 @@ namespace Dg
   }
 
   template<typename Real, int R>
-  Matrix<1, R, Real> WAxis()
+  Vector<Real, R> WAxis()
   {
     static_assert(R > 3);
 
-    Matrix<1, R, Real> result;
+    Vector<Real, R> result;
     result[0] = static_cast<Real>(0);
     result[1] = static_cast<Real>(0);
     result[2] = static_cast<Real>(0);
@@ -138,9 +152,9 @@ namespace Dg
   }
 
   template<typename Real, int R>
-  Matrix<1, R, Real> Zeros()
+  Vector<Real, R> Zeros()
   {
-    Matrix<1, R, Real> result;
+    Vector<Real, R> result;
 
     for (int i = 0; i < R; i++)
       result[i] = static_cast<Real>(0);
@@ -149,9 +163,9 @@ namespace Dg
 
   //! Make unit vector
   template<typename Real, int R>
-  Matrix<1, R, Real> Normalize(Matrix<1, R, Real> const & a_vec)
+  Vector<Real, R> Normalize(Vector<Real, R> const & a_vec)
   {
-    Matrix<1, R, Real> result;
+    Vector<Real, R> result;
     Real magSq = MagSq(a_vec);
 
     if (Dg::IsZero(magSq))
@@ -170,21 +184,21 @@ namespace Dg
   }
 
   template<typename Real>
-  Real PerpDot(Matrix<1, 2, Real> const & a_v0, Matrix<1, 2, Real> const & a_v1)
+  Real PerpDot(Vector2<Real> const & a_v0, Vector2<Real> const & a_v1)
   {
     return a_v0[0] * a_v1[1] - a_v0[1] * a_v1[0];
   }
 
   template<typename Real>
-  Matrix<1, 2, Real> Perpendicular(Matrix<1, 2, Real> const & a_vec)
+  Vector2<Real> Perpendicular(Vector2<Real> const & a_vec)
   {
-    return Matrix<1, 2, Real>(-a_vec[1], a_vec[0]);
+    return Vector2<Real>(-a_vec[1], a_vec[0]);
   }
 
   template<typename Real>
-  Matrix<1, 3, Real> Perpendicular(Matrix<1, 3, Real> const & a_vec)
+  Vector3<Real> Perpendicular(Vector3<Real> const & a_vec)
   {
-    Matrix<1, 3, Real> result;
+    Vector3<Real> result;
 
     if (!Dg::IsZero(a_vec[0]) || !Dg::IsZero(a_vec[1]))
     {
@@ -202,6 +216,15 @@ namespace Dg
     return result;
   }
 
+  template<size_t M, size_t N, typename Real>
+  Real Dot(Matrix<M, N, Real> const & a_mat0, Matrix<M, N, Real> const & a_mat1)
+  {
+    Real result = static_cast<Real>(0);
+    for (size_t i = 0; i < M * N; i++)
+      result += (a_mat0[i] * a_mat1[i]);
+    return result;
+  }
+
   template<typename Real, int R>
   Vector<Real, R> Cross(Vector<Real, R> const & a_v0, Vector<Real, R> const & a_v1)
   {
@@ -216,7 +239,7 @@ namespace Dg
       result[3] = static_cast<Real>(0);
 
     return result;
-  }	//End: Cross()
+  }
 }
 
 #endif

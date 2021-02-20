@@ -1,12 +1,5 @@
 //@group Math/Geometry
 
-//! @file DgR3OBB.h
-//!
-//! @author: Frank B. Hart
-//! @date 29/05/2016
-//!
-//! Class declaration: OBB
-
 #ifndef DGR3OBB_H
 #define DGR3OBB_H
 
@@ -14,19 +7,8 @@
 #include "DgVQS.h"
 #include "dgmath.h"
 
-//TODO Queries
 namespace Dg
 {
-  //! @ingroup DgMath_types
-  //!
-  //! @class OBB
-  //!
-  //! Orientated Bounding Box. A 3D rectangular prism that can be rotated and
-  //! transformed. It is defined by an orientation (basis), center and length
-  //! of the three sides. Typically used as a bounding geometry.
-  //!
-  //! @author: Frank Hart
-  //! @date 20/06/2016
   template<typename Real>
   class OBB
   {

@@ -1,11 +1,8 @@
 //@group Math
 
-//! @file DgR3Quaternion.h
-//!
-//! @author: James M. Van Verth, Lars M. Bishop, Frank B. Hart
-//! @date 4/10/2015
-//!
-//! Class declaration: Quaternion
+// This code is derived from:
+//    'Mathematics for Games and Interactive Applications'
+//     Authors: James M. Van Verth and Lars M. Bishop.
 
 #ifndef DGQUATERNION_H
 #define DGQUATERNION_H

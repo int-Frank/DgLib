@@ -15,6 +15,24 @@
 
 namespace Dg
 {
+  template<typename Real> Vector2<Real> GetRandomVector2(RNG_Base & a_rRNG);
+  template<typename Real> Vector3<Real> GetRandomVector3(RNG_Base & a_rRNG);
+  template<typename Real> Vector3<Real> GetRandomVector(Vector3<Real> const & a_axis, Real theta, RNG_Base & a_rRNG);
+  template<typename Real> Vector3<Real> GetRandomOrthonormalVector(Vector3<Real> const & a_axis, RNG_Base & a_rRNG);
+  template<typename Real> Real Orthonormalize(int a_numInputs, Vector3<Real> * a_v);
+  template <typename Real> Real ComputeOrthogonalComplement(int a_numInputs, Vector3<Real> * a_v);
+
+  template<typename Real>
+  void GetBasis(Vector3<Real> const & a_A_in,
+                Vector3<Real> const & a_B_in,
+                Vector3<Real> & a_A_out,
+                Vector3<Real> & a_B_out,
+                Vector3<Real> & a_C_out);
+
+  //-------------------------------------------------------------------------------
+  //  Implementation
+  //-------------------------------------------------------------------------------
+
   template<typename Real>
   Vector2<Real> GetRandomVector2(RNG_Base & a_rRNG)
   {
@@ -26,9 +44,6 @@ namespace Dg
     return Vector2<Real>(x, y);
   }
 
-  //-------------------------------------------------------------------------------
-  //		@	GetRandomVector()
-  //-------------------------------------------------------------------------------
   template<typename Real>
   Vector3<Real> GetRandomVector3(RNG_Base & a_rRNG)
   {
@@ -44,10 +59,6 @@ namespace Dg
     return Vector3<Real>({ x, y, z });
   }	//End: GetRandomVector()
 
-
-  //-------------------------------------------------------------------------------
-  //		@ GetRandomOrthonormalVector()
-  //-------------------------------------------------------------------------------
   template<typename Real>
   Vector3<Real> GetRandomOrthonormalVector(Vector3<Real> const & a_axis, RNG_Base & a_rRNG)
   {
@@ -58,10 +69,6 @@ namespace Dg
     return (cos(phi) * perp + sin(phi) * crs);
   }	//End: GetRandomOrthonormalVector()
 
-
-  //-------------------------------------------------------------------------------
-  //		@ GetRandomVector()
-  //-------------------------------------------------------------------------------
   template<typename Real>
   Vector3<Real> GetRandomVector(Vector3<Real> const & a_axis, Real theta, RNG_Base & a_rRNG)
   {

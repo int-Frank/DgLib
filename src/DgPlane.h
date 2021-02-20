@@ -1,11 +1,8 @@
 //@group Math/Geometry
 
-//! @file DgR3Plane.h
-//!
-//! @author: Frank B. Hart
-//! @date 29/05/2016
-//!
-//! Class declaration: Plane
+// This code is derived from:
+//    'Mathematics for Games and Interactive Applications'
+//     Authors: James M. Van Verth and Lars M. Bishop.
 
 #ifndef DGPLANE_H
 #define DGPLANE_H
@@ -22,11 +19,7 @@ namespace Dg
   //! A Plane is infinite flat surface. It is implemented by using the generalized
   //! plane equation: Ax + By + Cz + D = 0, or a vector normal to the plane
   //! and an offset. The plane normal will always be a unit vector.
-  //!
-  //! Retrieved From: Essential Mathematics for Games and Interactive Applications SE
-  //!
-  //! @author: James M. Van Verth, Lars M. Bishop, Frank Hart
-  //! @date 29/05/2016
+  //! 
   template<typename Real>
   class Plane
   {
