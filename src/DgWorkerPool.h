@@ -1,3 +1,5 @@
+//@group Misc
+
 #ifndef DGWORKERPOOL_H
 #define DGWORKERPOOL_H
 
