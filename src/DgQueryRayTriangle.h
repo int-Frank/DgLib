@@ -28,7 +28,7 @@ namespace Dg
   //---------------------------------------------------------------------------------------
 
   template<typename Real>
-  using TI3SegmentSegment = Query<QueryType::TestForIntersection, Real, 3, Ray3<Real>, Triangle3<Real>>;
+  using TI3RayTriangle = Query<QueryType::TestForIntersection, Real, 3, Ray3<Real>, Triangle3<Real>>;
 
   //---------------------------------------------------------------------------------------
   // Implementation

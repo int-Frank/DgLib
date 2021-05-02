@@ -75,9 +75,12 @@ namespace Dg
     //!   |      .         |            |                |
     //!   |______._________|            |________________|
     //!
+    //! @param outputItem Callback to take the next item placed in the container.
+    //! @param width, height Dimensions of the output container.
+    //! 
     //! @return Number of remaining items.
     template <typename ItemCompare = DefaultItemCompareFn, typename CutSpace = DefaultCutNodeFn>
-    size_t Fill(std::function<void(Item const &)>, Real width, Real height, ItemCompare cmp = DefaultCompare, CutSpace cutNode = DefaultCutNode);
+    size_t Fill(std::function<void(Item const &)> outputItem, Real width, Real height, ItemCompare cmp = DefaultCompare, CutSpace cutNode = DefaultCutNode);
 
     void Clear();
 
@@ -263,7 +266,7 @@ namespace Dg
     Ah *= Ah;
     Bh *= Bh;
 
-    if (Av + Bv > Ah + Bh)
+    if ((Av + Bv) > (Ah + Bh))
       return Cut::Vertical;
     return Cut::Horizontal;
   }

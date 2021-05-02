@@ -37,6 +37,34 @@ namespace Dg
       0xFFFFFFFFFFFFFFFFull
     };
 
+      //0x35
+      //0x61
+      //0xC1
+      //0x185
+      //0x301
+      //0x607
+      //0xC07
+      //0x1807
+      //0x3001
+      //0x6011
+      //0xC005
+      //0x1800D
+      //0x30005
+      //0x60019
+      //0xC0001
+      //0x180005
+      //0x30000B
+      //0x60000D
+      //0xC00005
+      //0x1800013
+      //0x3000005
+      //0x6000017
+      //0xC000013
+      //0x18000005
+      //0x30000059
+      //0x60000005
+
+
     //TODO revise values. See https ://planetmath.org/goodhashtableprimes
     size_t const SizeTable_Prime[] =
     {
