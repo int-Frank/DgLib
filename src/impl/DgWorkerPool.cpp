@@ -5,7 +5,6 @@
 #include <thread>
 #include <condition_variable>
 #include <vector>
-#include <list>
 
 #include "../DgWorkerPool.h"
 #include "../DgDoublyLinkedList.h"
@@ -32,9 +31,34 @@ namespace Dg
     std::mutex queuedTasksMutex;
     std::mutex queuedPostTasksMutex;
     std::condition_variable cv;
-    std::list<WorkerPoolTask> queuedTasks;      // TODO std::list... really? But the DgBoublyLinkedList crashes :(
-    std::list<WorkerPoolTask> queuedPostTasks;
+    Dg::DoublyLinkedList<WorkerPoolTask> queuedTasks;
+    Dg::DoublyLinkedList<WorkerPoolTask> queuedPostTasks;
     std::vector<std::thread> workerThreads;
+  };
+
+  // Helper class (hack) to ensure the threadsWorking counter is decremented if anything in the worker thread throws.
+  class CounterHelper
+  {
+  public:
+    CounterHelper(std::atomic<uint32_t> * a_ptr)
+      : m_pThreadsWorking(a_ptr)
+      , m_shouldDecrement(true)
+    { }
+
+    ~CounterHelper()
+    {
+      if (m_shouldDecrement)
+        (*m_pThreadsWorking)--;
+    }
+
+    void ShouldDecrement(bool a_val)
+    {
+      m_shouldDecrement = a_val;
+    }
+
+  private:
+    std::atomic<uint32_t> * m_pThreadsWorking;
+    bool m_shouldDecrement;
   };
 
   WorkerPool::WorkerPool(uint32_t a_totalThreads)
@@ -58,11 +82,14 @@ namespace Dg
               if (this->m_pimpl->shouldQuit)
                 break;
 
-              ++this->m_pimpl->threadsWorking;
+              this->m_pimpl->threadsWorking++;
+              CounterHelper ch(&this->m_pimpl->threadsWorking);
               temp = this->m_pimpl->queuedTasks.front();
               this->m_pimpl->queuedTasks.pop_front();
+              ch.ShouldDecrement(false);
             }
 
+            CounterHelper ch(&this->m_pimpl->threadsWorking);
             temp.function(temp.pUserData);
 
             if (temp.postFunction != nullptr)
@@ -74,9 +101,6 @@ namespace Dg
             {
               delete temp.pUserData;
             }
-
-            // TODO this will break if this function throws, this never decrementing the counter
-            --this->m_pimpl->threadsWorking;
           }
         });
   }

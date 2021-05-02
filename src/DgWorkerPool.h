@@ -10,11 +10,13 @@
 
 namespace Dg
 {
-  using WorkerPoolCallback = std::function<void(void *)>;
+  // We use a plain old function pointer instead of a std::function<void(void*)>. 
+  // This allows the implementation of the Worker Pool to use minimal memory allocations.
+  // A consequence is the capture clause of a lambda must be empty.
+  typedef void (*WorkerPoolCallback)(void *);
 
   class WorkerPool
   {
-
     WorkerPool(WorkerPool const &) = delete;
     WorkerPool operator=(WorkerPool const &) = delete;
 
