@@ -115,6 +115,8 @@ namespace Dg
     m_pimpl->cv.notify_all();
     for (std::thread & worker: m_pimpl->workerThreads)
       worker.join();
+
+    delete m_pimpl;
   }
 
   ErrorCode WorkerPool::AddTask(WorkerPoolCallback a_func, void * a_pUserData, bool a_clearMemory, WorkerPoolCallback a_postFunction)

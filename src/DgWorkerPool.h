@@ -4,7 +4,6 @@
 #define DGWORKERPOOL_H
 
 #include <stdint.h>
-#include <functional>
 
 #include "DgError.h"
 
