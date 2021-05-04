@@ -22,11 +22,11 @@ namespace Dg
   struct WorkerPool::PIMPL
   {
     PIMPL()
-      : threadsWorking(0)
+      : threadsWaiting(0)
       , shouldQuit(false)
     {}
 
-    std::atomic<uint32_t> threadsWorking;
+    std::atomic<uint32_t> threadsWaiting;
     std::atomic<bool> shouldQuit;
     std::mutex queuedTasksMutex;
     std::mutex queuedPostTasksMutex;
@@ -36,31 +36,6 @@ namespace Dg
     std::vector<std::thread> workerThreads;
   };
 
-  // Helper class (hack) to ensure the threadsWorking counter is decremented if anything in the worker thread throws.
-  class CounterHelper
-  {
-  public:
-    CounterHelper(std::atomic<uint32_t> * a_ptr)
-      : m_pThreadsWorking(a_ptr)
-      , m_shouldDecrement(true)
-    { }
-
-    ~CounterHelper()
-    {
-      if (m_shouldDecrement)
-        (*m_pThreadsWorking)--;
-    }
-
-    void ShouldDecrement(bool a_val)
-    {
-      m_shouldDecrement = a_val;
-    }
-
-  private:
-    std::atomic<uint32_t> * m_pThreadsWorking;
-    bool m_shouldDecrement;
-  };
-
   WorkerPool::WorkerPool(uint32_t a_totalThreads)
     : m_pimpl(new PIMPL())
   {
@@ -68,33 +43,37 @@ namespace Dg
       throw std::invalid_argument("Worker pool initialised with 0 threads!");
 
     for (uint32_t i = 0; i < a_totalThreads; i++)
+    {
       m_pimpl->workerThreads.emplace_back([this]
         {
           while (!this->m_pimpl->shouldQuit)
           {
-            WorkerPoolTask temp = {};
+            ++this->m_pimpl->threadsWaiting;
+            WorkerPoolTask temp ={};
 
             {
               std::unique_lock<std::mutex> lock(this->m_pimpl->queuedTasksMutex);
+
               this->m_pimpl->cv.wait(lock,
-                [this]{ return (!this->m_pimpl->queuedTasks.empty()) || this->m_pimpl->shouldQuit; });
+                [this] { return (!this->m_pimpl->queuedTasks.empty()) || this->m_pimpl->shouldQuit; });
+              --this->m_pimpl->threadsWaiting;
 
               if (this->m_pimpl->shouldQuit)
                 break;
 
-              this->m_pimpl->threadsWorking++;
-              CounterHelper ch(&this->m_pimpl->threadsWorking);
               temp = this->m_pimpl->queuedTasks.front();
               this->m_pimpl->queuedTasks.pop_front();
-              ch.ShouldDecrement(false);
             }
 
-            CounterHelper ch(&this->m_pimpl->threadsWorking);
             temp.function(temp.pUserData);
 
             if (temp.postFunction != nullptr)
             {
               std::unique_lock<std::mutex> lock(this->m_pimpl->queuedPostTasksMutex);
+
+              // TODO push_back can fail. It should return a ErrorCode and handled here.
+              // If push_back throws, this thread will never increment threadsWaiting,
+              // and will seem as if it is always working.
               this->m_pimpl->queuedPostTasks.push_back(temp);
             }
             else if (temp.freeUserData)
@@ -103,6 +82,7 @@ namespace Dg
             }
           }
         });
+    }
   }
 
   WorkerPool::~WorkerPool()
@@ -169,6 +149,6 @@ namespace Dg
   bool WorkerPool::HasActiveWorkers()
   {
     std::unique_lock<std::mutex> lock(m_pimpl->queuedTasksMutex);
-    return (!m_pimpl->queuedTasks.empty() || (m_pimpl->threadsWorking != 0));
+    return (!m_pimpl->queuedTasks.empty() || (m_pimpl->threadsWaiting != (uint32_t)m_pimpl->workerThreads.size()));
   }
 }
