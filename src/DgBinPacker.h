@@ -157,7 +157,7 @@ namespace Dg
     ErrorCode result;
 
     if (a_w <= static_cast<Real>(0) || a_h <= static_cast<Real>(0))
-      DG_ERROR_SET(ErrorCode::BadInput);
+      DG_ERROR_SET(ErrorCode::InvalidInput);
 
     Item item;
     item.id = a_id;

@@ -55,7 +55,7 @@ namespace Dg
     Close();
 
     if (!IsValidMode(a_openMode))
-      return ErrorCode::BadInput;
+      return ErrorCode::InvalidInput;
 
     std::string format = GetOpenFormat(a_openMode);
 
@@ -168,7 +168,7 @@ namespace Dg
       return IO::ReturnType{ErrorCode::Disallowed, 0};
 
     if (a_buffer == nullptr || a_count < 0)
-      return IO::ReturnType{ErrorCode::BadInput, 0};
+      return IO::ReturnType{ErrorCode::InvalidInput, 0};
 
     return IO::ReturnType{ErrorCode::None, static_cast<IO::myInt>(fread(a_buffer, 1, a_count, m_file))};
   }

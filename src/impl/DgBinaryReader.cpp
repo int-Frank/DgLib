@@ -41,7 +41,7 @@ namespace Dg
     Close();
 
     if (a_pStream == nullptr)
-      return ErrorCode::BadInput;
+      return ErrorCode::InvalidInput;
 
     if (!a_pStream->IsReadable())
       return ErrorCode::Disallowed;
@@ -53,7 +53,7 @@ namespace Dg
   IO::ReturnType BinaryReader::Read_string(std::string * a_out, IO::myInt const a_count)
   {
     if (a_count < 0 || a_out == nullptr)
-      return IO::ReturnType{ErrorCode::BadInput, 0};
+      return IO::ReturnType{ErrorCode::InvalidInput, 0};
 
     IO::myInt curSze = static_cast<IO::myInt>(a_out->size());
     a_out->resize(curSze + a_count);

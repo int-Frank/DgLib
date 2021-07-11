@@ -110,21 +110,9 @@ namespace Dg
   template<size_t ELEMENT_COUNT, typename INT_TYPE>
   ErrorCode StaticBoolArray<ELEMENT_COUNT, INT_TYPE>::Set(size_t a_index, bool a_on)
   {
-    ErrorCode result;
-
-    DG_ERROR_IF(a_index >= ELEMENT_COUNT, ErrorCode::OutOfBounds);
-
-    size_t const bucket = a_index / s_nBits;
-    size_t const shf = a_index - (bucket * s_nBits);
-
     if (a_on)
-      m_data[bucket] = m_data[bucket] | (static_cast<INT_TYPE>(1) << shf);
-    else
-      m_data[bucket] = m_data[bucket] & ~(static_cast<INT_TYPE>(1) << shf);
-
-    result = ErrorCode::None;
-  epilogue:
-    return result;
+      return SetOn(a_index);
+    return SetOff(a_index);
   }
 
   template<size_t ELEMENT_COUNT, typename INT_TYPE>

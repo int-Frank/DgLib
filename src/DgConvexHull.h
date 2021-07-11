@@ -42,7 +42,7 @@ namespace Dg
     Vector2<Real> const ** ppTempPoints = nullptr;
 
     if (a_points == nullptr)
-      DG_ERROR_SET(ErrorCode::BadInput);
+      DG_ERROR_SET(ErrorCode::InvalidInput);
 
     if (a_pointCount < 3)
       DG_ERROR_SET(ErrorCode::None);
@@ -140,7 +140,7 @@ namespace Dg
     Vector2<Real> const ** ppTempPoints = nullptr;
 
     if (a_points == nullptr)
-      DG_ERROR_SET(ErrorCode::BadInput);
+      DG_ERROR_SET(ErrorCode::InvalidInput);
 
     if (a_pointCount < 3)
       DG_ERROR_SET(ErrorCode::None);

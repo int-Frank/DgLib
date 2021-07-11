@@ -41,7 +41,7 @@ namespace Dg
     Close();
 
     if (a_pStream == nullptr)
-      return ErrorCode::BadInput;
+      return ErrorCode::InvalidInput;
 
     if (!a_pStream->IsWritable())
       return ErrorCode::Disallowed;

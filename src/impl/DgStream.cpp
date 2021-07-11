@@ -63,7 +63,7 @@ namespace Dg
   IO::ReturnType Stream::CopyTo(Stream * a_pStream, IO::myInt const a_bufSze)
   {
     if (a_pStream == nullptr)
-      IO::ReturnType{ErrorCode::BadInput, 0};
+      IO::ReturnType{ErrorCode::InvalidInput, 0};
 
     if (!a_pStream->IsWritable())
       IO::ReturnType{ErrorCode::Disallowed, 0};

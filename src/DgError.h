@@ -16,6 +16,7 @@
 #define DG_ERROR_CHECK(funcCall)      do { result = funcCall; if (result != ::Dg::ErrorCode::None) goto epilogue; } while(0)
 #define DG_ERROR_SET_AND_BREAK(code)  do { result = code; goto epilogue; } while(0)
 
+#undef ITEM
 #define ITEM()
 #define ERRORCODES \
   ITEM(None) \
@@ -26,7 +27,7 @@
   ITEM(Duplicate) \
   ITEM(FailedToOpenFile) \
   ITEM(IncorrectFileType) \
-  ITEM(BadInput) \
+  ITEM(InvalidInput) \
   ITEM(StreamNotOpen) \
   ITEM(FailedToAllocMem) \
   ITEM(Disallowed) \

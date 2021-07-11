@@ -90,7 +90,7 @@ namespace Dg
                                uint32_t const a_openMode)
   {
     if (a_bufSize < 0 || a_buffer == nullptr)
-      return ErrorCode::BadInput;
+      return ErrorCode::InvalidInput;
 
     ErrorCode code = CloseAndReset();
     if (code != ErrorCode::None) 
@@ -180,7 +180,7 @@ namespace Dg
       return IO::ReturnType{ErrorCode::Disallowed, 0};
 
     if (a_buffer == nullptr || a_count < 0)
-      return IO::ReturnType{ErrorCode::BadInput, 0};
+      return IO::ReturnType{ErrorCode::InvalidInput, 0};
 
     IO::myInt remain = m_size - m_position;
     if (remain <= 0)
@@ -199,7 +199,7 @@ namespace Dg
   ErrorCode MemoryStream::SetBufferSize(IO::myInt const a_newSize)
   {
     if (a_newSize < 0)
-      return ErrorCode::BadInput;
+      return ErrorCode::InvalidInput;
 
     IO::myInt newSize = a_newSize;
     if (newSize < s_defaultBufSze)
@@ -226,7 +226,7 @@ namespace Dg
       return IO::ReturnType{ErrorCode::Disallowed, 0};
 
     if (a_buffer == nullptr || a_count < 0)
-      return IO::ReturnType{ErrorCode::BadInput, 0};
+      return IO::ReturnType{ErrorCode::InvalidInput, 0};
 
     IO::myInt required = m_position + a_count;
 
@@ -291,12 +291,12 @@ namespace Dg
     {
       IO::myInt remaining = m_size - m_position;
       if (count > remaining)
-        return IO::ReturnType{ErrorCode::BadInput, m_position};
+        return IO::ReturnType{ErrorCode::InvalidInput, m_position};
     }
     else
     {
       if (-count > m_position)
-        return IO::ReturnType{ErrorCode::BadInput, m_position};
+        return IO::ReturnType{ErrorCode::InvalidInput, m_position};
       m_position += count;
       count = -count;
     }
