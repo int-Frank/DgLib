@@ -216,18 +216,13 @@ namespace Dg
     if (it == spaces.end())
       return false;
 
-    Rect ra;
-    Rect rb;
+    Rect ra = {it->position[0], it->position[1] + item.xy[1], item.xy[0], it->size[1] - item.xy[1]};
+    Rect rb = {it->position[0] + item.xy[0], it->position[1], it->size[0] - item.xy[0], it->size[1]};
 
-    if (a_cutSpace(it->size, item.xy) == Cut::Vertical)
+    if (a_cutSpace(it->size, item.xy) == Cut::Horizontal)
     {
-      Rect ra = {it->position[0], it->position[1] + item.xy[1], item.xy[0], it->size[1] - item.xy[1]};
-      Rect rb = {it->position[0] + item.xy[0], it->position[1], it->size[0] - item.xy[0], it->size[1]};
-    }
-    else
-    {
-      Rect ra = {it->position[0], it->position[1] + item.xy[1], it->size[0], it->size[1] - item.xy[1]};
-      Rect rb = {it->position[0] + item.xy[0], it->position[1], it->size[0] - item.xy[0], item.xy[1]};
+      ra.size[0] = it->size[0];
+      rb.size[1] = item.xy[1];
     }
 
     item.xy[0] = it->position[0];
