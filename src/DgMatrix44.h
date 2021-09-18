@@ -107,6 +107,9 @@ namespace Dg
     //! (assumes upper 3x3 is a valid rotation matrix)
     Quaternion<Real> GetQuaternion() const;
 
+    //! Retrieve translation component 
+    Vector3<Real> GetTranslation() const;
+
     //! Set as scaling matrix based on vector.
     Matrix44 & Scaling(Matrix<1, 3, Real> const &);
 
@@ -700,7 +703,7 @@ namespace Dg
       q.y = (m_V[8] - m_V[2]) / S;
       q.z = (m_V[1] - m_V[4]) / S;
     }
-    else if ((m_V[0] > m_V[5])&(m_V[0] > m_V[10]))
+    else if ((m_V[0] > m_V[5]) && (m_V[0] > m_V[10]))
     {
       Real S = sqrt(static_cast<Real>(1.0) + m_V[0] - m_V[5] - m_V[10]) * static_cast<Real>(2.0); // S=4*q.x() 
       q.w = (m_V[6] - m_V[9]) / S;
@@ -728,6 +731,12 @@ namespace Dg
     return q;
   }   // End of GetQuaternion()
 
+
+  template<typename Real>
+  Vector3<Real> Matrix44<Real>::GetTranslation() const
+  {
+    return Vector3<Real>(m_V[12], m_V[13], m_V[14])
+  }
 
 
   //-------------------------------------------------------------------------------

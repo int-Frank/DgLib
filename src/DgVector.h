@@ -161,6 +161,16 @@ namespace Dg
     return result;
   }
 
+  template<typename Real, int R>
+  Vector<Real, R> Ones()
+  {
+    Vector<Real, R> result;
+
+    for (int i = 0; i < R; i++)
+      result[i] = static_cast<Real>(1);
+    return result;
+  }
+
   //! Make unit vector
   template<typename Real, int R>
   Vector<Real, R> Normalize(Vector<Real, R> const & a_vec)

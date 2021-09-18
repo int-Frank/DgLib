@@ -44,9 +44,9 @@ namespace Dg
   //! @param[in] a_t Factor: 0 < t < 1
   template<typename Real>
   void Lerp(Quaternion<Real>& a_result,
-    Quaternion<Real> const & a_start,
-    Quaternion<Real> const & a_end,
-    Real a_t);
+            Quaternion<Real> const & a_start,
+            Quaternion<Real> const & a_end,
+            Real a_t);
 
   //! Spherical linearly interpolate two quaternions.
   //! This will always take the shorter path between them.
@@ -57,9 +57,9 @@ namespace Dg
   //! @param[in] a_t Factor: 0 < t < 1
   template<typename Real>
   void Slerp(Quaternion<Real>& a_result,
-    Quaternion<Real> const & a_start,
-    Quaternion<Real> const & a_end,
-    Real a_t);
+             Quaternion<Real> const & a_start,
+             Quaternion<Real> const & a_end,
+             Real a_t);
 
 
   //! Approximate spherical linear interpolation of two quaternions.
@@ -72,9 +72,9 @@ namespace Dg
   //! @param[in] a_t Factor: 0 < t < 1
   template<typename Real>
   void ApproxSlerp(Quaternion<Real>& a_result,
-    Quaternion<Real> const & a_start,
-    Quaternion<Real> const & a_end,
-    Real a_t);
+                   Quaternion<Real> const & a_start,
+                   Quaternion<Real> const & a_end,
+                   Real a_t);
 
 
   //! @ingroup DgMath_types
@@ -239,19 +239,12 @@ namespace Dg
     //! @return Rotated vector
     Vector3<Real> Rotate(Vector3<Real> const &) const;
 
-    //! Vector rotation. 
-    //! @pre Quaternion is normalized.
-    void RotateSelf(Vector3<Real>&) const;
-
   public:
 
     Real w, x, y, z;
   };
 
 
-  //-------------------------------------------------------------------------------
-  //	@	Quaternion::Set()
-  //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::Set(Real a_w, Real a_x, Real a_y, Real a_z)
   {
@@ -263,9 +256,6 @@ namespace Dg
   }   // End of Quaternion::Set()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Zero()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::Zero()
   {
@@ -273,9 +263,6 @@ namespace Dg
   }   // End of Quaternion::Zero()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Identity()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::Identity()
   {
@@ -283,9 +270,7 @@ namespace Dg
     w = static_cast<Real>(1);
   }   // End of Quaternion::Identity
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Quaternion()
-      //-------------------------------------------------------------------------------
+
   template<typename Real>
   Quaternion<Real>::Quaternion(const Vector3<Real>& a_axis, Real a_angle)
   {
@@ -294,9 +279,6 @@ namespace Dg
   }   // End of Quaternion::Quaternion()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Quaternion()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real>::Quaternion(const Vector3<Real>& a_from, const Vector3<Real>& a_to)
   {
@@ -305,9 +287,6 @@ namespace Dg
   }   // End of Quaternion::Quaternion()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Quaternion()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real>::Quaternion(const Vector3<Real>& a_vector)
   {
@@ -316,9 +295,6 @@ namespace Dg
   }   // End of Quaternion::Quaternion()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Quaternion()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real>::Quaternion(Quaternion<Real> const & a_other) :
     w(a_other.w), x(a_other.x), y(a_other.y), z(a_other.z)
@@ -327,9 +303,6 @@ namespace Dg
   }   // End of Quaternion::Quaternion()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::operator=()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real>& Quaternion<Real>::operator=(Quaternion<Real> const & a_other)
   {
@@ -343,9 +316,6 @@ namespace Dg
   }   // End of Quaternion::operator=()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Magnitude()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Real Quaternion<Real>::Magnitude() const
   {
@@ -354,9 +324,6 @@ namespace Dg
   }   // End of Quaternion::Magnitude()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Norm()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Real Quaternion<Real>::Norm() const
   {
@@ -365,9 +332,6 @@ namespace Dg
   }   // End of Quaternion::Norm()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::operator==()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   bool Quaternion<Real>::operator==(Quaternion<Real> const & a_other) const
   {
@@ -379,9 +343,6 @@ namespace Dg
   }   // End of Quaternion::operator==()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::operator!=()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   bool Quaternion<Real>::operator!=(Quaternion<Real> const & a_other) const
   {
@@ -392,9 +353,6 @@ namespace Dg
   }   // End of Quaternion::operator!=()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::IsZero()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   bool Quaternion<Real>::IsZero() const
   {
@@ -403,9 +361,6 @@ namespace Dg
   }   // End of Quaternion::IsZero()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::IsUnit()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   bool Quaternion<Real>::IsUnit() const
   {
@@ -414,9 +369,6 @@ namespace Dg
   }   // End of Quaternion::IsUnit()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::IsIdentity()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   bool Quaternion<Real>::IsIdentity() const
   {
@@ -428,9 +380,6 @@ namespace Dg
   }   // End of Quaternion::IsIdentity()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::SetRotationX()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::SetRotationX(Real a_rx)
   {
@@ -444,9 +393,6 @@ namespace Dg
   }   // End of Quaternion::SetRotationX()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::SetRotationZ()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::SetRotationY(Real a_ry)
   {
@@ -460,9 +406,6 @@ namespace Dg
   }   // End of Quaternion::SetRotationZ()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::SetRotation()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::SetRotationZ(Real a_rz)
   {
@@ -476,9 +419,6 @@ namespace Dg
   }   // End of Quaternion::SetRotationZ()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::SetRotation()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::SetRotation(Real a_rx,
     Real a_ry,
@@ -602,9 +542,6 @@ namespace Dg
   }   // End of Quaternion::SetRotation()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Set()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::Set(const Vector3<Real>& a_axis, Real a_angle)
   {
@@ -632,9 +569,6 @@ namespace Dg
   }   // End of Quaternion::Set()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::Set(const Vector3<Real>& a_from, const Vector3<Real>& a_to)
   {
@@ -681,9 +615,6 @@ namespace Dg
   }   // End of Quaternion::Set()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::MakeValid()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::MakeValid()
   {
@@ -715,9 +646,6 @@ namespace Dg
   }   // End of Quaternion::Identity
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::GetAxisAngle()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::GetAxisAngle(Vector3<Real>& a_axis, Real& a_angle)
   {
@@ -738,9 +666,6 @@ namespace Dg
   }   // End of Quaternion::GetAxisAngle()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::GetBasis()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::GetBasis(Vector3<Real>& a_x0,
     Vector3<Real>& a_x1,
@@ -776,9 +701,6 @@ namespace Dg
   }   // End of Quaternion::GetGetBasis()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Clean()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::Clean()
   {
@@ -794,9 +716,6 @@ namespace Dg
   }   // End of Quaternion::Clean()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Normalize()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Quaternion<Real>::Normalize()
   {
@@ -818,9 +737,6 @@ namespace Dg
   }   // End of Quaternion::Normalize()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Conjugate()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real> Conjugate(Quaternion<Real> const & a_quat)
   {
@@ -829,9 +745,6 @@ namespace Dg
   }   // End of Conjugate()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Conjugate()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real> const & Quaternion<Real>::Conjugate()
   {
@@ -844,9 +757,6 @@ namespace Dg
   }   // End of Conjugate()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Inverse()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real> Inverse(Quaternion<Real> const & a_quat)
   {
@@ -857,9 +767,6 @@ namespace Dg
   }   // End of Inverse()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Inverse()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real> const & Quaternion<Real>::Inverse()
   {
@@ -880,9 +787,6 @@ namespace Dg
   }   // End of Inverse()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::operator+()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real> Quaternion<Real>::operator+(Quaternion<Real> const & a_other) const
   {
@@ -894,9 +798,6 @@ namespace Dg
   }   // End of Quaternion::operator+()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::operator+=()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real>& Quaternion<Real>::operator+=(Quaternion<Real> const & a_other)
   {
@@ -910,9 +811,6 @@ namespace Dg
   }   // End of Quaternion::operator+=()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::operator-()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real> Quaternion<Real>::operator-(Quaternion<Real> const & a_other) const
   {
@@ -924,9 +822,6 @@ namespace Dg
   }   // End of Quaternion::operator-()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::operator-=()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real>& Quaternion<Real>::operator-=(Quaternion<Real> const & a_other)
   {
@@ -940,9 +835,6 @@ namespace Dg
   }   // End of Quaternion::operator-=()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::operator-()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real> Quaternion<Real>::operator-() const
   {
@@ -951,9 +843,6 @@ namespace Dg
   }    // End of Quaternion::operator-()
 
 
-        //-------------------------------------------------------------------------------
-        //	@	Quaternion::operator*()
-        //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real> operator*(Real a_scalar, Quaternion<Real> const & a_quat)
   {
@@ -965,9 +854,6 @@ namespace Dg
   }   // End of operator*()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::operator*=()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real>& Quaternion<Real>::operator*=(Real a_scalar)
   {
@@ -981,9 +867,6 @@ namespace Dg
   }   // End of Quaternion::operator*=()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::operator*()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real> Quaternion<Real>::operator*(Quaternion<Real> const & a_other) const
   {
@@ -996,9 +879,6 @@ namespace Dg
   }   // End of Quaternion::operator*()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::operator*=()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Quaternion<Real>& Quaternion<Real>::operator*=(Quaternion<Real> const & a_other)
   {
@@ -1012,9 +892,6 @@ namespace Dg
   }   // End of Quaternion::operator*=()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Dot()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Real Dot(Quaternion<Real> const & a_quat1, Quaternion<Real> const & a_quat2)
   {
@@ -1026,9 +903,6 @@ namespace Dg
   }   // End of Dot()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Rotate()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   Vector3<Real> Quaternion<Real>::Rotate(const Vector3<Real>& a_vector) const
   {
@@ -1046,29 +920,6 @@ namespace Dg
   }   // End of Quaternion::Rotate()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::RotateSelf()
-      //-------------------------------------------------------------------------------
-  template<typename Real>
-  void Quaternion<Real>::RotateSelf(Vector3<Real>& a_vector) const
-  {
-    Real vMult = static_cast<Real>(2) * (x*a_vector[0] + y*a_vector[1] + z*a_vector[2]);
-    Real crossMult = static_cast<Real>(2) * w;
-    Real pMult = crossMult * w - static_cast<Real>(1);
-
-    Real _x = pMult*a_vector[0] + vMult*x + crossMult*(y*a_vector[2] - z*a_vector[1]);
-    Real _y = pMult*a_vector[1] + vMult*y + crossMult*(z*a_vector[0] - x*a_vector[2]);
-    Real _z = pMult*a_vector[2] + vMult*z + crossMult*(x*a_vector[1] - y*a_vector[0]);
-
-    a_vector[0] = _x;
-    a_vector[1] = _y;
-    a_vector[2] = _z;
-  }   // End of Quaternion::RotateSelf()
-
-
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Lerp()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Lerp(Quaternion<Real>& a_result, Quaternion<Real> const & a_start, Quaternion<Real> const & a_end, Real a_t)
   {
@@ -1093,9 +944,6 @@ namespace Dg
   }   // End of Lerp()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::Slerp()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void Slerp(Quaternion<Real>& a_result, Quaternion<Real> const & a_start, Quaternion<Real> const & a_end, Real a_t)
   {
@@ -1151,9 +999,6 @@ namespace Dg
   }   // End of Slerp()
 
 
-      //-------------------------------------------------------------------------------
-      //	@	Quaternion::ApproxSlerp()
-      //-------------------------------------------------------------------------------
   template<typename Real>
   void ApproxSlerp(Quaternion<Real>& a_result, Quaternion<Real> const & a_start, Quaternion<Real> const & a_end, Real a_t)
   {
@@ -1185,7 +1030,6 @@ namespace Dg
       // otherwise, take the shorter path
       a_result += (a_t - static_cast<Real>(1)) * a_start;
     }
-
   }   // a_end of ApproxSlerp()
 }
 
