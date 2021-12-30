@@ -1,0 +1,3 @@
+[submodule "3rdParty/BuildScripts"]
+	path = 3rdParty/BuildScripts
+	url = git@github.com:int-Frank/BuildScripts.git
