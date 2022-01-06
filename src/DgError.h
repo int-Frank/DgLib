@@ -24,6 +24,7 @@
   ITEM(Failure) \
   ITEM(Undefined) \
   ITEM(OutOfBounds) \
+  ITEM(NotFound) \
   ITEM(Duplicate) \
   ITEM(FailedToOpenFile) \
   ITEM(IncorrectFileType) \
