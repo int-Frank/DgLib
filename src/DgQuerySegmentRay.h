@@ -55,7 +55,7 @@ namespace Dg
     Result result;
     result.code = QueryCode::Success;
 
-    Vector<Real, R> ds(a_seg.Direction());
+    Vector<Real, R> ds(a_seg.Vect());
     Vector<Real, R> os(a_seg.Origin());
     Vector<Real, R> or (a_ray.Origin());
     Vector<Real, R> dr(a_ray.Direction());

@@ -48,7 +48,7 @@ namespace Dg
     Result result;
     Vector<Real, R> w = a_point - a_seg.Origin();
 
-    Real proj = Dot(w, a_seg.Direction());
+    Real proj = Dot(w, a_seg.Vect());
 
     if (proj < static_cast<Real>(0))
     {
@@ -64,7 +64,7 @@ namespace Dg
         result.u = (proj / vsq);
     }
 
-    result.cp = a_seg.Origin() + result.u * a_seg.Direction();
+    result.cp = a_seg.Origin() + result.u * a_seg.Vect();
     return result;
   }
 }

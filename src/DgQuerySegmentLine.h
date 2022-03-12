@@ -32,30 +32,9 @@ namespace Dg
     Result operator()(Segment<Real, R> const &, Line<Real, R> const &);
   };
 
-  template <typename Real>
-  class Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Line2<Real>>
-  {
-  public:
-
-	  struct Result
-	  {
-		  Real us; // Distance from the line origin to closest point to the line segment
-		  Real ul; // Distance from the line segment origin to closest point to the line
-
-		  Vector2<Real> p; // Intersection point
-
-		  QueryCode code; // NotIntersecting, Intersecting, Overlapping
-	  };
-
-	  Result operator()(Segment2<Real> const &, Line2<Real> const &);
-  };
-
   //---------------------------------------------------------------------------------------
   // Useful typedefs
   //---------------------------------------------------------------------------------------
-
-  template<typename Real>
-  using FI2SegmentLine = Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Line2<Real>>;
 
   template<typename Real>
   using CP2SegmentLine = Query<QueryType::ClosestPoint, Real, 2, Segment2<Real>, Line2<Real>>;
@@ -76,7 +55,7 @@ namespace Dg
 
     Vector<Real, R> os(a_seg.Origin());
     Vector<Real, R> ol(a_line.Origin());
-    Vector<Real, R> ds(a_seg.Direction());
+    Vector<Real, R> ds(a_seg.Vect());
     Vector<Real, R> dl(a_line.Direction());
 
     //compute intermediate parameters
@@ -127,56 +106,6 @@ namespace Dg
     result.cps = os + result.us*ds;
     result.cpl = ol + result.ul*dl;
     return result;
-  }
-
-  template<typename Real>
-  typename Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Line2<Real>>::Result
-    Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Line2<Real>>::operator()
-	  (Segment2<Real> const & a_seg, Line2<Real> const & a_line)
-  {
-	  Result result;
-
-	  Vector2<Real> const & dir_s = a_seg.Direction();
-	  Vector2<Real> const & dir_l = a_line.Direction();
-
-	  Vector2<Real> w = a_seg.GetP0() - a_line.Origin();
-	  Real denom = PerpDot(dir_s, dir_l);
-	  Real us_numerator = PerpDot(dir_l, w);
-	  Real ul_numerator = PerpDot(dir_s, w);
-
-	  if (Dg::IsZero(denom))
-	  {
-      //Parallel
-		  if (!Dg::IsZero(us_numerator))
-			  result.code = QueryCode::NotIntersecting;
-
-      //Coincident
-		  else
-		  {
-			  result.code = QueryCode::Overlapping;
-			  result.p = a_seg.GetP0();
-			  result.us = static_cast<Real>(0);
-			  result.ul = Dot(dir_l, w);
-		  }
-	  }
-	  else
-	  {
-		  Real us = us_numerator / denom;
-		  Real ul = ul_numerator / denom;
-
-		  if (IsInRange(static_cast<Real>(0), static_cast<Real>(1), us))
-		  {
-			  result.code = QueryCode::Intersecting;
-			  result.us = us;
-			  result.ul = ul;
-			  result.p = a_seg.GetP0() + us * dir_s;
-		  }
-		  else
-		  {
-        result.code = QueryCode::NotIntersecting;
-		  }
-	  }
-	  return result;
   }
 }
 

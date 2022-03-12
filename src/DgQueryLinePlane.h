@@ -63,7 +63,7 @@ namespace Dg
     (Line3<Real> const & a_line, Plane<Real> const & a_plane)
   {
     Result result;
-    result.isIntersecting = !Dg::IsZero(a_plane.NormalDot(a_line.Direction())) ||
+    result.isIntersecting = !Dg::IsZero(Dot(a_plane.Normal(), a_line.Direction())) ||
       Dg::IsZero(a_plane.SignedDistance(a_line.Origin()));
     return result;
   }

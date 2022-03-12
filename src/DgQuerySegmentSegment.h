@@ -33,28 +33,12 @@ namespace Dg
     Result operator()(Segment<Real, R> const &, Segment<Real, R> const &);
   };
 
-  template <typename Real>
-  class Query<QueryType::TestForIntersection, Real, 2, Segment2<Real>, Segment2<Real>>
-  {
-  public:
-
-    struct Result
-    {
-      bool isIntersecting;
-    };
-
-    Result operator()(Segment2<Real> const &, Segment2<Real> const &);
-  };
-
   //---------------------------------------------------------------------------------------
   // Useful typedefs
   //---------------------------------------------------------------------------------------
 
   template<typename Real>
   using CP2SegmentSegment = Query<QueryType::ClosestPoint, Real, 2, Segment2<Real>, Segment2<Real>>;
-
-  template<typename Real>
-  using TI2SegmentSegment = Query<QueryType::TestForIntersection, Real, 2, Segment2<Real>, Segment2<Real>>;
 
   template<typename Real>
   using CP3SegmentSegment = Query<QueryType::ClosestPoint, Real, 3, Segment3<Real>, Segment3<Real>>;
@@ -73,8 +57,8 @@ namespace Dg
 
     Vector<Real, R> o0(a_seg0.Origin());
     Vector<Real, R> o1(a_seg1.Origin());
-    Vector<Real, R> d0(a_seg0.Direction());
-    Vector<Real, R> d1(a_seg1.Direction());
+    Vector<Real, R> d0(a_seg0.Vect());
+    Vector<Real, R> d1(a_seg1.Vect());
 
     //compute intermediate parameters
     Vector<Real, R> w0(o0 - o1);
@@ -90,38 +74,6 @@ namespace Dg
     // if denom is zero, try finding closest point on segment1 to origin0
     if (Dg::IsZero(denom))
     {
-      //Either or both segment lengths are zero
-      if (IsZero(a))
-      {
-        if (IsZero(c))
-        {
-          result.u0 = static_cast<Real>(0);
-          result.u1 = static_cast<Real>(0);
-          result.cp0 = o0;
-          result.cp1 = o1;
-        }
-        else
-        {
-          Query<QueryType::ClosestPoint, Real, R, Vector<Real, R>, Segment<Real, R>> query;
-          Query<QueryType::ClosestPoint, Real, R, Vector<Real, R>, Segment<Real, R>>::Result qRes = query(o0, a_seg1);
-          result.u0 = static_cast<Real>(0);
-          result.u1 = qRes.u;
-          result.cp0 = o0;
-          result.cp1 = qRes.cp;
-        }
-        return result;
-      }
-      else if (IsZero(c))
-      {
-        Query<QueryType::ClosestPoint, Real, R, Vector<Real, R>, Segment<Real, R>> query;
-        Query<QueryType::ClosestPoint, Real, R, Vector<Real, R>, Segment<Real, R>>::Result qRes = query(o1, a_seg0);
-        result.u0 = qRes.u;
-        result.u1 = static_cast<Real>(0);
-        result.cp0 = qRes.cp;
-        result.cp1 = o0;
-        return result;
-      }
-
       // clamp result.u0 to 0
       sd = td = c;
       sn = static_cast<Real>(0);
@@ -197,49 +149,6 @@ namespace Dg
 
     result.cp0 = o0 + result.u0*d0;
     result.cp1 = o1 + result.u1*d1;
-    return result;
-  }
-
-  template<typename Real>
-  typename Query<QueryType::TestForIntersection, Real, 2, Segment2<Real>, Segment2<Real>>::Result
-    Query<QueryType::TestForIntersection, Real, 2, Segment2<Real>, Segment2<Real>>::operator()
-    (Segment<Real, 2> const & a_seg0, Segment<Real, 2> const & a_seg1)
-  {
-    Result result;
-
-    Vector<Real, 2> const & dir0 = a_seg0.Direction();
-    Vector<Real, 2> const & dir1 = a_seg1.Direction();
-
-    Vector<Real, 2> w = a_seg0.GetP0() - a_seg1.GetP0();
-    Real denom = PerpDot(a_seg0.Direction(), a_seg1.Direction());
-    Real u0_numerator = PerpDot(a_seg1.Direction(), w);
-    Real u1_numerator = PerpDot(a_seg0.Direction(), w);
-
-    if (Dg::IsZero(denom))
-    {
-      //Parallel
-      if (!Dg::IsZero(u0_numerator))
-        result.isIntersecting = false;
-
-      //Segments lie on the same line
-      else
-      {
-        Vector2<Real> v0 = a_seg0.Direction() / MagSq(a_seg0.Direction());
-        Vector2<Real> v1 = a_seg1.Direction() / MagSq(a_seg1.Direction());
-        Vector2<Real> q = a_seg1.GetP0() - a_seg1.GetP0();
-
-        result.isIntersecting = (IsInRange(static_cast<Real>(0), static_cast<Real>(1), Dot(w, v1))
-          || IsInRange(static_cast<Real>(0), static_cast<Real>(1), Dot(q, v1))
-          || IsInRange(static_cast<Real>(0), static_cast<Real>(1), Dot(-w, v0)));
-      }
-    }
-    else
-    {
-      Real u0 = u0_numerator / denom;
-      Real u1 = u1_numerator / denom;
-      result.isIntersecting = (IsInRange(static_cast<Real>(0), static_cast<Real>(1), u0)
-        && IsInRange(static_cast<Real>(0), static_cast<Real>(1), u1));
-    }
     return result;
   }
 }

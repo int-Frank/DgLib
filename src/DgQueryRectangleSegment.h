@@ -48,7 +48,7 @@ namespace Dg
     Result result;
 
     Vector3<Real> rectNorm = Cross(a_rect.GetAxis(0), a_rect.GetAxis(1));
-    Real denom = Dot(rectNorm, a_seg.Direction());
+    Real denom = Dot(rectNorm, a_seg.Vect());
 
     //check if line is parallel to plane
     if (Dg::IsZero(denom))
@@ -107,13 +107,13 @@ namespace Dg
 
       //Either end point in the segment need to lie on opposite sides of
       //the rectangle plane
-      Real dDdir = Dot(diff, a_seg.Direction());
-      Real d2Ddir = Dot(diff2, a_seg.Direction());
+      Real dDdir = Dot(diff, a_seg.Vect());
+      Real d2Ddir = Dot(diff2, a_seg.Vect());
 
       if (dDdir * d2Ddir < static_cast<Real>(0))
       {
         Vector3<Real> basis[3];  // {D, U, V}
-        basis[0] = a_seg.Direction();
+        basis[0] = a_seg.Vect();
         ComputeOrthogonalComplement<Real>(1, basis);
         Real UdD0 = Dot(basis[1], a_rect.GetAxis(0));
         Real UdD1 = Dot(basis[1], a_rect.GetAxis(1));

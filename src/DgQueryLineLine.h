@@ -32,24 +32,6 @@ namespace Dg
     Result operator()(Line3<Real> const &, Line3<Real> const &);
   };
 
-  template <typename Real>
-  class Query<QueryType::FindIntersection, Real, 2, Line2<Real>, Line2<Real>>
-  {
-  public:
-
-    struct Result
-    {
-      Real u0;            // Distance from line 0 origin to closest point to line 1
-      Real u1;            // Distance from line 1 origin to closest point to line 0
-
-      Vector3<Real> pt;   // Intersection point
-
-      QueryCode code;     // Success, Parallel, Overlapping
-    };
-
-    Result operator()(Line2<Real> const &, Line2<Real> const &);
-  };
-
   //---------------------------------------------------------------------------------------
   // Useful typedefs
   //---------------------------------------------------------------------------------------
@@ -58,7 +40,7 @@ namespace Dg
   using CP3LineLine = Query<QueryType::ClosestPoint, Real, 3, Line3<Real>, Line3<Real>>;
 
   template<typename Real>
-  using FI2LineLine = Query<QueryType::FindIntersection, Real, 2, Line2<Real>, Line2<Real>>;
+  using CP2LineLine = Query<QueryType::ClosestPoint, Real, 2, Line2<Real>, Line2<Real>>;
 
   //---------------------------------------------------------------------------------------
   // Implementation

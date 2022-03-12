@@ -14,19 +14,6 @@
 namespace Dg
 {
   template <typename Real>
-  class Query<QueryType::TestForIntersection, Real, 3, Segment3<Real>, Plane<Real>>
-  {
-  public:
-
-    struct Result
-    {
-      bool isIntersecting;
-    };
-
-    Result operator()(Segment3<Real> const &, Plane<Real> const &);
-  };
-
-  template <typename Real>
   class Query<QueryType::FindIntersection, Real, 3, Segment3<Real>, Plane<Real>>
   {
   public:
@@ -47,50 +34,11 @@ namespace Dg
   //---------------------------------------------------------------------------------------
 
   template<typename Real>
-  using TI3SegmentPlane = Query<QueryType::TestForIntersection, Real, 3, Segment3<Real>, Plane<Real>>;
-
-  template<typename Real>
   using FI3SegmentPlane = Query<QueryType::FindIntersection, Real, 3, Segment3<Real>, Plane<Real>>;
 
   //---------------------------------------------------------------------------------------
   // Implementation
   //---------------------------------------------------------------------------------------
-
-  template<typename Real>
-  typename Query<QueryType::TestForIntersection, Real, 3, Segment3<Real>, Plane<Real>>::Result
-    Query<QueryType::TestForIntersection, Real, 3, Segment3<Real>, Plane<Real>>::operator()
-    (Segment3<Real> const & a_seg, Plane<Real> const & a_plane)
-  {
-    Result result;
-
-    Vector3<Real> pn(a_plane.Normal());
-    Real          po(a_plane.Offset());
-    Vector3<Real> so(a_seg.Origin());
-    Vector3<Real> sd(a_seg.Direction());
-
-    Real denom = Dot(pn, sd);
-
-    //check if ray is parallel to plane
-    if (Dg::IsZero(denom))
-    {
-      //check if ray is on the plane
-      if (Dg::IsZero(a_plane.SignedDistance(so)))
-        result.isIntersecting = true;
-      else
-        result.isIntersecting = false;
-    }
-    else
-    {
-      Real u = (-(Dot(so, pn) + po) / denom);
-
-      if (u < static_cast<Real>(0) || u > static_cast<Real>(1))
-        result.isIntersecting = false;
-      else
-        result.isIntersecting = true;
-    }
-
-    return result;
-  }
 
   template<typename Real>
   typename Query<QueryType::FindIntersection, Real, 3, Segment3<Real>, Plane<Real>>::Result
@@ -102,7 +50,7 @@ namespace Dg
     Vector3<Real> pn(a_plane.Normal());
     Real          po(a_plane.Offset());
     Vector3<Real> so(a_seg.Origin());
-    Vector3<Real> sd(a_seg.Direction());
+    Vector3<Real> sd(a_seg.Vect());
 
     Real denom = Dot(pn, sd);
 
