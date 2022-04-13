@@ -68,10 +68,12 @@ namespace Dg
   }
 
   template<typename Real, int R>
-  AABB<Real, R> &AABB<Real, R>::operator=(AABB const &)
+  AABB<Real, R> &AABB<Real, R>::operator=(AABB const &other)
   {
     m_ptMin = other.m_ptMin;
     m_ptMax = other.m_ptMax;
+
+    return *this;
   }
 
   template<typename Real, int R>
