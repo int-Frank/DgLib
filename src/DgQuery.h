@@ -14,7 +14,9 @@ namespace Dg
     Intersecting,
     NotIntersecting,
     CompletelyInside,
-    CompletelyOutside
+    CompletelyOutside,
+    A_in_B,
+    B_in_A,
   };
 
   enum class QueryType
