@@ -1160,8 +1160,8 @@ namespace Dg
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
   void Tree_AVL<KeyType, ValueType, Compare>::Extend()
   {
-    m_poolSize.SetNextPoolSize();
     size_t oldSize = m_poolSize.GetSize();
+    m_poolSize.SetNextPoolSize();
     Node * oldNodes = m_pNodes;
 
     size_t s = sizeof(Node);
@@ -1181,7 +1181,8 @@ namespace Dg
       m_pRoot = m_pNodes + (m_pRoot - oldNodes);
       for (sizeType i = 0; i <= m_nItems; i++)
       {
-        m_pNodes[i].pParent = m_pNodes + (m_pNodes[i].pParent - oldNodes);
+        if (m_pNodes[i].pParent)
+          m_pNodes[i].pParent = m_pNodes + (m_pNodes[i].pParent - oldNodes);
 
         if (m_pNodes[i].pLeft)
           m_pNodes[i].pLeft = m_pNodes + (m_pNodes[i].pLeft - oldNodes);
