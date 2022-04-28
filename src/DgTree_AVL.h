@@ -244,6 +244,8 @@ namespace Dg
 
     void clear();
     
+    //impl::DebugTreeNode *GetDebugTree(impl::DebugTreeNode **ppRoot, std::string (*ToString)(KeyType) = impl::DefaultValueToString<KeyType>) const;
+
   protected:
 
     class EraseData
@@ -1215,7 +1217,7 @@ namespace Dg
   typename Tree_AVL<KeyType, ValueType, Compare>::Node *
     Tree_AVL<KeyType, ValueType, Compare>::LeftRotate(Node * a_x)
   {  
-    Node * y = a_x->pRight;  
+    Node * y = a_x->pRight;
     Node * T2 = y->pLeft;  
     Node * xParent = a_x->pParent;
 
@@ -1248,8 +1250,8 @@ namespace Dg
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
   typename Tree_AVL<KeyType, ValueType, Compare>::Node *
     Tree_AVL<KeyType, ValueType, Compare>::RightRotate(Node * a_y)
-  {  
-    Node * x = a_y->pLeft;  
+  { 
+    Node * x = a_y->pLeft;
     Node * T2 = x->pRight;  
     Node * yParent = a_y->pParent;
 
@@ -1341,34 +1343,39 @@ namespace Dg
     }
     else
     {
-      a_newNode = a_pNode;
+      a_newNode = a_pNode; // Tried to insert an element that alread exists!
       return a_pNode;
     }
 
     a_pNode->height = 1 + impl::Max(Height(a_pNode->pLeft), Height(a_pNode->pRight));
     int balance = GetBalance(a_pNode);
 
-    // Left Left Case  
-    if (balance > 1 && Compare(GetKeyType(a_value), GetKeyType(a_pNode->data)))
-      return RightRotate(a_pNode);  
-
-    // Right Right Case  
-    if (balance < -1 && !Compare(GetKeyType(a_value), GetKeyType(a_pNode->data)))
-      return LeftRotate(a_pNode);  
-
-    // Left Right Case  
-    if (balance > 1 && !Compare(GetKeyType(a_value), GetKeyType(a_pNode->data)))
-    {  
-      a_pNode->pLeft = LeftRotate(a_pNode->pLeft);  
-      return RightRotate(a_pNode);  
-    }  
-
-    // Right Left Case  
-    if (balance < -1 && Compare(GetKeyType(a_value), GetKeyType(a_pNode->data)))
+    if (balance > 1)
     {
-      a_pNode->pRight = RightRotate(a_pNode->pRight);
-      return LeftRotate(a_pNode);
-    }  
+      if (Compare(GetKeyType(a_value), GetKeyType(a_pNode->pLeft->data)))
+      {
+        return RightRotate(a_pNode);
+      }
+      else if (Compare(GetKeyType(a_pNode->pLeft->data), GetKeyType(a_value)))
+      {
+        a_pNode->pLeft = LeftRotate(a_pNode->pLeft);
+        return RightRotate(a_pNode);
+      }
+    }
+
+    if (balance < -1)
+    {
+      if (Compare(GetKeyType(a_pNode->pRight->data), GetKeyType(a_value)))
+      {
+        return LeftRotate(a_pNode);
+      }
+      else if (Compare(GetKeyType(a_value), GetKeyType(a_pNode->pRight->data)))
+      {
+        a_pNode->pRight = RightRotate(a_pNode->pRight);
+        return LeftRotate(a_pNode);
+      }
+    }
+
     return a_pNode;
   }
 
@@ -1623,6 +1630,68 @@ namespace Dg
     } while (pOldNode == pNode->pLeft);
     return const_cast<Node*>(pNode);
   }
+
+  //template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
+  //impl::DebugTreeNode *Tree_AVL<KeyType, ValueType, Compare>::GetDebugTree(impl::DebugTreeNode **ppRoot, std::string(*ToString)(KeyType)) const
+  //{
+  //  if (m_nItems == 0)
+  //    return nullptr;
+
+  //  uint32_t depth = 0;
+  //  int32_t row = 0;
+
+  //  impl::DebugTreeNode *pNodes = new impl::DebugTreeNode[m_nItems]();
+
+  //  size_t rootIndex = m_pRoot - m_pNodes;
+  //  *ppRoot = &pNodes[rootIndex];
+
+  //  // Get first node in the tree
+  //  Node const *pCurrentNode = m_pRoot;
+  //  while (pCurrentNode->pLeft != nullptr)
+  //  {
+  //    pCurrentNode = pCurrentNode->pLeft;
+  //    depth++;
+  //    row--;
+  //  }
+
+  //  while (pCurrentNode != m_pNodes)
+  //  {
+  //    if (pCurrentNode == m_pNodes) // End
+  //      break;
+
+  //    size_t index = pCurrentNode - m_pNodes - 1;
+  //    DebugNode *pNode = &pNodes[index];
+
+  //    pNode->depth = depth;
+  //    pNode->row = row;
+  //    pNode->str = ToString(GetKeyType(pCurrentNode->data));
+
+  //    if (pCurrentNode->pParent)
+  //    {
+  //      index = pCurrentNode->pParent - m_pNodes - 1;
+  //      pNode->pParent = &pNodes[index];
+  //    }
+
+  //    if (pCurrentNode->pLeft)
+  //    {
+  //      index = pCurrentNode->pLeft - m_pNodes - 1;
+  //      pNode->pLeft = &pNodes[index];
+  //    }
+
+  //    if (pCurrentNode->pRight)
+  //    {
+  //      index = pCurrentNode->pRight - m_pNodes - 1;
+  //      if (index == 0)
+  //        pNode->pRight 0xFFFFFFFFFFFFFFFF;
+  //      else
+  //        pNode->pRight = &pNodes[index];
+  //    }
+
+  //    pCurrentNode = GetNextNodeForDebug(pCurrentNode, depth, row);
+  //  }
+
+  //  return pNodes;
+  //}
 }
 
 #endif
