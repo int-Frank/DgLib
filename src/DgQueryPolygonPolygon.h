@@ -7,7 +7,7 @@
 #include "DgVector.h"
 #include "DgPolygon.h"
 #include "DgQueryPointPolygon.h"
-#include "DgQuerySegmentPolygon.h"
+#include "DgQuerySegmentSegment.h"
 
 namespace Dg
 {
@@ -46,14 +46,18 @@ namespace Dg
     for (auto ea = poly_a.cEdgesBegin(); ea != poly_a.cEdgesEnd(); ea++)
     {
       Segment2<Real> sa = *(ea);
-
-      TI2SegmentPolygon<Real> query;
-      TI2SegmentPolygon<Real>::Result tempResult = query(*ea, poly_b);
-
-      if (tempResult.code != QueryCode::NotIntersecting)
+      for (auto eb = poly_b.cEdgesBegin(); eb != poly_b.cEdgesEnd(); eb++)
       {
-        result.code = Dg::QueryCode::Intersecting;
-        goto epilogue;
+        Segment2<Real> sb = *(eb);
+
+        TI2SegmentSegment<Real> query;
+        TI2SegmentSegment<Real>::Result tempResult = query(sa, sb);
+
+        if (tempResult.code != QueryCode::NotIntersecting)
+        {
+          result.code = Dg::QueryCode::Intersecting;
+          goto epilogue;
+        }
       }
     }
 

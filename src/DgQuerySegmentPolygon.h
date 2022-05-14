@@ -7,6 +7,7 @@
 #include "DgVector.h"
 #include "DgPolygon.h"
 #include "DgQuerySegmentSegment.h"
+#include "DgQueryPointPolygon.h"
 
 namespace Dg
 {
@@ -41,7 +42,6 @@ namespace Dg
     (Segment<Real, 2> const &a_seg, Polygon2<Real> const &a_polygon)
   {
     Result result;
-    result.code = QueryCode::NotIntersecting;
 
     for (auto it = a_polygon.cEdgesBegin(); it != a_polygon.cEdgesEnd(); it++)
     {
@@ -51,9 +51,21 @@ namespace Dg
       if (tempResult.code != QueryCode::NotIntersecting)
       {
         result.code = Dg::QueryCode::Intersecting;
-        break;
+        goto epilogue;
       }
     }
+
+    TI2PointPolygon<Real> query;
+    TI2PointPolygon<Real>::Result tempResult = query(a_seg.GetP0(), a_polygon);
+
+    if (tempResult.code != QueryCode::CompletelyOutside)
+    {
+      result.code = QueryCode::Intersecting;
+      goto epilogue;
+    }
+
+    result.code = QueryCode::NotIntersecting;
+  epilogue:
     return result;
   }
 }
