@@ -61,10 +61,9 @@ namespace Dg
       }
     }
 
-    for (auto it = poly_b.cPointsBegin(); it != poly_b.cPointsEnd(); it++)
     {
       TI2PointPolygon<Real> query;
-      TI2PointPolygon<Real>::Result tempResult = query(*it, poly_a);
+      TI2PointPolygon<Real>::Result tempResult = query(*poly_b.cPointsBegin(), poly_a);
       if (tempResult.code != Dg::QueryCode::CompletelyOutside)
       {
         result.code = Dg::QueryCode::B_in_A;
@@ -72,10 +71,9 @@ namespace Dg
       }
     }
     
-    for (auto it = poly_a.cPointsBegin(); it != poly_a.cPointsEnd(); it++)
     {
       TI2PointPolygon<Real> query;
-      TI2PointPolygon<Real>::Result tempResult = query(*it, poly_b);
+      TI2PointPolygon<Real>::Result tempResult = query(*poly_a.cPointsBegin(), poly_b);
       if (tempResult.code != Dg::QueryCode::CompletelyOutside)
       {
         result.code = Dg::QueryCode::A_in_B;
