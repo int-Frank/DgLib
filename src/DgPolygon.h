@@ -159,9 +159,10 @@ namespace Dg
 
     Polygon2 ReverseWinding() const;
     void ReverseThisWinding();
+    void SetWinding(Dg::Orientation);
 
     Real Area() const;
-    Dg::Orientation Orientation() const;
+    Dg::Orientation Winding() const;
     Real SignedArea() const;
 
   private:
@@ -720,8 +721,8 @@ namespace Dg
       return;
 
     auto itl = PointsBegin();
-    auto itr = PointsEnd()--;
-    for (size_t i = 0; i < m_points.size() / 2; i++)
+    auto itr = --PointsEnd();
+    for (size_t i = 0; i < m_points.size() / 2; i++, itl++, itr--)
     {
       Vector2<Real> temp = *itl;
       *itl = *itr;
@@ -736,7 +737,19 @@ namespace Dg
   }
 
   template<typename Real>
-  Dg::Orientation Polygon2<Real>::Orientation() const
+  void Polygon2<Real>::SetWinding(Dg::Orientation a_winding)
+  {
+    Dg::Orientation winding = Winding();
+    if (((a_winding != Dg::Orientation::CCW) && (a_winding != Dg::Orientation::CW)) ||
+        ((winding   != Dg::Orientation::CCW) && (winding   != Dg::Orientation::CW)))
+      return;
+
+    if (a_winding != winding)
+      ReverseThisWinding();
+  }
+
+  template<typename Real>
+  Dg::Orientation Polygon2<Real>::Winding() const
   {
     if (Size() < 3)
       return Dg::Orientation::Colinear;
