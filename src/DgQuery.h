@@ -15,6 +15,7 @@ namespace Dg
     NotIntersecting,
     CompletelyInside,
     CompletelyOutside,
+    OnBoundary,
     A_in_B,
     B_in_A,
   };
