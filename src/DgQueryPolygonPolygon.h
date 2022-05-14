@@ -61,24 +61,21 @@ namespace Dg
       }
     }
 
+    TI2PointPolygon<Real> query;
+    TI2PointPolygon<Real>::Result tempResult;
+      
+    tempResult = query(*poly_b.cPointsBegin(), poly_a);
+    if (tempResult.code != Dg::QueryCode::CompletelyOutside)
     {
-      TI2PointPolygon<Real> query;
-      TI2PointPolygon<Real>::Result tempResult = query(*poly_b.cPointsBegin(), poly_a);
-      if (tempResult.code != Dg::QueryCode::CompletelyOutside)
-      {
-        result.code = Dg::QueryCode::B_in_A;
-        goto epilogue;
-      }
+      result.code = Dg::QueryCode::B_in_A;
+      goto epilogue;
     }
     
+    tempResult = query(*poly_a.cPointsBegin(), poly_b);
+    if (tempResult.code != Dg::QueryCode::CompletelyOutside)
     {
-      TI2PointPolygon<Real> query;
-      TI2PointPolygon<Real>::Result tempResult = query(*poly_a.cPointsBegin(), poly_b);
-      if (tempResult.code != Dg::QueryCode::CompletelyOutside)
-      {
-        result.code = Dg::QueryCode::A_in_B;
-        goto epilogue;
-      }
+      result.code = Dg::QueryCode::A_in_B;
+      goto epilogue;
     }
 
     result.code = Dg::QueryCode::NotIntersecting;
