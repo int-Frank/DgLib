@@ -60,7 +60,7 @@ namespace Dg
 
     if (tempResult.code != QueryCode::CompletelyOutside)
     {
-      result.code = QueryCode::Intersecting;
+      result.code = QueryCode::CompletelyInside;
       goto epilogue;
     }
 
