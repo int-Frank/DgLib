@@ -16,7 +16,7 @@ namespace Dg
   {
   public:
 
-    AABB();
+    AABB() {}
     AABB(Vector<Real, R> const &a_ptMin, Vector<Real, R> const &a_ptMax);
     AABB(AABB const &);
     AABB &operator=(AABB const &);

@@ -10,6 +10,7 @@ namespace Dg
   {
     Pair(): first() {}
 
+    // TODO This only exists to make the Map_AVL work. Come up with a better solution.
     Pair(T0 const & t0)
       : first(t0)
     {

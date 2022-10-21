@@ -266,7 +266,7 @@ namespace Dg
       Node * pLeft;
       Node * pRight;
       int32_t   height;
-      ValueType data;
+      ValueType data; // TODO Maybe this should be a pointer so we can have null nodes, for the root and end.
 
       Node * GetNext() const;
       Node * GetPrevious() const;
@@ -926,28 +926,28 @@ namespace Dg
   typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::iterator_rand
     Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::begin_rand()
   {
-    return iterator_rand(&m_pNodes[1]);
+    return iterator_rand(m_pNodes + 1);
   }
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
   typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::iterator_rand
     Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::end_rand()
   {
-    return iterator_rand(&m_pNodes[m_nItems]);
+    return iterator_rand(m_pNodes + m_nItems + 1);
   }
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
   typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::const_iterator_rand
     Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::cbegin_rand() const
   {
-    return const_iterator_rand(&m_pNodes[1]);
+    return const_iterator_rand(m_pNodes + 1);
   }
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
   typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::const_iterator_rand
     Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::cend_rand() const
   {
-    return const_iterator_rand(&m_pNodes[m_nItems]);
+    return const_iterator_rand(m_pNodes + m_nItems + 1);
   }
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
@@ -1096,7 +1096,7 @@ namespace Dg
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
   void Tree_AVL<KeyType, ValueType, Compare>::InitDefaultNode()
   {
-    m_pRoot = &m_pNodes[0];
+    m_pRoot = m_pNodes;
     m_pNodes[0].pParent = nullptr;
     m_pNodes[0].pLeft = nullptr;
     m_pNodes[0].pRight = nullptr;
@@ -1119,7 +1119,7 @@ namespace Dg
       if (a_other.m_pNodes[i].pRight)
         newNode.pRight = m_pNodes + (a_other.m_pNodes[i].pRight - a_other.m_pNodes);
 
-      new (&m_pNodes[i]) Node(newNode);
+      new (m_pNodes + i) Node(newNode);
     }
 
     for (sizeType i = 1; i <= m_nItems; i++)
@@ -1290,7 +1290,7 @@ namespace Dg
     new (&m_pNodes[m_nItems].data) ValueType(a_value);
 
     //Insert new node
-    Node * newNode = &m_pNodes[m_nItems];
+    Node * newNode = m_pNodes + m_nItems;
     newNode->pLeft = nullptr;
     newNode->pRight = nullptr;
     newNode->pParent = a_pParent;
@@ -1303,14 +1303,14 @@ namespace Dg
   typename Tree_AVL<KeyType, ValueType, Compare>::Node *
     Tree_AVL<KeyType, ValueType, Compare>::EndNode()
   {
-    return &m_pNodes[0];
+    return m_pNodes;
   }
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
   typename Tree_AVL<KeyType, ValueType, Compare>::Node const *
     Tree_AVL<KeyType, ValueType, Compare>::EndNode() const
   {
-    return &m_pNodes[0];
+    return m_pNodes;
   }
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
@@ -1477,12 +1477,12 @@ namespace Dg
         //TODO mem out with 0xdeadbeef
 
         //Was this the last node? If not we need to move the last node to fill the gap.
-        if (a_pRoot != &m_pNodes[m_nItems])
+        if (a_pRoot != m_pNodes + m_nItems)
         {
           //Shift last node to fill in empty slot
           memcpy(&(a_pRoot->data), &(m_pNodes[m_nItems].data), sizeof(ValueType));
 
-          Node * oldNode = &m_pNodes[m_nItems];
+          Node * oldNode = m_pNodes + m_nItems;
 
           //We have a couple of pointers to nodes in use that may need to be updated... 
           a_data.oldNodeAdd = oldNode;

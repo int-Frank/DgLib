@@ -664,7 +664,7 @@ namespace Dg
    typename DoublyLinkedList<T>::iterator
      DoublyLinkedList<T>::end() 
    {
-     return iterator(&m_pNodes[0]); 
+     return iterator(m_pNodes); 
    }
 
    template<typename T>
@@ -678,7 +678,7 @@ namespace Dg
    typename DoublyLinkedList<T>::const_iterator
      DoublyLinkedList<T>::cend() const 
    {
-     return const_iterator(&m_pNodes[0]); 
+     return const_iterator(m_pNodes); 
    }
 
    template<typename T>
@@ -726,7 +726,7 @@ namespace Dg
    template<typename T>
    void DoublyLinkedList<T>::push_front(T const & a_item)
    {
-     InsertNewAfter(&m_pNodes[0], a_item);
+     InsertNewAfter(m_pNodes, a_item);
    }
 
    template<typename T>
@@ -782,7 +782,7 @@ namespace Dg
    template<class Compare>
    void DoublyLinkedList<T>::sort(Compare a_cmp)
    {
-     sort(m_pNodes[0].pNext, &m_pNodes[0], a_cmp);
+     sort(m_pNodes[0].pNext, m_pNodes, a_cmp);
    }
 
    template<typename T>
@@ -858,13 +858,13 @@ namespace Dg
        //Extending might invalidate a_pNode, so we need to record its index in the pool.
        size_t index(a_pNode - m_pNodes);
        Extend();
-       a_pNode = &m_pNodes[index]; //Reset the pointer in case we have extended.
+       a_pNode = m_pNodes + index; //Reset the pointer in case we have extended.
      }
 
      m_nItems++;
      new (&m_pNodes[m_nItems].data) T(a_data);
 
-     Node * newNode = &m_pNodes[m_nItems];
+     Node * newNode = m_pNodes + m_nItems;
      newNode->pPrev = a_pNode;
      newNode->pNext = a_pNode->pNext;
      a_pNode->pNext->pPrev = newNode;
@@ -904,20 +904,20 @@ namespace Dg
      }
 
      for (size_t i = 1; i <= m_nItems; i++)
-       m_pNodes[i].pPrev = &m_pNodes[i - 1];
+       m_pNodes[i].pPrev = m_pNodes + (i - 1);
 
      for (size_t i = 0; i < m_nItems; i++)
-       m_pNodes[i].pNext = &m_pNodes[i + 1];
+       m_pNodes[i].pNext = m_pNodes + (i + 1);
 
-     m_pNodes[0].pPrev = &m_pNodes[m_nItems];
+     m_pNodes[0].pPrev = m_pNodes + m_nItems;
      m_pNodes[m_nItems].pNext = m_pNodes;
    }
 
    template<typename T>
    void DoublyLinkedList<T>::InitEndNode()
    {
-     m_pNodes[0].pNext = &m_pNodes[0];
-     m_pNodes[0].pPrev = &m_pNodes[0];
+     m_pNodes[0].pNext = m_pNodes;
+     m_pNodes[0].pPrev = m_pNodes;
    }
 
    template<typename T>
@@ -932,7 +932,7 @@ namespace Dg
 
      a_pNode->data.~T();
 
-     if (&m_pNodes[m_nItems] != a_pNode)
+     if ((m_pNodes + m_nItems) != a_pNode)
      {
        //Move last node to fill gap
        a_pNode->pNext = m_pNodes[m_nItems].pNext;
@@ -942,7 +942,7 @@ namespace Dg
        memcpy(&a_pNode->data, &m_pNodes[m_nItems].data, sizeof (T));
      }
 
-     if (pNext == &m_pNodes[m_nItems])
+     if (pNext == m_pNodes + m_nItems)
        pNext = a_pNode;
 
      m_nItems--;

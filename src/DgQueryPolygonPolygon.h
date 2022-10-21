@@ -42,7 +42,6 @@ namespace Dg
     (Polygon2<Real>  const &poly_a, Polygon2<Real> const &poly_b)
   {
     Result result;
-
     for (auto ea = poly_a.cEdgesBegin(); ea != poly_a.cEdgesEnd(); ea++)
     {
       Segment2<Real> sa = *(ea);
