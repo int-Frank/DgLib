@@ -57,6 +57,7 @@ namespace Dg
 
       union
       {
+        // code = Intersecting
         struct PointResult
         {
           Vector2<Real> point;
@@ -64,15 +65,22 @@ namespace Dg
           Real u1;
         } pointResult;
 
+        // code = Overlapping
         struct SegmentResult
         {
           Segment2<Real> segment;
-          Real u0ToSeg0;
-          Real u0ToSeg1;
-          Real u1ToSeg0;
-          Real u1ToSeg1;
-        };
+          Real u0_to_s0;
+          Real u0_to_s1;
+          Real u1_to_s0;
+          Real u1_to_s1;
+        } segmentResult;
       };
+
+      Result() {}
+      ~Result() {}
+
+      Result &operator=(Result const &);
+      Result(Result const &);
     };
 
     Result operator()(Segment<Real, 2> const &, Segment<Real, 2> const &);
@@ -99,6 +107,34 @@ namespace Dg
   //---------------------------------------------------------------------------------------
 
   template<typename Real>
+  Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Segment2<Real>>::Result::Result
+    (Result const &other)
+  {
+    code = other.code;
+    if (other.code == Dg::QueryCode::Intersecting)
+      pointResult = other.pointResult;
+    else if (other.code == Dg::QueryCode::Overlapping)
+      segmentResult = other.segmentResult;
+  }
+
+  template<typename Real>
+  typename Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Segment2<Real>>::Result &
+    Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Segment2<Real>>::Result::operator=
+    (Result const &other)
+  {
+    if (this != &other)
+    {
+      code = other.code;
+      if (other.code == Dg::QueryCode::Intersecting)
+        pointResult = other.pointResult;
+      else if (other.code == Dg::QueryCode::Overlapping)
+        segmentResult = other.segmentResult;
+    }
+
+    return *this;
+  }
+
+  template<typename Real>
   typename Query<QueryType::TestForIntersection, Real, 2, Segment2<Real>, Segment2<Real>>::Result
     Query<QueryType::TestForIntersection, Real, 2, Segment2<Real>, Segment2<Real>>::operator()
     (Segment2<Real> const &s0, Segment2<Real> const &s1)
@@ -108,26 +144,27 @@ namespace Dg
     Vector2<Real> w = s0.GetP0() - s1.GetP0();
 
     Real denom = (s1.Vect().y() * s0.Vect().x()) - (s1.Vect().x() * s0.Vect().y());
-    Real num_a = (s1.Vect().x() * w.y()) - (s1.Vect().y() * w.x());
-    Real num_b = (s0.Vect().x() * w.y()) - (s0.Vect().y() * w.x());
+    Real num_0 = (s1.Vect().x() * w.y()) - (s1.Vect().y() * w.x());
+    Real num_1 = (s0.Vect().x() * w.y()) - (s0.Vect().y() * w.x());
 
-    if (IsZero(denom) && (IsZero(num_a) || IsZero(num_b)))
+    if (IsZero(denom) && (IsZero(num_0) || IsZero(num_1)))
     {
-      Vector2<Real> w0 = s1.GetP0() - s0.GetP0();
-      Vector2<Real> w1 = s1.GetP1() - s0.GetP0();
+      Vector2<Real> w00 = s1.GetP0() - s0.GetP0();
+      Vector2<Real> w01 = s1.GetP1() - s0.GetP0();
 
-      Real len = s0.Length();
-      Real u0 = Dot(w0, s0.Vect()) / len;
-      Real u1 = Dot(w1, s0.Vect()) / len;
+      Real len0Sq = MagSq(s0.Vect());
+      Real u00 = Dot(w00, s0.Vect()) / len0Sq;
+      Real u01 = Dot(w01, s0.Vect()) / len0Sq;
 
-      if (!(((u0 < Real(0)) && (u1 < Real(0))) || ((u0 > Real(1)) && (u1 > Real(1)))))
+      if (!((u00 < Real(0) && u01 < Real(0)) || (u00 > Real(1) && u01 > Real(1))))
         result.code = QueryCode::Overlapping;
     }
     else if (!IsZero(denom))
     {
-      Real ua = num_a / denom;
-      Real ub = num_b / denom;
-      if (((ua >= Real(0)) && (ua <= Real(1))) && ((ub >= Real(0)) && (ub <= Real(1))))
+      Real u0 = num_0 / denom;
+      Real u1 = num_1 / denom;
+      if (((u0 >= Real(0)) && (u0 <= Real(1)))
+        && ((u1 >= Real(0)) && (u1 <= Real(1))))
         result.code = QueryCode::Intersecting;
     }
     return result;
@@ -143,31 +180,60 @@ namespace Dg
     Vector2<Real> w = s0.GetP0() - s1.GetP0();
 
     Real denom = (s1.Vect().y() * s0.Vect().x()) - (s1.Vect().x() * s0.Vect().y());
-    Real num_a = (s1.Vect().x() * w.y()) - (s1.Vect().y() * w.x());
-    Real num_b = (s0.Vect().x() * w.y()) - (s0.Vect().y() * w.x());
+    Real num_0 = (s1.Vect().x() * w.y()) - (s1.Vect().y() * w.x());
+    Real num_1 = (s0.Vect().x() * w.y()) - (s0.Vect().y() * w.x());
 
-    if (IsZero(denom) && (IsZero(num_a) || IsZero(num_b)))
+    if (IsZero(denom) && (IsZero(num_0) || IsZero(num_1)))
     {
-      Vector2<Real> w0 = s1.GetP0() - s0.GetP0();
-      Vector2<Real> w1 = s1.GetP1() - s0.GetP0();
+      Vector2<Real> w00 = s1.GetP0() - s0.GetP0();
+      Vector2<Real> w01 = s1.GetP1() - s0.GetP0();
 
-      Real len = s0.Length();
-      Real u0 = Dot(w0, s0.Vect()) / len;
-      Real u1 = Dot(w1, s0.Vect()) / len;
+      Real len0Sq = MagSq(s0.Vect());
+      Real u00 = Dot(w00, s0.Vect()) / len0Sq;
+      Real u01 = Dot(w01, s0.Vect()) / len0Sq;
 
-      if (!(((u0 < Real(0)) && (u1 < Real(0))) || ((u0 > Real(1)) && (u1 > Real(1)))))
+      if (!((u00 < Real(0) && u01 < Real(0)) || (u00 > Real(1) && u01 > Real(1))))
       {
-        result.code = QueryCode::Overlapping;
+        if (u00 > u01)
+        {
+          Real temp = u00;
+          u00 = u01;
+          u01 = temp;
+        }
 
+        u00 = Clamp(u00, Real(0), Real(1));
+        u01 = Clamp(u01, Real(0), Real(1));
+
+        Segment2<Real> seg(s0.GetP0() + s0.Vect() * u00, s0.GetP0() + s0.Vect() * u01);
+
+        Vector2<Real> w10 = seg.GetP0() - s1.GetP0();
+        Vector2<Real> w11 = seg.GetP1() - s1.GetP0();
+
+        Real len1Sq = MagSq(s1.Vect());
+        Real u10 = Dot(w10, s1.Vect()) / len1Sq;
+        Real u11 = Dot(w11, s1.Vect()) / len1Sq;
+
+        u10 = Clamp(u10, Real(0), Real(1));
+        u11 = Clamp(u11, Real(0), Real(1));
+
+        result.code = QueryCode::Overlapping;
+        result.segmentResult.segment = seg;
+        result.segmentResult.u0_to_s0 = u00;
+        result.segmentResult.u0_to_s1 = u01;
+        result.segmentResult.u1_to_s0 = u10;
+        result.segmentResult.u1_to_s1 = u11;
       }
     }
     else if (!IsZero(denom))
     {
-      result.pointResult.u0 = num_a / denom;
-      result.pointResult.u1 = num_b / denom;
-      if  (((result.pointResult.u0 >= Real(0)) && (result.pointResult.u0 <= Real(1))) 
+      result.pointResult.u0 = num_0 / denom;
+      result.pointResult.u1 = num_1 / denom;
+      if (((result.pointResult.u0 >= Real(0)) && (result.pointResult.u0 <= Real(1)))
         && ((result.pointResult.u1 >= Real(0)) && (result.pointResult.u1 <= Real(1))))
+      {
         result.code = QueryCode::Intersecting;
+        result.pointResult.point = s0.GetP0() + result.pointResult.u0 * s0.Vect();
+      }
     }
     return result;
   }

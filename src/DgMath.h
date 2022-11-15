@@ -227,14 +227,14 @@ namespace Dg
 
   //! Clamp a number to a range.
   template<typename Real>
-  void ClampNumber(Real lower, Real upper, Real& val)
+  Real Clamp(Real val, Real lower, Real upper)
   {
     if (val < lower)
-      val = lower;
+      return lower;
     else if (val > upper)
-      val = upper;
-
-  }	//End: ClampNumber()
+      return upper;
+    return val;
+  }	//End: Clamp()
 
 
   //! Is the argument close to zero?
