@@ -33,9 +33,52 @@ namespace Dg
     Result operator()(Segment<Real, R> const &, Ray<Real, R> const &);
   };
 
+  template <typename Real>
+  class Query<QueryType::FindIntersection, Real, 2, Segment<Real, 2>, Ray<Real, 2>>
+  {
+  public:
+
+    struct Result
+    {
+      QueryCode code; // Intersecting, NotIntersecting, Overlapping
+
+      union
+      {
+        // code = Intersecting
+        struct PointResult
+        {
+          Vector2<Real> point;
+          Real us;
+          Real ur;
+        } pointResult;
+
+        // code = Overlapping
+        struct SegmentResult
+        {
+          Segment2<Real> segment;
+          Real us_to_s0;
+          Real us_to_s1;
+          Real ur_to_s0;
+          Real ur_to_s1;
+        } segmentResult;
+      };
+
+      Result() {}
+      ~Result() {}
+
+      Result &operator=(Result const &);
+      Result(Result const &);
+    };
+
+    Result operator()(Segment<Real, 2> const &, Ray<Real, 2> const &);
+  };
+
   //---------------------------------------------------------------------------------------
   // Useful typedefs
   //---------------------------------------------------------------------------------------
+
+  template<typename Real>
+  using FI2SegmentRay = Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Ray2<Real>>;
 
   template<typename Real>
   using CP2SegmentRay = Query<QueryType::ClosestPoint, Real, 2, Segment2<Real>, Ray2<Real>>;
@@ -46,6 +89,104 @@ namespace Dg
   //---------------------------------------------------------------------------------------
   // Implementation
   //---------------------------------------------------------------------------------------
+
+  template<typename Real>
+  Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Ray2<Real>>::Result::Result
+  (Result const &other)
+  {
+    code = other.code;
+    if (other.code == Dg::QueryCode::Intersecting)
+      pointResult = other.pointResult;
+    else if (other.code == Dg::QueryCode::Overlapping)
+      segmentResult = other.segmentResult;
+  }
+
+  template<typename Real>
+  typename Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Ray2<Real>>::Result &
+    Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Ray2<Real>>::Result::operator=
+    (Result const &other)
+  {
+    if (this != &other)
+    {
+      code = other.code;
+      if (other.code == Dg::QueryCode::Intersecting)
+        pointResult = other.pointResult;
+      else if (other.code == Dg::QueryCode::Overlapping)
+        segmentResult = other.segmentResult;
+    }
+
+    return *this;
+  }
+
+  template<typename Real>
+  typename Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Ray2<Real>>::Result
+    Query<QueryType::FindIntersection, Real, 2, Segment2<Real>, Ray2<Real>>::operator()
+    (Segment2<Real> const &s, Ray2<Real> const &r)
+  {
+    Result result;
+    result.code = QueryCode::NotIntersecting;
+
+    Vector2<Real> w = s.GetP0() - r.Origin();
+
+    Real denom = (r.Direction().y() * s.Vect().x()) - (r.Direction().x() * s.Vect().y());
+    Real num_s = (r.Direction().x() * w.y()) - (r.Direction().y() * w.x());
+    Real num_r = (s.Vect().x() * w.y()) - (s.Vect().y() * w.x());
+
+    if (IsZero(denom) && (IsZero(num_s) || IsZero(num_r)))
+    {
+      Vector2<Real> wr0 = s.GetP0() - r.Origin();
+      Vector2<Real> wr1 = s.GetP1() - r.Origin();
+
+      result.segmentResult.ur_to_s0 = Dot(wr0, r.Direction());
+      result.segmentResult.ur_to_s1 = Dot(wr1, r.Direction());
+
+      if (result.segmentResult.ur_to_s0 > Real(0) || result.segmentResult.ur_to_s1 > Real(0))
+      {
+        result.code = QueryCode::Overlapping;
+
+        Vector2<Real> p0, p1;
+        Real us0, us1;
+
+        if (result.segmentResult.ur_to_s0 > Real(0))
+        {
+          p0 = s.GetP0();
+          result.segmentResult.us_to_s0 = Real(0);
+        }
+        else
+        {
+          p0 = r.Origin();
+          result.segmentResult.us_to_s0 = Dot(-wr0, s.Vect()) / MagSq(s.Vect());
+          result.segmentResult.ur_to_s0 = Real(0);
+        }
+
+        if (result.segmentResult.ur_to_s1 > Real(0))
+        {
+          p1 = s.GetP1();
+          result.segmentResult.us_to_s1 = Real(1);
+        }
+        else
+        {
+          p1 = r.Origin();
+          result.segmentResult.us_to_s1 = Dot(-wr0, s.Vect()) / MagSq(s.Vect());
+          result.segmentResult.ur_to_s1 = Real(0);
+        }
+
+        result.segmentResult.segment.Set(p0, p1);
+      }
+    }
+    else if (!IsZero(denom))
+    {
+      result.pointResult.us = num_s / denom;
+      result.pointResult.ur = num_r / denom;
+      if (((result.pointResult.us >= Real(0)) && (result.pointResult.us <= Real(1)))
+        && ((result.pointResult.ur >= Real(0))))
+      {
+        result.code = QueryCode::Intersecting;
+        result.pointResult.point = s.GetP0() + result.pointResult.us * s.Vect();
+      }
+    }
+    return result;
+  }
 
   template<typename Real, int R>
   typename Query<QueryType::ClosestPoint, Real, R, Segment<Real, R>, Ray<Real, R>>::Result
