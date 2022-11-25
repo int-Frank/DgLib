@@ -37,10 +37,12 @@ namespace Dg
   //
   // The Tree_AVL uses two template types: KeyType and ValueType. This allows us to attach data
   // to keys in the tree. For example, the ValueType of a set is the KeyType, but the ValueType
-  // of a map is Dg::Pair<KeyType, U>.To make this work, we need the function
-  //        'KeyType const & GetKeyType(U const &)'
-  // for each container that derives from the Tree_AVL that extacts the KeyType from the ValueType.
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &) = impl::Less<KeyType>>
+  // of a map is Dg::Pair<KeyType, U>.
+  template<
+    typename KeyType, 
+    typename ValueType, 
+    KeyType(*GET_KEY)(ValueType const &),
+    bool (*Compare)(KeyType const &, KeyType const &) = impl::Less<KeyType>>
   class Tree_AVL
   {
     typedef size_t sizeType;
@@ -272,10 +274,6 @@ namespace Dg
       Node * GetPrevious() const;
     };
     
-    // TODO How can I push these back to the map and set derived classes?
-    template<typename U> constexpr KeyType const & GetKeyType(U const & a_val) const  { return a_val.first; } // For maps, when ValueType is a Pair
-    template<> constexpr KeyType const & GetKeyType(KeyType const & a_val) const { return a_val; }            // For sets
-
     void DestructAll();
     void InitMemory();
     void InitDefaultNode();
@@ -316,11 +314,12 @@ namespace Dg
     Node *          m_pNodes;
     sizeType        m_nItems;
   };
+
   //------------------------------------------------------------------------------------------------
   // EraseData
   //------------------------------------------------------------------------------------------------
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::EraseData::EraseData()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::EraseData::EraseData()
     : oldNodeAdd(nullptr)
     , newNodeAdd(nullptr)
     , pNext(nullptr)
@@ -332,97 +331,97 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
   // const_iterator_rand
   //------------------------------------------------------------------------------------------------
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::const_iterator_rand(Tree_AVL<KeyType, ValueType, Compare>::Node const * a_pNode)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::const_iterator_rand(Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node const * a_pNode)
     : m_pNode(a_pNode)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::const_iterator_rand()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::const_iterator_rand()
     : m_pNode(nullptr)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::~const_iterator_rand()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::~const_iterator_rand()
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::const_iterator_rand(const_iterator_rand const & a_it)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::const_iterator_rand(const_iterator_rand const & a_it)
     : m_pNode(a_it.m_pNode)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand & 
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::operator=(const_iterator_rand const & a_it)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::operator=(const_iterator_rand const & a_it)
   {
     m_pNode = a_it.m_pNode;
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  bool Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::operator==(const_iterator_rand const & a_it) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  bool Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::operator==(const_iterator_rand const & a_it) const
   {
     return m_pNode == a_it.m_pNode;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  bool Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::operator!=(const_iterator_rand const & a_it) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  bool Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::operator!=(const_iterator_rand const & a_it) const
   {
     return m_pNode != a_it.m_pNode;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand & 
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::operator++()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::operator++()
   {
     m_pNode++;
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::operator++(int)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::operator++(int)
   {
     const_iterator_rand result(*this);
     ++(*this);
     return result;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand & 
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::operator--()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::operator--()
   {
     m_pNode--;
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::operator--(int)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::operator--(int)
   {
     const_iterator_rand result(*this);
     --(*this);
     return result;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
   ValueType const * 
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::operator->() const
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::operator->() const
   {
     return &(m_pNode->data);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
   ValueType const & 
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand::operator*() const
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand::operator*() const
   {
     return m_pNode->data;
   }
@@ -430,104 +429,104 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
   // iterator_rand
   //------------------------------------------------------------------------------------------------
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::iterator_rand(Tree_AVL<KeyType, ValueType, Compare>::Node * a_pNode)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::iterator_rand(Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node * a_pNode)
     : m_pNode(a_pNode)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::iterator_rand()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::iterator_rand()
     : m_pNode(nullptr)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::~iterator_rand()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::~iterator_rand()
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::iterator_rand(iterator_rand const & a_it)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::iterator_rand(iterator_rand const & a_it)
     : m_pNode(a_it.m_pNode)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator_rand & 
-    Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator=(iterator_rand const & a_it)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::operator=(iterator_rand const & a_it)
   {
     m_pNode = a_it.m_pNode;
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  bool Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator==(iterator_rand const & a_it) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  bool Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::operator==(iterator_rand const & a_it) const
   {
     return m_pNode == a_it.m_pNode;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  bool Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator!=(iterator_rand const & a_it) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  bool Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::operator!=(iterator_rand const & a_it) const
   {
     return m_pNode != a_it.m_pNode;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator_rand & 
-    Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator++()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::operator++()
   {
     m_pNode++;
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator_rand
-    Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator++(int)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::operator++(int)
   {
     iterator_rand result(*this);
     ++(*this);
     return result;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator_rand & 
-    Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator--()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::operator--()
   {
     m_pNode--;
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator_rand
-    Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator--(int)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::operator--(int)
   {
     iterator_rand result(*this);
     --(*this);
     return result;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator
-    typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand() const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::operator
+    typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand() const
   {
-    return Tree_AVL<KeyType, ValueType, Compare>::const_iterator_rand(m_pNode);
+    return Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator_rand(m_pNode);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
   ValueType * 
-    Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator->()
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::operator->()
   {
     return &(m_pNode->data);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
   ValueType & 
-    Tree_AVL<KeyType, ValueType, Compare>::iterator_rand::operator*()
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator_rand::operator*()
   {
     return m_pNode->data;
   }
@@ -536,56 +535,56 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
   // const_iterator
   //------------------------------------------------------------------------------------------------
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::const_iterator::const_iterator(Node const * a_pNode)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::const_iterator(Node const * a_pNode)
     : m_pNode(a_pNode)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::const_iterator::const_iterator()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::const_iterator()
     : m_pNode(nullptr)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::const_iterator::~const_iterator()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::~const_iterator()
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::const_iterator::const_iterator(const_iterator const & a_it)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::const_iterator(const_iterator const & a_it)
     : m_pNode(a_it.m_pNode)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator & 
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator=(const_iterator const & a_it)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator=(const_iterator const & a_it)
   {
     m_pNode = a_it.m_pNode;
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  bool Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator==(const_iterator const & a_it) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  bool Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator==(const_iterator const & a_it) const
   {
     return m_pNode == a_it.m_pNode;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  bool Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator!=(const_iterator const & a_it) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  bool Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator!=(const_iterator const & a_it) const
   {
     return m_pNode != a_it.m_pNode;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator+(size_t a_val) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator+(size_t a_val) const
   {
     Node const * pNode = m_pNode;
     for (size_t i = 0; i < a_val; i++)
@@ -593,9 +592,9 @@ namespace Dg
     return const_iterator(pNode);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator-(size_t a_val) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator-(size_t a_val) const
   {
     Node const * pNode = m_pNode;
     for (size_t i = 0; i < a_val; i++)
@@ -603,68 +602,68 @@ namespace Dg
     return const_iterator(pNode);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator &
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator+=(size_t a_val)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator+=(size_t a_val)
   {
     for (size_t i = 0; i < a_val; i++)
       m_pNode = m_pNode->GetNext();
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator &
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator-=(size_t a_val)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator-=(size_t a_val)
   {
     for (size_t i = 0; i < a_val; i++)
       m_pNode = m_pNode->GetPrevious();
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator & 
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator++()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator++()
   {
     m_pNode = m_pNode->GetNext();
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator++(int)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator++(int)
   {
     const_iterator result(*this);
     ++(*this);
     return result;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator & 
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator--()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator--()
   {
     m_pNode = m_pNode->GetPrevious();
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator--(int)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator--(int)
   {
     const_iterator result(*this);
     --(*this);
     return result;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
   ValueType const * 
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator->() const
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator->() const
   {
     return &(m_pNode->data);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
   ValueType const & 
-    Tree_AVL<KeyType, ValueType, Compare>::const_iterator::operator*() const
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator::operator*() const
   {
     return m_pNode->data;
   }
@@ -672,56 +671,56 @@ namespace Dg
   //------------------------------------------------------------------------------------------------
   // iterator
   //------------------------------------------------------------------------------------------------
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::iterator::iterator(Node * a_pNode)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::iterator(Node * a_pNode)
     : m_pNode(a_pNode)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::iterator::iterator()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::iterator()
     : m_pNode(nullptr)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::iterator::~iterator()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::~iterator()
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::iterator::iterator(iterator const & a_it)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::iterator(iterator const & a_it)
     : m_pNode(a_it.m_pNode)
   {
 
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator & 
-    Tree_AVL<KeyType, ValueType, Compare>::iterator::operator=(iterator const & a_it)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator=(iterator const & a_it)
   {
     m_pNode = a_it.m_pNode;
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  bool Tree_AVL<KeyType, ValueType, Compare>::iterator::operator==(iterator const & a_it) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  bool Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator==(iterator const & a_it) const
   {
     return m_pNode == a_it.m_pNode;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  bool Tree_AVL<KeyType, ValueType, Compare>::iterator::operator!=(iterator const & a_it) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  bool Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator!=(iterator const & a_it) const
   {
     return m_pNode != a_it.m_pNode;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator
-    Tree_AVL<KeyType, ValueType, Compare>::iterator::operator+(size_t a_val) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator+(size_t a_val) const
   {
     Node * pNode = m_pNode;
     for (size_t i = 0; i < a_val; i++)
@@ -729,9 +728,9 @@ namespace Dg
     return iterator(pNode);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator
-    Tree_AVL<KeyType, ValueType, Compare>::iterator::operator-(size_t a_val) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator-(size_t a_val) const
   {
     Node * pNode = m_pNode;
     for (size_t i = 0; i < a_val; i++)
@@ -739,84 +738,84 @@ namespace Dg
     return iterator(pNode);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator &
-    Tree_AVL<KeyType, ValueType, Compare>::iterator::operator+=(size_t a_val)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator+=(size_t a_val)
   {
     for (size_t i = 0; i < a_val; i++)
       m_pNode = m_pNode->GetNext();
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator &
-    Tree_AVL<KeyType, ValueType, Compare>::iterator::operator-=(size_t a_val)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator-=(size_t a_val)
   {
     for (size_t i = 0; i < a_val; i++)
       m_pNode = m_pNode->GetPrevious();
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator & 
-    Tree_AVL<KeyType, ValueType, Compare>::iterator::operator++()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator++()
   {
     m_pNode = m_pNode->GetNext();
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator
-    Tree_AVL<KeyType, ValueType, Compare>::iterator::operator++(int)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator++(int)
   {
     iterator result(*this);
     ++(*this);
     return result;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator & 
-    Tree_AVL<KeyType, ValueType, Compare>::iterator::operator--()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator--()
   {
     m_pNode = m_pNode->GetPrevious();
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator
-    Tree_AVL<KeyType, ValueType, Compare>::iterator::operator--(int)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator--(int)
   {
     iterator result(*this);
     --(*this);
     return result;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
   ValueType * 
-    Tree_AVL<KeyType, ValueType, Compare>::iterator::operator->()
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator->()
   {
     return &(m_pNode->data);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
   ValueType & 
-    Tree_AVL<KeyType, ValueType, Compare>::iterator::operator*()
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator*()
   {
     return m_pNode->data;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::iterator::operator
-    typename Tree_AVL<KeyType, ValueType, Compare>::const_iterator() const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator::operator
+    typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator() const
   {
-    return Tree_AVL<KeyType, ValueType, Compare>::const_iterator(m_pNode);
+    return Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::const_iterator(m_pNode);
   }
 
   //------------------------------------------------------------------------------------------------
   // Tree_AVL
   //------------------------------------------------------------------------------------------------
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL()
     : m_pNodes(nullptr)
     , m_nItems(0)
     , m_pRoot(nullptr)
@@ -825,8 +824,8 @@ namespace Dg
     InitDefaultNode();
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL(sizeType a_request)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL(sizeType a_request)
     : m_pNodes(nullptr)
     , m_nItems(0)
     , m_pRoot(nullptr)
@@ -836,15 +835,15 @@ namespace Dg
     InitDefaultNode();
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::~Tree_AVL()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::~Tree_AVL()
   {
     DestructAll();
     free(m_pNodes);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL(Tree_AVL const & a_other)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL(Tree_AVL const & a_other)
     : m_poolSize(a_other.m_poolSize)
     , m_pNodes(nullptr)
     , m_nItems(0)
@@ -854,9 +853,9 @@ namespace Dg
     Init(a_other);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare> & 
-    Tree_AVL<KeyType, ValueType, Compare>::operator=(Tree_AVL const & a_other)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare> &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::operator=(Tree_AVL const & a_other)
   {
     if (this != &a_other)
     {
@@ -879,8 +878,8 @@ namespace Dg
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL(Tree_AVL && a_other) noexcept
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL(Tree_AVL && a_other) noexcept
     : m_poolSize(a_other.m_poolSize)
     , m_pNodes(a_other.m_pNodes)
     , m_nItems(a_other.m_nItems)
@@ -891,9 +890,9 @@ namespace Dg
     a_other.m_pRoot = nullptr;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  Tree_AVL<KeyType, ValueType, Compare> &
-    Tree_AVL<KeyType, ValueType, Compare>::operator=(Tree_AVL && a_other) noexcept
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  Tree_AVL<KeyType, ValueType, GET_KEY, Compare> &
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::operator=(Tree_AVL && a_other) noexcept
   {
     if (this != &a_other)
     {
@@ -909,50 +908,50 @@ namespace Dg
     return *this;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::sizeType
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::size() const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::sizeType
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::size() const
   {
     return m_nItems;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  bool Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::empty() const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  bool Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::empty() const
   {
     return m_nItems == 0;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::iterator_rand
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::begin_rand()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::iterator_rand
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::begin_rand()
   {
     return iterator_rand(m_pNodes + 1);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::iterator_rand
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::end_rand()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::iterator_rand
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::end_rand()
   {
     return iterator_rand(m_pNodes + m_nItems + 1);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::const_iterator_rand
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::cbegin_rand() const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::const_iterator_rand
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::cbegin_rand() const
   {
     return const_iterator_rand(m_pNodes + 1);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::const_iterator_rand
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::cend_rand() const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::const_iterator_rand
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::cend_rand() const
   {
     return const_iterator_rand(m_pNodes + m_nItems + 1);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::iterator
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::begin()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::begin()
   {
     Node * pNode = m_pRoot;
     while (pNode->pLeft != nullptr)
@@ -960,16 +959,16 @@ namespace Dg
     return iterator(pNode);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::iterator
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::end()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::end()
   {
     return iterator(m_pNodes);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::const_iterator
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::cbegin() const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::const_iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::cbegin() const
   {
     Node * pNode = m_pRoot;
     while (pNode->pLeft != nullptr)
@@ -977,16 +976,16 @@ namespace Dg
     return const_iterator(pNode);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::const_iterator
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::cend() const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::const_iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::cend() const
   {
     return const_iterator(m_pNodes);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::const_iterator
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::find(KeyType const & a_value) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::const_iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::find(KeyType const & a_value) const
   {
     Node * pNode;
     if (ValueExists(a_value, pNode))
@@ -994,9 +993,9 @@ namespace Dg
     return cend();
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::iterator
-    Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::find(KeyType const & a_value)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::find(KeyType const & a_value)
   {
     Node * pNode;
     if (ValueExists(a_value, pNode))
@@ -1004,8 +1003,8 @@ namespace Dg
     return end();
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator Tree_AVL<KeyType, ValueType, Compare>::insert(ValueType const & a_value)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::insert(ValueType const & a_value)
   {
     if ((m_nItems + 1) == m_poolSize.GetSize())
       Extend();
@@ -1015,38 +1014,38 @@ namespace Dg
     return iterator(foundNode);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  void Tree_AVL<KeyType, ValueType, Compare>::erase(KeyType const & a_value)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  void Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::erase(KeyType const & a_value)
   {
     EraseData eData;
     m_pRoot = __Erase<false>(m_pRoot, a_value, eData);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator
-    Tree_AVL<KeyType, ValueType, Compare>::erase(iterator a_it)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::erase(iterator a_it)
   {
     EraseData eData;
-    m_pRoot = __Erase<true>(m_pRoot, GetKeyType(*a_it), eData);
+    m_pRoot = __Erase<true>(m_pRoot, GET_KEY(*a_it), eData);
     return iterator(eData.pNext);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  bool Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::exists(KeyType const & a_value) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  bool Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::exists(KeyType const & a_value) const
   {
     Node * pNode;
     return ValueExists(a_value, pNode);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::iterator Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::lower_bound(KeyType const & a_key) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::iterator Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::lower_bound(KeyType const & a_key) const
   {
     Node * pNode = m_pRoot;
     Node const * pNodeGreater = EndNode();
 
     while (pNode != EndNode())
     {
-      if (Compare(a_key, GetKeyType(pNode->data)))
+      if (Compare(a_key, GET_KEY(pNode->data)))
       {
         pNodeGreater = pNode;
         if (pNode->pLeft != nullptr)
@@ -1054,7 +1053,7 @@ namespace Dg
         else
           break;
       }
-      else if (Compare(GetKeyType(pNode->data), a_key))
+      else if (Compare(GET_KEY(pNode->data), a_key))
       {
         if (pNode->pRight != nullptr)
           pNode = pNode->pRight;
@@ -1070,31 +1069,31 @@ namespace Dg
     return iterator(const_cast<Node *>(pNodeGreater));
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  void Tree_AVL<KeyType, ValueType, Compare>::Tree_AVL::clear()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  void Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Tree_AVL::clear()
   {
     DestructAll();
     m_nItems = 0;
     InitDefaultNode();
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  void Tree_AVL<KeyType, ValueType, Compare>::DestructAll()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  void Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::DestructAll()
   {
     for (sizeType i = 1; i <= m_nItems; i++)
       m_pNodes[i].data.~ValueType();
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  void Tree_AVL<KeyType, ValueType, Compare>::InitMemory()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  void Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::InitMemory()
   {
     m_pNodes = static_cast<Node*> (realloc(m_pNodes, m_poolSize.GetSize() * sizeof(Node)));
     if (m_pNodes == nullptr)
       throw std::bad_alloc();
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  void Tree_AVL<KeyType, ValueType, Compare>::InitDefaultNode()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  void Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::InitDefaultNode()
   {
     m_pRoot = m_pNodes;
     m_pNodes[0].pParent = nullptr;
@@ -1103,23 +1102,28 @@ namespace Dg
     m_pNodes[0].height = 0;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  void Tree_AVL<KeyType, ValueType, Compare>::Init(Tree_AVL const & a_other)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  void Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Init(Tree_AVL const & a_other)
   {
     m_nItems = a_other.m_nItems;
 
     for (sizeType i = 0; i <= m_nItems; i++)
     {
-      Node newNode{nullptr, nullptr, nullptr, 0};
-      newNode.pParent = m_pNodes + (a_other.m_pNodes[i].pParent - a_other.m_pNodes);
+      //Node newNode{nullptr, nullptr, nullptr, 0};
+      Node *pNode = m_pNodes + i;
+      pNode->height = a_other.m_pNodes[i].height;
+      pNode->pParent = nullptr;
+      pNode->pLeft = nullptr;
+      pNode->pRight = nullptr;
+
+      if (a_other.m_pNodes[i].pParent)
+        pNode->pParent = m_pNodes + (a_other.m_pNodes[i].pParent - a_other.m_pNodes);
 
       if (a_other.m_pNodes[i].pLeft)
-        newNode.pLeft = m_pNodes + (a_other.m_pNodes[i].pLeft - a_other.m_pNodes);
+        pNode->pLeft = m_pNodes + (a_other.m_pNodes[i].pLeft - a_other.m_pNodes);
 
       if (a_other.m_pNodes[i].pRight)
-        newNode.pRight = m_pNodes + (a_other.m_pNodes[i].pRight - a_other.m_pNodes);
-
-      new (m_pNodes + i) Node(newNode);
+        pNode->pRight = m_pNodes + (a_other.m_pNodes[i].pRight - a_other.m_pNodes);
     }
 
     for (sizeType i = 1; i <= m_nItems; i++)
@@ -1129,21 +1133,21 @@ namespace Dg
     m_pRoot->pParent = nullptr;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  bool Tree_AVL<KeyType, ValueType, Compare>::ValueExists(KeyType const & a_key, Node *& a_out) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  bool Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::ValueExists(KeyType const & a_key, Node *& a_out) const
   {
     a_out = m_pRoot;
     bool result = false;
     while (a_out != EndNode())
     {
-      if (Compare(a_key, GetKeyType(a_out->data)))
+      if (Compare(a_key, GET_KEY(a_out->data)))
       {
         if (a_out->pLeft != nullptr)
           a_out = a_out->pLeft;
         else
           break;
       }
-      else if (Compare(GetKeyType(a_out->data), a_key))
+      else if (Compare(GET_KEY(a_out->data), a_key))
       {
         if (a_out->pRight != nullptr)
           a_out = a_out->pRight;
@@ -1159,8 +1163,8 @@ namespace Dg
     return result;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  void Tree_AVL<KeyType, ValueType, Compare>::Extend()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  void Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Extend()
   {
     size_t oldSize = m_poolSize.GetSize();
     m_poolSize.SetNextPoolSize();
@@ -1197,25 +1201,25 @@ namespace Dg
     }
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  int Tree_AVL<KeyType, ValueType, Compare>::GetBalance(Node * a_pNode) const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  int Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::GetBalance(Node * a_pNode) const
   {  
     if (a_pNode == nullptr)
       return 0;  
     return Height(a_pNode->pLeft) - Height(a_pNode->pRight);  
   } 
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  int Tree_AVL<KeyType, ValueType, Compare>::Height(Node * a_pNode) const  
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  int Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Height(Node * a_pNode) const
   {  
     if (a_pNode == nullptr)  
       return 0;  
     return a_pNode->height;  
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Node *
-    Tree_AVL<KeyType, ValueType, Compare>::LeftRotate(Node * a_x)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node *
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::LeftRotate(Node * a_x)
   {  
     Node * y = a_x->pRight;
     Node * T2 = y->pLeft;  
@@ -1247,9 +1251,9 @@ namespace Dg
     return y;  
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Node *
-    Tree_AVL<KeyType, ValueType, Compare>::RightRotate(Node * a_y)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node *
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::RightRotate(Node * a_y)
   { 
     Node * x = a_y->pLeft;
     Node * T2 = x->pRight;  
@@ -1281,9 +1285,9 @@ namespace Dg
     return x;  
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Node *
-    Tree_AVL<KeyType, ValueType, Compare>::NewNode(Node * a_pParent, ValueType const & a_value)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node *
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::NewNode(Node * a_pParent, ValueType const & a_value)
   {
     //Insert data
     m_nItems++;
@@ -1299,25 +1303,25 @@ namespace Dg
     return newNode;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Node *
-    Tree_AVL<KeyType, ValueType, Compare>::EndNode()
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node *
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::EndNode()
   {
     return m_pNodes;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Node const *
-    Tree_AVL<KeyType, ValueType, Compare>::EndNode() const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node const *
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::EndNode() const
   {
     return m_pNodes;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Node *
-    Tree_AVL<KeyType, ValueType, Compare>::__Insert(Node * a_pNode, Node * a_pParent,
-                                          ValueType const & a_value,
-                                          Node *& a_newNode)
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node *
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::__Insert(Node * a_pNode, Node * a_pParent,
+                                                             ValueType const & a_value,
+                                                             Node *& a_newNode)
   {
     //Check if leaf node or final node in the tree. The final node will point
     //to the end node.
@@ -1333,11 +1337,11 @@ namespace Dg
       return a_newNode;
     }
 
-    if (Compare(GetKeyType(a_value), GetKeyType(a_pNode->data)))
+    if (Compare(GET_KEY(a_value), GET_KEY(a_pNode->data)))
     {
       a_pNode->pLeft = __Insert(a_pNode->pLeft, a_pNode, a_value, a_newNode);
     }
-    else if (Compare(GetKeyType(a_pNode->data), GetKeyType(a_value)))
+    else if (Compare(GET_KEY(a_pNode->data), GET_KEY(a_value)))
     {
       a_pNode->pRight = __Insert(a_pNode->pRight, a_pNode, a_value, a_newNode);
     }
@@ -1352,11 +1356,11 @@ namespace Dg
 
     if (balance > 1)
     {
-      if (Compare(GetKeyType(a_value), GetKeyType(a_pNode->pLeft->data)))
+      if (Compare(GET_KEY(a_value), GET_KEY(a_pNode->pLeft->data)))
       {
         return RightRotate(a_pNode);
       }
-      else if (Compare(GetKeyType(a_pNode->pLeft->data), GetKeyType(a_value)))
+      else if (Compare(GET_KEY(a_pNode->pLeft->data), GET_KEY(a_value)))
       {
         a_pNode->pLeft = LeftRotate(a_pNode->pLeft);
         return RightRotate(a_pNode);
@@ -1365,11 +1369,11 @@ namespace Dg
 
     if (balance < -1)
     {
-      if (Compare(GetKeyType(a_pNode->pRight->data), GetKeyType(a_value)))
+      if (Compare(GET_KEY(a_pNode->pRight->data), GET_KEY(a_value)))
       {
         return LeftRotate(a_pNode);
       }
-      else if (Compare(GetKeyType(a_value), GetKeyType(a_pNode->pRight->data)))
+      else if (Compare(GET_KEY(a_value), GET_KEY(a_pNode->pRight->data)))
       {
         a_pNode->pRight = RightRotate(a_pNode->pRight);
         return LeftRotate(a_pNode);
@@ -1379,15 +1383,15 @@ namespace Dg
     return a_pNode;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
   template<bool GetNext>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Node *
-    Tree_AVL<KeyType, ValueType, Compare>::__Erase(Node * a_pRoot, KeyType const & a_key, EraseData & a_data)
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node *
+    Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::__Erase(Node * a_pRoot, KeyType const & a_key, EraseData & a_data)
   {
     if (a_pRoot == nullptr || a_pRoot == EndNode())
       return a_pRoot;
 
-    if (Compare(a_key, GetKeyType(a_pRoot->data)))
+    if (Compare(a_key, GET_KEY(a_pRoot->data)))
     {
       Node * temp = __Erase<GetNext>(a_pRoot->pLeft, a_key, a_data);
       if (a_data.oldNodeAdd == a_pRoot)
@@ -1395,7 +1399,7 @@ namespace Dg
 
       a_pRoot->pLeft = temp;
     }
-    else if (Compare(GetKeyType(a_pRoot->data), a_key))
+    else if (Compare(GET_KEY(a_pRoot->data), a_key))
     {
       Node * temp = __Erase<GetNext>(a_pRoot->pRight, a_key, a_data);
       if (a_data.oldNodeAdd == a_pRoot)
@@ -1480,6 +1484,8 @@ namespace Dg
         if (a_pRoot != m_pNodes + m_nItems)
         {
           //Shift last node to fill in empty slot
+          //new(&(a_pRoot->data)) ValueType(std::move(m_pNodes[m_nItems].data));
+          //m_pNodes[m_nItems].data.~ValueType();
           memcpy(&(a_pRoot->data), &(m_pNodes[m_nItems].data), sizeof(ValueType));
 
           Node * oldNode = m_pNodes + m_nItems;
@@ -1540,10 +1546,14 @@ namespace Dg
           a_data.firstSuccDeleted = true;
         }
 
+        // TODO We can probably use a template parameter to decide how we move
+        //      objects around in memory; memcpy vs move semantics.
+        //new(&(a_pRoot->data)) ValueType(std::move(successor->data));
+        //successor->data.~ValueType();
         memcpy(&(a_pRoot->data), &(successor->data), sizeof(ValueType));
 
         // Delete the inorder successor
-        Node * temp = __Erase<GetNext>(a_pRoot->pRight, GetKeyType(successor->data), a_data);
+        Node * temp = __Erase<GetNext>(a_pRoot->pRight, GET_KEY(successor->data), a_data);
         if (a_data.oldNodeAdd == a_pRoot)
           a_pRoot = a_data.newNodeAdd;
 
@@ -1583,8 +1593,8 @@ namespace Dg
     return a_pRoot;
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Node * Tree_AVL<KeyType, ValueType, Compare>::Node::GetNext() const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node * Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node::GetNext() const
   {
     //Try right
     if (pRight != nullptr)
@@ -1607,8 +1617,8 @@ namespace Dg
     return const_cast<Node*>(pNode);
   }
 
-  template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &)>
-  typename Tree_AVL<KeyType, ValueType, Compare>::Node * Tree_AVL<KeyType, ValueType, Compare>::Node::GetPrevious() const
+  template<typename KeyType, typename ValueType, KeyType(*GET_KEY)(ValueType const &), bool (*Compare)(KeyType const &, KeyType const &)>
+  typename Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node * Tree_AVL<KeyType, ValueType, GET_KEY, Compare>::Node::GetPrevious() const
   {
     //Try left
     if (pLeft != nullptr)
@@ -1664,7 +1674,7 @@ namespace Dg
 
   //    pNode->depth = depth;
   //    pNode->row = row;
-  //    pNode->str = ToString(GetKeyType(pCurrentNode->data));
+  //    pNode->str = ToString(GET_KEY(pCurrentNode->data));
 
   //    if (pCurrentNode->pParent)
   //    {
