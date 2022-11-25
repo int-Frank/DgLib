@@ -145,7 +145,6 @@ namespace Dg
         result.code = QueryCode::Overlapping;
 
         Vector2<Real> p0, p1;
-        Real us0, us1;
 
         if (result.segmentResult.ur_to_s0 > Real(0))
         {
