@@ -190,8 +190,10 @@ namespace Dg
     Real cofactor1 = m_V[5] * m_V[6] - m_V[3] * m_V[8];
     Real cofactor2 = m_V[3] * m_V[7] - m_V[6] * m_V[4];
     Real det = m_V[0] * cofactor0 + m_V[1] * cofactor1 + m_V[2] * cofactor2;
-    if (Dg::IsZero(det))
+    if (det == static_cast<Real>(0))
     {
+      // TODO We really need a better way to handle this other than returning the identity.
+      //      Maybe use a TryGetInverse() method?
       return result;
     }
 

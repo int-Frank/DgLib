@@ -679,7 +679,7 @@ namespace Dg
   template<typename Real>
   typename Polygon2<Real>::PointIterator Polygon2<Real>::Insert(PointIterator const &position, Vector2<Real> const &point)
   {
-    return m_points.insert(position, item);
+    return m_points.insert(position, point);
   }
 
   template<typename Real>

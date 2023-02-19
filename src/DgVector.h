@@ -51,6 +51,12 @@ namespace Dg
   template<typename Real> using Vector3 = ::Dg::Vector<Real, 3>;
   template<typename Real> using Vector4 = ::Dg::Vector<Real, 4>;
 
+  template<typename Real> Vector2<Real> ToVector2(Vector3<Real> const &);
+  template<typename Real> Vector3<Real> ToVector3(Vector2<Real> const &, Real w);
+
+  template<typename Real> Vector3<Real> ToVector3(Vector4<Real> const &);
+  template<typename Real> Vector4<Real> ToVector4(Vector3<Real> const &, Real w);
+
   template<typename Real, int R> Real MagSq(Vector<Real, R> const & a_vec);
   template<typename Real, int R> Real Mag(Vector<Real, R> const & a_vec);
   template<typename Real, int R> bool IsUnit(Vector<Real, R> const & a_vec);
@@ -71,6 +77,30 @@ namespace Dg
   //------------------------------------------------------------------------------
   // Implementation
   //------------------------------------------------------------------------------
+
+  template<typename Real> 
+  Vector2<Real> ToVector2(Vector3<Real> const &v)
+  {
+    return Vector2<Real>(v.x(), v.y());
+  }
+
+  template<typename Real> 
+  Vector3<Real> ToVector3(Vector2<Real> const &v, Real w)
+  {
+    return Vector3<Real>(v.x(), v.y(), w);
+  }
+
+  template<typename Real> 
+  Vector3<Real> ToVector3(Vector4<Real> const &v)
+  {
+    return Vector3<Real>(v.x(), v.y(), v.z());
+  }
+
+  template<typename Real> 
+  Vector4<Real> ToVector4(Vector3<Real> const &v, Real w)
+  {
+    return Vector4<Real>(v.x(), v.y(), v.z(), w);
+  }
 
   template<typename Real, int R>
   Real MagSq(Vector<Real, R> const & a_vec)
