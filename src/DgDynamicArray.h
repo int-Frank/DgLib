@@ -15,11 +15,11 @@
 #include <new>
 #include <type_traits>
 #include <exception>
+#include <stdexcept>
 #include <stdint.h>
 
 #include "impl/DgPoolSizeManager.h"
 
-//TODO Deprecated. Just use std::vector. 
 namespace Dg
 {
   template<typename T>
@@ -153,6 +153,9 @@ namespace Dg
 
     //! Remove element from the back of the array.
     void pop_back();
+
+    //! Remove element from the back of the array.
+    void insert(size_t position, T const &item);
 
     //! Current size is flagged as 0. Elements are NOT destroyed.
     void clear();
@@ -599,12 +602,28 @@ namespace Dg
   }
 
   template<typename T>
-  void DynamicArray<T>::push_back(T const & a_item)
+  void DynamicArray<T>::push_back(T const &a_item)
   {
     if (m_nItems == m_poolSize.GetSize())
       extend();
 
     new(&m_pData[m_nItems]) T(a_item);
+    m_nItems++;
+  }
+
+  template<typename T>
+  void DynamicArray<T>::insert(size_t a_position, T const &a_item)
+  {
+    if (a_position > m_nItems)
+      throw std::out_of_range("Index out of bounds when inserting element.");
+
+    if (m_nItems == m_poolSize.GetSize())
+      extend();
+
+    for (size_t i = m_nItems; i > a_position; i--)
+      memcpy(&m_pData[i], &m_pData[i - 1], sizeof(T));
+
+    new(&m_pData[a_position]) T(a_item);
     m_nItems++;
   }
 
@@ -644,7 +663,7 @@ namespace Dg
   void DynamicArray<T>::erase_swap(size_t a_ind)
   {
     m_pData[a_ind].~T();
-    memmove(&m_pData[a_ind], &m_pData[m_nItems - 1], sizeof(T));
+    memcpy(&m_pData[a_ind], &m_pData[m_nItems - 1], sizeof(T));
     --m_nItems;
   }
 
