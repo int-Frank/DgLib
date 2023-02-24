@@ -154,7 +154,10 @@ namespace Dg
     //! Remove element from the back of the array.
     void pop_back();
 
-    //! Remove element from the back of the array.
+    //! Remove element at position
+    void erase(size_t position);
+
+    //! Insert element at position.
     void insert(size_t position, T const &item);
 
     //! Current size is flagged as 0. Elements are NOT destroyed.
@@ -625,6 +628,20 @@ namespace Dg
 
     new(&m_pData[a_position]) T(a_item);
     m_nItems++;
+  }
+
+  template<typename T>
+  void DynamicArray<T>::erase(size_t a_position)
+  {
+    if (a_position > m_nItems)
+      throw std::out_of_range("Index out of bounds when inserting element.");
+
+    m_pData[a_position].~T();
+
+    for (size_t i = a_position; (i + 1) < m_nItems; i++)
+      memcpy(&m_pData[i], &m_pData[i + 1], sizeof(T));
+
+    m_nItems--;
   }
 
   template<typename T>
