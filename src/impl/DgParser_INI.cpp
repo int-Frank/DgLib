@@ -76,6 +76,17 @@ namespace Dg
     return m_pimpl->items;
   }
 
+  bool Parser_INI::AsString(std::string key, std::string *pOut) const
+  {
+    auto it = m_pimpl->items.find(key);
+    if (it == m_pimpl->items.end())
+      return false;
+
+    *pOut = it->second;
+
+    return true;
+  }
+
   ErrorCode Parser_INI::Parse(std::string const & a_file)
   {
     m_pimpl->items.clear();

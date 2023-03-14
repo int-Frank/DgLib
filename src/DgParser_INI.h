@@ -46,6 +46,9 @@ namespace Dg
     //! Get the token/value items successfully extracted from the ini file.
     std::map<std::string, std::string> const & GetItems() const;
 
+    //! Read a value as a string
+    bool AsString(std::string key, std::string *pOut) const;
+
   private:
 
     class PIMPL;
