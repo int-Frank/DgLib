@@ -74,8 +74,12 @@ namespace Dg
   template<typename Real, int R>
   Hypersphere<Real, R> & Hypersphere<Real, R>::operator=(Hypersphere<Real, R> const & a_other)
   {
-    m_origin = a_other.m_origin;
-    m_radius = a_other.m_radius;
+    if (this != &a_other)
+    {
+      m_origin = a_other.m_origin;
+      m_radius = a_other.m_radius;
+    }
+    return *this;
   }
 
   template<typename Real, int R>
