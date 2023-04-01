@@ -79,6 +79,7 @@ namespace Dg
             else if (temp.freeUserData)
             {
               delete temp.pUserData;
+              temp.pUserData = nullptr;
             }
           }
         });
