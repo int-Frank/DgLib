@@ -15,7 +15,7 @@ namespace Dg
     
     }
 
-    T0 const first;
+    T0 first;
     T1 second;
   };
 }

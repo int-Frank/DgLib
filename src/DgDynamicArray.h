@@ -680,7 +680,10 @@ namespace Dg
   void DynamicArray<T>::erase_swap(size_t a_ind)
   {
     m_pData[a_ind].~T();
-    memcpy(&m_pData[a_ind], &m_pData[m_nItems - 1], sizeof(T));
+
+    if (a_ind != m_nItems - 1)
+      memcpy(&m_pData[a_ind], &m_pData[m_nItems - 1], sizeof(T));
+
     --m_nItems;
   }
 

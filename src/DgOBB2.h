@@ -17,14 +17,15 @@ namespace Dg
     OBB2();
     OBB2(Vector2<Real> const &centre, Vector2<Real> const &axis, Real hlAxis, Real hlPerp);
 
-    void GetBasis(Vector2<Real> &axis, Vector2<Real> &perp) const;
+    Vector2<Real> const &Axis() const;
+    Vector2<Real> Perp() const;
+
     void GetHalfLengths(Real &axis, Real &perp) const;
     Vector2<Real> const &GetCenter() const;
 
   private:
     Vector2<Real> m_center;
     Vector2<Real> m_axis;
-    Vector2<Real> m_perp;
     Real          m_halfLengths[2];
   };
 
@@ -36,7 +37,6 @@ namespace Dg
   OBB2<Real>::OBB2()
     : m_center(Zeros<Real, 2>())
     , m_axis(XAxis<Real, 2>())
-    , m_perp(YAxis<Real, 2>())
     , m_halfLengths{ static_cast<Real>(1), static_cast<Real>(1) }
   {
   }
@@ -45,17 +45,21 @@ namespace Dg
   OBB2<Real>::OBB2(Vector2<Real> const &centre, Vector2<Real> const &axis, Real hlAxis, Real hlPerp)
     : m_center(centre)
     , m_axis(Dg::Normalize(axis))
-    , m_perp(Vector2<Real>(-m_axis.y(), m_axis.x()))
     , m_halfLengths{ hlAxis, hlPerp }
   {
     
   }
 
   template<typename Real>
-  void OBB2<Real>::GetBasis(Vector2<Real> &axis, Vector2<Real> &perp) const
+  Vector2<Real> const &OBB2<Real>::Axis() const
   {
-    axis = m_axis;
-    perp = m_perp;
+    return m_axis;
+  }
+
+  template<typename Real>
+  Vector2<Real> OBB2<Real>::Perp() const
+  {
+    return Vector2<Real>(-axis.y(), axis.x());
   }
 
   template<typename Real>
