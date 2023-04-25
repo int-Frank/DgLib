@@ -47,10 +47,15 @@ namespace Dg
         throw std::out_of_range("Invalid key!");
       return pResult->data.second;
     }
+
+    auto insert(KeyType const &key, decltype(ValueType::second) const &value)
+    {
+      return Tree_AVL::insert(Dg::Pair<KeyType const, decltype(ValueType::second)>(key, value));
+    }
   };
 
   template<typename KeyType, typename ValueType, bool (*Compare)(KeyType const &, KeyType const &) = impl::Less<KeyType>>
-  using Map_AVL = _Map_AVL<KeyType, ::Dg::Pair<KeyType, ValueType>, Compare>;
+  using Map_AVL = _Map_AVL<KeyType, ::Dg::Pair<KeyType const, ValueType>, Compare>;
 }
 
 #endif
