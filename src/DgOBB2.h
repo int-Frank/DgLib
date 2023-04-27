@@ -20,6 +20,7 @@ namespace Dg
     Vector2<Real> const &Axis() const;
     Vector2<Real> Perp() const;
 
+    void GetBasis(Vector2<Real> &axis, Vector2<Real> &perp) const;
     void GetHalfLengths(Real &axis, Real &perp) const;
     Vector2<Real> const &GetCenter() const;
 
@@ -59,7 +60,14 @@ namespace Dg
   template<typename Real>
   Vector2<Real> OBB2<Real>::Perp() const
   {
-    return Vector2<Real>(-axis.y(), axis.x());
+    return Vector2<Real>(-m_axis.y(), m_axis.x());
+  }
+
+  template<typename Real>
+  void OBB2<Real>::GetBasis(Vector2<Real> &axis, Vector2<Real> &perp) const
+  {
+    axis = Dg::Normalize(Axis());
+    perp = Dg::Normalize(Perp());
   }
 
   template<typename Real>
