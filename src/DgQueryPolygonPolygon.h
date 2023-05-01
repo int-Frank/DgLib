@@ -370,13 +370,13 @@ namespace Dg
         if (!TryAddPolygon(pGraph, polyB, EF_InsideB))
           return QueryCode::Fail;
 
-        bool hasIntersections = false;
+        int hasIntersections = 0;
 
-        hasIntersections = hasIntersections || MergeNodes(pGraph, epsilon);
-        hasIntersections = hasIntersections || MergeNodeAndEdges(pGraph, epsilon);
-        hasIntersections = hasIntersections || FindIntersections(pGraph, epsilon);
+        hasIntersections += MergeNodes(pGraph, epsilon) ? 1 : 0;
+        hasIntersections += MergeNodeAndEdges(pGraph, epsilon) ? 1 : 0;
+        hasIntersections += FindIntersections(pGraph, epsilon) ? 1 : 0;
 
-        return hasIntersections ? QueryCode::Intersecting : QueryCode::NotIntersecting;
+        return hasIntersections > 0 ? QueryCode::Intersecting : QueryCode::NotIntersecting;
       }
 
     private:
@@ -441,24 +441,23 @@ namespace Dg
         return true;
       }
 
-      bool FindIntersections(Graph<Real> *pGraph, Real epsilon)
+      // TODO testedEdgePairs should be a hash map
+      bool FindIntersections(Graph<Real> *pGraph, Set_AVL<EdgePair, EdgePairLess> *pTestedEdgePairs, Real epsilon)
       {
-        bool hasIntersections = false;
-        Set_AVL<EdgePair, EdgePairLess> testedEdgePairs;
         for (uint32_t id00 = 0; id00 < (uint32_t)pGraph->nodes.size(); id00++)
         {
           Node<Real> *pNode00 = &pGraph->nodes[id00];
           for (uint32_t n0 = 0; n0 < (uint32_t)pNode00->neighbours.size(); n0++)
           {
             uint32_t id01 = pNode00->neighbours[n0].id;
-            Node<Real>*pNode01 = &pGraph->nodes[id01];
+            Node<Real> *pNode01 = &pGraph->nodes[id01];
 
             for (uint32_t id10 = id00 + 1; id10 < (uint32_t)pGraph->nodes.size(); id10++)
             {
               if (id10 == id01)
                 continue;
 
-              Node<Real>*pNode10 = &pGraph->nodes[id10];
+              Node<Real> *pNode10 = &pGraph->nodes[id10];
               Segment2<Real> seg0(pNode00->vertex, pNode01->vertex);
 
               for (uint32_t n1 = 0; n1 < (uint32_t)pNode10->neighbours.size(); n1++)
@@ -470,12 +469,12 @@ namespace Dg
 
                 EdgePair edgePair(GetEdgeID(id00, id01), GetEdgeID(id10, id11));
 
-                if (testedEdgePairs.exists(edgePair))
+                if (pTestedEdgePairs->exists(edgePair))
                   continue;
 
-                testedEdgePairs.insert(edgePair);
+                pTestedEdgePairs->insert(edgePair);
 
-                Node<Real>*pNode11 = &pGraph->nodes[id11];
+                Node<Real> *pNode11 = &pGraph->nodes[id11];
                 Segment2<Real> seg1(pNode10->vertex, pNode11->vertex);
 
                 FI2SegmentSegment<Real> query;
@@ -485,11 +484,21 @@ namespace Dg
                   continue;
 
                 DoEdgeEdgeIntersection(pGraph, id00, id01, id10, id11, result.pointResult.point);
-                hasIntersections = true;
+                return true;
               }
             }
           }
         }
+        return false;
+      }
+
+      bool FindIntersections(Graph<Real> *pGraph, Real epsilon)
+      {
+        bool hasIntersections = false;
+        Set_AVL<EdgePair, EdgePairLess> testedEdgePairs;
+
+        while (FindIntersections(pGraph, &testedEdgePairs, epsilon))
+          hasIntersections = true;
 
         return hasIntersections;
       }
@@ -555,7 +564,7 @@ namespace Dg
           }
         }
 
-        Node<Real>newNode;
+        Node<Real> newNode;
         newNode.vertex = point;
 
         newNode.neighbours.push_back({ id00, flags01_00 });
@@ -602,7 +611,7 @@ namespace Dg
       bool MergeNodeAndEdges(Graph<Real> *pGraph, Real epsilon)
       {
         bool hasIntersections = false;
-        Dg::Set_AVL<uint64_t> testedEdges;
+        Dg::Set_AVL<uint64_t> testedEdges; // TODO Should be hash map
         for (uint32_t pointID = 0; pointID < (uint32_t)pGraph->nodes.size(); pointID++)
         {
           testedEdges.clear();

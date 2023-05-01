@@ -1,3 +1,4 @@
+//@group Math/Geometry/Query/impl
 
 #include "../DgQueryPolygonPolygon.h"
 
