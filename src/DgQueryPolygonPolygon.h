@@ -441,18 +441,25 @@ namespace Dg
         return true;
       }
 
-      // TODO testedEdgePairs should be a hash map
-      bool FindIntersections(Graph<Real> *pGraph, Set_AVL<EdgePair, EdgePairLess> *pTestedEdgePairs, Real epsilon)
+      bool FindIntersections(Graph<Real> *pGraph, Real epsilon)
       {
+      // TODO testedEdgePairs should be a hash map
+        Set_AVL<EdgePair, EdgePairLess> testedEdgePairs;
+        bool hasIntersections = false;
+
         for (uint32_t id00 = 0; id00 < (uint32_t)pGraph->nodes.size(); id00++)
         {
           Node<Real> *pNode00 = &pGraph->nodes[id00];
+          uint32_t id10 = id00 + 1;
+
+          restart_node:
+
           for (uint32_t n0 = 0; n0 < (uint32_t)pNode00->neighbours.size(); n0++)
           {
             uint32_t id01 = pNode00->neighbours[n0].id;
             Node<Real> *pNode01 = &pGraph->nodes[id01];
 
-            for (uint32_t id10 = id00 + 1; id10 < (uint32_t)pGraph->nodes.size(); id10++)
+            for (; id10 < (uint32_t)pGraph->nodes.size(); id10++)
             {
               if (id10 == id01)
                 continue;
@@ -469,10 +476,10 @@ namespace Dg
 
                 EdgePair edgePair(GetEdgeID(id00, id01), GetEdgeID(id10, id11));
 
-                if (pTestedEdgePairs->exists(edgePair))
+                if (testedEdgePairs.exists(edgePair))
                   continue;
 
-                pTestedEdgePairs->insert(edgePair);
+                testedEdgePairs.insert(edgePair);
 
                 Node<Real> *pNode11 = &pGraph->nodes[id11];
                 Segment2<Real> seg1(pNode10->vertex, pNode11->vertex);
@@ -484,22 +491,13 @@ namespace Dg
                   continue;
 
                 DoEdgeEdgeIntersection(pGraph, id00, id01, id10, id11, result.pointResult.point);
-                return true;
+
+                hasIntersections = true;
+                goto restart_node;
               }
             }
           }
         }
-        return false;
-      }
-
-      bool FindIntersections(Graph<Real> *pGraph, Real epsilon)
-      {
-        bool hasIntersections = false;
-        Set_AVL<EdgePair, EdgePairLess> testedEdgePairs;
-
-        while (FindIntersections(pGraph, &testedEdgePairs, epsilon))
-          hasIntersections = true;
-
         return hasIntersections;
       }
 
