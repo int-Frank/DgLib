@@ -458,6 +458,7 @@ namespace Dg
           {
             uint32_t id01 = pNode00->neighbours[n0].id;
             Node<Real> *pNode01 = &pGraph->nodes[id01];
+            Segment2<Real> seg0(pNode00->vertex, pNode01->vertex);
 
             for (; id10 < (uint32_t)pGraph->nodes.size(); id10++)
             {
@@ -465,7 +466,6 @@ namespace Dg
                 continue;
 
               Node<Real> *pNode10 = &pGraph->nodes[id10];
-              Segment2<Real> seg0(pNode00->vertex, pNode01->vertex);
 
               for (uint32_t n1 = 0; n1 < (uint32_t)pNode10->neighbours.size(); n1++)
               {
