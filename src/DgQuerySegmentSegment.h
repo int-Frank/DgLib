@@ -141,13 +141,22 @@ namespace Dg
   {
     Result result;
     result.code = QueryCode::NotIntersecting;
+
+    // We do this check to account for floating point precision errors
+    // when the segments are almost parallel
+    Real distSq = Dg::MagSq(s0.GetCenter() - s1.GetCenter());
+    Real lenSq = s0.Length() / Real(2) + s1.Length() / Real(2);
+    lenSq *= lenSq;
+    if (distSq > lenSq)
+      return result;
+
     Vector2<Real> w = s0.GetP0() - s1.GetP0();
 
     Real denom = (s1.Vect().y() * s0.Vect().x()) - (s1.Vect().x() * s0.Vect().y());
     Real num_0 = (s1.Vect().x() * w.y()) - (s1.Vect().y() * w.x());
     Real num_1 = (s0.Vect().x() * w.y()) - (s0.Vect().y() * w.x());
 
-    if (IsZero(denom) && (IsZero(num_0) || IsZero(num_1)))
+    if (denom == Real(0) && (num_0 == Real(0) || num_1 == Real(0)))
     {
       Vector2<Real> w00 = s1.GetP0() - s0.GetP0();
       Vector2<Real> w01 = s1.GetP1() - s0.GetP0();
@@ -159,7 +168,7 @@ namespace Dg
       if (!((u00 < Real(0) && u01 < Real(0)) || (u00 > Real(1) && u01 > Real(1))))
         result.code = QueryCode::Overlapping;
     }
-    else if (!IsZero(denom))
+    else if (denom != Real(0))
     {
       Real u0 = num_0 / denom;
       Real u1 = num_1 / denom;
@@ -177,54 +186,59 @@ namespace Dg
   {
     Result result;
     result.code = QueryCode::NotIntersecting;
+
+    // Check if s1 is either completely behind or completely in front of s1.
+    // We do this first to short circuit floating point precision errors
+    // when the segments are almost parallel. These variables may be used later
+    // if the the segments are found to be parallel.
+    Vector2<Real> w00 = s1.GetP0() - s0.GetP0();
+    Vector2<Real> w01 = s1.GetP1() - s0.GetP0();
+
+    Real len0Sq = MagSq(s0.Vect());
+    Real u00 = Dot(w00, s0.Vect()) / len0Sq;
+    Real u01 = Dot(w01, s0.Vect()) / len0Sq;
+
+    if ((u00 < Real(0) && u01 < Real(0)) || (u00 > Real(1) && u01 > Real(1)))
+      return result;
+
     Vector2<Real> w = s0.GetP0() - s1.GetP0();
 
     Real denom = (s1.Vect().y() * s0.Vect().x()) - (s1.Vect().x() * s0.Vect().y());
     Real num_0 = (s1.Vect().x() * w.y()) - (s1.Vect().y() * w.x());
     Real num_1 = (s0.Vect().x() * w.y()) - (s0.Vect().y() * w.x());
 
-    if (IsZero(denom) && (IsZero(num_0) || IsZero(num_1)))
+    if (denom == Real(0) && (num_0 == Real(0) || num_1 == Real(0)))
     {
-      Vector2<Real> w00 = s1.GetP0() - s0.GetP0();
-      Vector2<Real> w01 = s1.GetP1() - s0.GetP0();
-
-      Real len0Sq = MagSq(s0.Vect());
-      Real u00 = Dot(w00, s0.Vect()) / len0Sq;
-      Real u01 = Dot(w01, s0.Vect()) / len0Sq;
-
-      if (!((u00 < Real(0) && u01 < Real(0)) || (u00 > Real(1) && u01 > Real(1))))
+      if (u00 > u01)
       {
-        if (u00 > u01)
-        {
-          Real temp = u00;
-          u00 = u01;
-          u01 = temp;
-        }
-
-        u00 = Clamp(u00, Real(0), Real(1));
-        u01 = Clamp(u01, Real(0), Real(1));
-
-        Segment2<Real> seg(s0.GetP0() + s0.Vect() * u00, s0.GetP0() + s0.Vect() * u01);
-
-        Vector2<Real> w10 = seg.GetP0() - s1.GetP0();
-        Vector2<Real> w11 = seg.GetP1() - s1.GetP0();
-
-        Real len1Sq = MagSq(s1.Vect());
-        Real u10 = Dot(w10, s1.Vect()) / len1Sq;
-        Real u11 = Dot(w11, s1.Vect()) / len1Sq;
-
-        u10 = Clamp(u10, Real(0), Real(1));
-        u11 = Clamp(u11, Real(0), Real(1));
-
-        result.code = QueryCode::Overlapping;
-        result.segmentResult.segment = seg;
-        result.segmentResult.u0_to_s0 = u00;
-        result.segmentResult.u0_to_s1 = u01;
-        result.segmentResult.u1_to_s0 = u10;
-        result.segmentResult.u1_to_s1 = u11;
+        Real temp = u00;
+        u00 = u01;
+        u01 = temp;
       }
+
+      u00 = Clamp(u00, Real(0), Real(1));
+      u01 = Clamp(u01, Real(0), Real(1));
+
+      Segment2<Real> seg(s0.GetP0() + s0.Vect() * u00, s0.GetP0() + s0.Vect() * u01);
+
+      Vector2<Real> w10 = seg.GetP0() - s1.GetP0();
+      Vector2<Real> w11 = seg.GetP1() - s1.GetP0();
+
+      Real len1Sq = MagSq(s1.Vect());
+      Real u10 = Dot(w10, s1.Vect()) / len1Sq;
+      Real u11 = Dot(w11, s1.Vect()) / len1Sq;
+
+      u10 = Clamp(u10, Real(0), Real(1));
+      u11 = Clamp(u11, Real(0), Real(1));
+
+      result.code = QueryCode::Overlapping;
+      result.segmentResult.segment = seg;
+      result.segmentResult.u0_to_s0 = u00;
+      result.segmentResult.u0_to_s1 = u01;
+      result.segmentResult.u1_to_s0 = u10;
+      result.segmentResult.u1_to_s1 = u11;
     }
-    else if (!IsZero(denom))
+    else if (denom != Real(0))
     {
       result.pointResult.u0 = num_0 / denom;
       result.pointResult.u1 = num_1 / denom;

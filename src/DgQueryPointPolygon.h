@@ -23,6 +23,21 @@ namespace Dg
     Result operator()(Vector<Real, 2> const &, Polygon2<Real> const &);
   };
 
+  template <typename Real>
+  class Query<QueryType::ClosestPoint, Real, 2, Vector<Real, 2>, Polygon2<Real>>
+  {
+  public:
+
+    //! Query result data
+    struct Result
+    {
+      QueryCode code;
+      Vector<Real, 2> cp;
+    };
+
+    Result operator()(Vector<Real, 2> const &, Polygon2<Real> const &);
+  };
+
   //---------------------------------------------------------------------------------------
   // Useful typedefs
   //---------------------------------------------------------------------------------------

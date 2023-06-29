@@ -37,11 +37,14 @@ namespace Dg
     struct Result
     {
       QueryCode code;
-      Polygon2<Real> boundary;
-      Dg::DynamicArray<Polygon2<Real>> polyA;
-      Dg::DynamicArray<Polygon2<Real>> polyB;
-      Dg::DynamicArray<Polygon2<Real>> intersection;
-      Dg::DynamicArray<Polygon2<Real>> holes;
+
+      Dg::DynamicArray<Vector2<Real>> vertices;
+
+      Dg::DynamicArray<uint32_t> boundary;
+      Dg::DynamicArray<Dg::DynamicArray<uint32_t>> polyA;
+      Dg::DynamicArray<Dg::DynamicArray<uint32_t>> polyB;
+      Dg::DynamicArray<Dg::DynamicArray<uint32_t>> intersection;
+      Dg::DynamicArray<Dg::DynamicArray<uint32_t>> holes;
     };
 
     Result operator()(Polygon2<Real> const &A, Polygon2<Real> const &B);
@@ -145,14 +148,16 @@ namespace Dg
 
     bool EdgePairLess(EdgePair const &p0, EdgePair const &p1);
 
-    // We make this a public method so we can test it.
-    /*
-      Range = [1, -1)
-      1             : a and b are aligned
-      From (1, 0)   : b is left of  a
-      0             : a and b are in opposite directions
-      From (0, -1)  : b is right of  a
-    */
+    uint64_t GetUndirectedEdgeID(uint32_t a, uint32_t b);
+    uint64_t GetDirectedEdgeID(uint32_t a, uint32_t b);
+
+    // Returns a value (1 <= x < -1) depending on the orientation of vector b to vector a.
+    //
+    //     1       : a and b are aligned
+    // 1 > x > 0   : b is left of  a
+    //     0       : a and b are in opposite directions
+    // 0 > x > -1  : b is right of  a
+    //
     template<typename Real>
     Real GetOrientation(Vector2<Real> a, Vector2<Real> b)
     {
@@ -166,10 +171,10 @@ namespace Dg
       if (bLenSq == Real(0))
         b = XAxis<Real, 2>();
       else
-        b = b / sqrt(aLenSq);
+        b = b / sqrt(bLenSq);
 
       Real dot = Dot(a, b);
-      Real perp = PerpDot(b, a);
+      Real perp = PerpDot(a, b);
       Real result;
 
       if (perp > Real(0))
@@ -206,6 +211,9 @@ namespace Dg
       {
         Dg::Set_AVL<uint64_t> processedEdges;
 
+        for (uint32_t i = 0; i < (uint32_t)pGraph->nodes.size(); i++)
+          pResult->vertices.push_back(pGraph->nodes[i].vertex);
+
         ExtractBoundary(pGraph, pResult, &processedEdges);
 
         for (uint32_t i = 0; i < (uint32_t)pGraph->nodes.size(); i++)
@@ -213,49 +221,49 @@ namespace Dg
           Node<Real> const *pNode = &pGraph->nodes[i];
           for (uint32_t j = 0; j < (uint32_t)pNode->neighbours.size(); j++)
           {
-            uint32_t n = pNode->neighbours[j].id;
-            uint64_t key = GetKey(i, n);
+            uint64_t key = GetDirectedEdgeID(i, pNode->neighbours[j].id);
 
             if (processedEdges.exists(key))
               continue;
 
-            ExtractPolygon(pGraph, i, n, pResult, &processedEdges);
+            ExtractPolygon(pGraph, i, &pNode->neighbours[j], pResult, &processedEdges);
           }
         }
       }
 
     private:
 
-      inline uint64_t GetKey(uint32_t idA, uint32_t idB)
-      {
-        return (((uint64_t)idA) << 32) | ((uint64_t)idB);
-      }
-
       void ExtractBoundary(Graph<Real> const *pGraph,
                            typename FI2PolygonPolygon<Real>::Result *pResult,
                            Dg::Set_AVL<uint64_t> *pProcessedEdges)
       {
-        Real xMin = pGraph->nodes[0].vertex.x();
+        Vector2<Real> current = pGraph->nodes[0].vertex;
         uint32_t id = 0;
         for (uint32_t i = 1; i < (uint32_t)pGraph->nodes.size(); i++)
         {
-          if (pGraph->nodes[i].vertex.x() < xMin)
+          Vector2<Real> temp = pGraph->nodes[i].vertex;
+
+          if (temp.y() > current.y())
+            continue;
+
+          if (temp.y() < current.y() || temp.x() < current.x())
           {
             id = i;
-            xMin = pGraph->nodes[i].vertex.x();
+            current = temp;
           }
         }
 
-        uint32_t nextIndex = TurnLeft(pGraph, NI_Invalid, &pGraph->nodes[id], XAxis<Real, 2>());
+        Node<Real> const *pNode = &pGraph->nodes[id];
+        uint32_t neighbourIndex = TurnLeft(pGraph, NI_Invalid, pNode, XAxis<Real, 2>());
         uint32_t flags = 0;
-        ExtractPolygon(pGraph, id, nextIndex, pProcessedEdges, &pResult->boundary, &flags);
+        _ExtractPolygon(pGraph, id, &pNode->neighbours[neighbourIndex], pProcessedEdges, &pResult->boundary, &flags);
       }
 
-      void ExtractPolygon(Graph<Real> const *pGraph,
+      void _ExtractPolygon(Graph<Real> const *pGraph,
                           uint32_t currentID,
-                          uint32_t neighbourIndex,
+                          Neighbour const *pNeighbour,
                           Dg::Set_AVL<uint64_t> *pProcessedEdges,
-                          Polygon2<Real> *pPolygon,
+                          Dg::DynamicArray<uint32_t> *pPolygon,
                           uint32_t *pFlags)
       {
         uint32_t startID = currentID;
@@ -264,36 +272,35 @@ namespace Dg
         do
         {
           Node<Real> const *pCurrent = &pGraph->nodes[currentID];
-          uint32_t nextID = pCurrent->neighbours[neighbourIndex].id;
-
-          uint64_t key = GetKey(currentID, nextID);
-          pProcessedEdges->insert(key);
+          uint32_t nextID = pNeighbour->id;
+          Node<Real> const *pNext = &pGraph->nodes[nextID];
 
           // Output point
-          pPolygon->PushBack(pCurrent->vertex);
-          *pFlags = *pFlags | pCurrent->neighbours[neighbourIndex].flags;
+          pPolygon->push_back(currentID);
+          *pFlags = *pFlags | pNeighbour->flags;
+
+          // Register edge
+          uint64_t key = GetDirectedEdgeID(currentID, nextID);
+          pProcessedEdges->insert(key);
 
           // Move to next edge
-          Vector2<Real> p0 = pGraph->nodes[currentID].vertex;
-          Node<Real> const *pNext = &pGraph->nodes[nextID];
-          Vector2<Real> vecA = pNext->vertex - p0;
-
+          Vector2<Real> vecA = pNext->vertex - pCurrent->vertex;
           uint32_t nextIndex = TurnLeft(pGraph, currentID, pNext, vecA);
-          currentID = pCurrent->neighbours[neighbourIndex].id;
-          neighbourIndex = nextIndex;
+          currentID = nextID;
+          pNeighbour = &pNext->neighbours[nextIndex];
           
         } while (currentID != startID);
       }
 
       void ExtractPolygon(Graph<Real> const *pGraph, 
                           uint32_t currentID, 
-                          uint32_t neighbourIndex,
+                          Neighbour const *pNeighbour,
                           typename FI2PolygonPolygon<Real>::Result *pResult, 
                           Dg::Set_AVL<uint64_t> *pProcessedEdges)
       {
         uint32_t flags = 0;
-        Polygon2<Real> polygon;
-        ExtractPolygon(pGraph, currentID, neighbourIndex, pProcessedEdges, &polygon, &flags);
+        Dg::DynamicArray<uint32_t> polygon;
+        _ExtractPolygon(pGraph, currentID, pNeighbour, pProcessedEdges, &polygon, &flags);
 
         switch (flags)
         {
@@ -320,9 +327,10 @@ namespace Dg
         }
       }
 
+      // Returns the index of neighbour from pCurrent
       uint32_t TurnLeft(Graph<Real> const *pGraph, uint32_t prevID, Node<Real> const *pCurrent, Vector2<Real> const &vPrevCurrent)
       {
-        uint32_t neighbourID = 0;
+        uint32_t neighbourIndex = 0;
         Real currentOrientation = Real(42); // Just pick a number higher than 2pi
 
         for (uint32_t i = 0; i < (uint32_t)pCurrent->neighbours.size(); i++)
@@ -340,20 +348,16 @@ namespace Dg
           if (orientation < currentOrientation)
           {
             currentOrientation = orientation;
-            neighbourID = i;
+            neighbourIndex = i;
           }
         }
 
-        return neighbourID;
+        return neighbourIndex;
       }
     };
 
-    // Polygon must not:
-    // - have vertices within an epsilon of each other
-    // - must not be self intersecting, and no  overlapping edges
-    // - must not be a degenerate polygon
     template<typename Real>
-    class GraphBuilder
+    class PolygonsToGraph
     {
     public:
 
@@ -370,13 +374,7 @@ namespace Dg
         if (!TryAddPolygon(pGraph, polyB, EF_InsideB))
           return QueryCode::Fail;
 
-        int hasIntersections = 0;
-
-        hasIntersections += MergeNodes(pGraph, epsilon) ? 1 : 0;
-        hasIntersections += MergeNodeAndEdges(pGraph, epsilon) ? 1 : 0;
-        hasIntersections += FindIntersections(pGraph, epsilon) ? 1 : 0;
-
-        return hasIntersections > 0 ? QueryCode::Intersecting : QueryCode::NotIntersecting;
+        return QueryCode::Success;
       }
 
     private:
@@ -440,21 +438,64 @@ namespace Dg
 
         return true;
       }
+    };
+
+    // Polygon must not:
+    // - have vertices within an epsilon of each other
+    // - must not be self intersecting, and no  overlapping edges
+    // - must not be a degenerate polygon
+    template<typename Real>
+    class GraphBuilder
+    {
+    public:
+
+      //void PrintGraph(Graph<Real> const *pGraph)
+      //{
+      //  std::cout << "\nGraph\n";
+      //
+      //  for (size_t n = 0; n < pGraph->nodes.size(); n++)
+      //  {
+      //    Node<Real> const *pNode = &pGraph->nodes[n];
+      //
+      //    std::cout << n << ": [" << pNode->vertex.x() << ", " << pNode->vertex.y() << "] [";
+      //    for (size_t i = 0; i < pNode->neighbours.size(); i++)
+      //    {
+      //      std::cout << pNode->neighbours[i].id;
+      //      if (i + 1 != pNode->neighbours.size())
+      //        std::cout << ", ";
+      //    }
+      //    std::cout << "]\n";
+      //  }
+      //}
+
+      QueryCode Execute(Graph<Real> *pGraph, Real epsilon = Constants<Real>::EPSILON)
+      {
+        bool hasIntersections = false;
+
+        hasIntersections = hasIntersections || MergeNodes(pGraph, epsilon);
+        hasIntersections = hasIntersections || MergeNodeAndEdges(pGraph, epsilon);
+        hasIntersections = hasIntersections || FindIntersections(pGraph, epsilon);
+
+        return hasIntersections ? QueryCode::Intersecting : QueryCode::NotIntersecting;
+      }
+
+    private:
 
       bool FindIntersections(Graph<Real> *pGraph, Real epsilon)
       {
-      // TODO testedEdgePairs should be a hash map
+        // TODO testedEdgePairs should be a hash set
         Set_AVL<EdgePair, EdgePairLess> testedEdgePairs;
         bool hasIntersections = false;
 
         for (uint32_t id00 = 0; id00 < (uint32_t)pGraph->nodes.size(); id00++)
         {
-          Node<Real> *pNode00 = &pGraph->nodes[id00];
           uint32_t id10 = id00 + 1;
 
-          restart_node:
+        restart_node:
 
-          for (uint32_t n0 = 0; n0 < (uint32_t)pNode00->neighbours.size(); n0++)
+          Node<Real> *pNode00 = &pGraph->nodes[id00];
+
+          for (size_t n0 = 0; n0 < pNode00->neighbours.size(); n0++)
           {
             uint32_t id01 = pNode00->neighbours[n0].id;
             Node<Real> *pNode01 = &pGraph->nodes[id01];
@@ -467,14 +508,14 @@ namespace Dg
 
               Node<Real> *pNode10 = &pGraph->nodes[id10];
 
-              for (uint32_t n1 = 0; n1 < (uint32_t)pNode10->neighbours.size(); n1++)
+              for (size_t n1 = 0; n1 < pNode10->neighbours.size(); n1++)
               {
                 uint32_t id11 = pNode10->neighbours[n1].id;
 
                 if (id11 == id00 || id11 == id01)
                   continue;
 
-                EdgePair edgePair(GetEdgeID(id00, id01), GetEdgeID(id10, id11));
+                EdgePair edgePair(GetUndirectedEdgeID(id00, id01), GetUndirectedEdgeID(id10, id11));
 
                 if (testedEdgePairs.exists(edgePair))
                   continue;
@@ -491,21 +532,16 @@ namespace Dg
                   continue;
 
                 DoEdgeEdgeIntersection(pGraph, id00, id01, id10, id11, result.pointResult.point);
-
                 hasIntersections = true;
+
                 goto restart_node;
               }
             }
+
+            id10 = id00 + 1;
           }
         }
         return hasIntersections;
-      }
-
-      static uint64_t GetEdgeID(uint32_t a, uint32_t b)
-      {
-        if (a > b)
-          return (((uint64_t)a) << 32) | (uint64_t)b;
-        return (((uint64_t)b) << 32) | (uint64_t)a;
       }
 
       static void DoEdgeEdgeIntersection(Graph<Real> *pGraph, uint32_t id00, uint32_t id01, uint32_t id10, uint32_t id11, Vector2<Real> const &point)
@@ -630,7 +666,7 @@ namespace Dg
               if (pointID == edgeID1)
                 continue;
 
-              uint64_t edgeID = GetEdgeID(edgeID0, edgeID1);
+              uint64_t edgeID = GetUndirectedEdgeID(edgeID0, edgeID1);
 
               if (testedEdges.exists(edgeID))
                 continue;
@@ -665,15 +701,17 @@ namespace Dg
       {
         pGraph->nodes.erase_swap(id);
         uint32_t oldID = (uint32_t)pGraph->nodes.size();
-        for (uint32_t i = 0; i < (uint32_t)pGraph->nodes.size(); i++)
+        Node<Real> *pNode = &pGraph->nodes[id];
+
+        for (uint32_t i = 0; i < (uint32_t)pNode->neighbours.size(); i++)
         {
-          Node<Real> *pNode = &pGraph->nodes[i];
-          for (uint32_t n = 0; n < (uint32_t)pNode->neighbours.size(); n++)
+          Node<Real> *pOther = &pGraph->nodes[pNode->neighbours[i].id];
+
+          for (uint32_t j = 0; j < (uint32_t)pOther->neighbours.size(); j++)
           {
-            uint32_t neighbourID = pNode->neighbours[n].id;
-            if (neighbourID == oldID)
+            if (pOther->neighbours[j].id == oldID)
             {
-              pNode->neighbours[n].id = id;
+              pOther->neighbours[j].id = id;
               break;
             }
           }
@@ -776,10 +814,11 @@ namespace Dg
         }
 
         // Swap all links to old, to now point to the new node.
-        for (uint32_t i = 0; i < (uint32_t)pGraph->nodes.size(); i++)
+        for (uint32_t i = 0; i < (uint32_t)pOldNode->neighbours.size(); i++)
         {
-          if (i != oldID && i != newID)
-            SwapNeighbour(&pGraph->nodes[i], oldID, newID);
+          uint32_t id = pOldNode->neighbours[i].id;
+          if (id != newID)
+            SwapNeighbour(&pGraph->nodes[id], oldID, newID);
         }
       }
     };
@@ -791,10 +830,15 @@ namespace Dg
     (Polygon2<Real> const &polyA, Polygon2<Real> const &polyB)
   {
     impl_FI2PolygonPolygon::Graph<Real> graph;
+    impl_FI2PolygonPolygon::PolygonsToGraph<Real> polysToGraph;
     impl_FI2PolygonPolygon::GraphBuilder<Real> builder;
     Result result;
+    QueryCode code;
 
-    QueryCode code = builder.Execute(polyA, polyB, &graph);
+    code = polysToGraph.Execute(polyA, polyB, &graph);
+    if (code != QueryCode::Success) goto epilogue;
+
+    code = builder.Execute(&graph);
 
     if (code == QueryCode::NotIntersecting)
     {
@@ -818,6 +862,8 @@ namespace Dg
       impl_FI2PolygonPolygon::PolygonExtractor<Real> extractor;
       extractor.Execute(&graph, &result);
     }
+
+    epilogue:
 
     result.code = code;
     return result;

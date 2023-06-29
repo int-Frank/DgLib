@@ -29,5 +29,17 @@ namespace Dg
         return false;
       return false; // equal
     }
+
+    uint64_t GetUndirectedEdgeID(uint32_t a, uint32_t b)
+    {
+      if (a > b)
+        return (((uint64_t)a) << 32) | (uint64_t)b;
+      return (((uint64_t)b) << 32) | (uint64_t)a;
+    }
+
+    uint64_t GetDirectedEdgeID(uint32_t a, uint32_t b)
+    {
+      return (((uint64_t)a) << 32) | ((uint64_t)b);
+    }
   }
 }
