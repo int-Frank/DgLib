@@ -489,59 +489,63 @@ namespace Dg
 
         for (uint32_t id00 = 0; id00 < (uint32_t)pGraph->nodes.size(); id00++)
         {
-          uint32_t id10 = id00 + 1;
-
-        restart_node:
-
-          Node<Real> *pNode00 = &pGraph->nodes[id00];
-
-          for (size_t n0 = 0; n0 < pNode00->neighbours.size(); n0++)
+          for (uint32_t id10 = id00 + 1; id10 < (uint32_t)pGraph->nodes.size(); )
           {
-            uint32_t id01 = pNode00->neighbours[n0].id;
-            Node<Real> *pNode01 = &pGraph->nodes[id01];
-            Segment2<Real> seg0(pNode00->vertex, pNode01->vertex);
-
-            for (; id10 < (uint32_t)pGraph->nodes.size(); id10++)
-            {
-              if (id10 == id01)
-                continue;
-
-              Node<Real> *pNode10 = &pGraph->nodes[id10];
-
-              for (size_t n1 = 0; n1 < pNode10->neighbours.size(); n1++)
-              {
-                uint32_t id11 = pNode10->neighbours[n1].id;
-
-                if (id11 == id00 || id11 == id01)
-                  continue;
-
-                EdgePair edgePair(GetUndirectedEdgeID(id00, id01), GetUndirectedEdgeID(id10, id11));
-
-                if (testedEdgePairs.exists(edgePair))
-                  continue;
-
-                testedEdgePairs.insert(edgePair);
-
-                Node<Real> *pNode11 = &pGraph->nodes[id11];
-                Segment2<Real> seg1(pNode10->vertex, pNode11->vertex);
-
-                FI2SegmentSegment<Real> query;
-                auto result = query(seg0, seg1);
-
-                if (result.code != QueryCode::Intersecting)
-                  continue;
-
-                DoEdgeEdgeIntersection(pGraph, id00, id01, id10, id11, result.pointResult.point);
-                hasIntersections = true;
-
-                goto restart_node;
-              }
-            }
-
-            id10 = id00 + 1;
+            // Continue processing until there are no more intersections
+            // coming from this node pair.
+            if (ProcessNodePair(pGraph, id00, id10, &testedEdgePairs))
+              hasIntersections = true;
+            else
+              id10++;
           }
         }
         return hasIntersections;
+      }
+
+      bool ProcessNodePair(Graph<Real> *pGraph, uint32_t id00, uint32_t id10, Set_AVL<EdgePair, EdgePairLess> *pTestedEdgePairs)
+      {
+        Node<Real> *pNode00 = &pGraph->nodes[id00];
+        Node<Real> *pNode10 = &pGraph->nodes[id10];
+
+        for (size_t n0 = 0; n0 < pNode00->neighbours.size(); n0++)
+        {
+          uint32_t id01 = pNode00->neighbours[n0].id;
+
+          if (id01 == id10)
+            continue;
+
+          Node<Real> *pNode01 = &pGraph->nodes[id01];
+          Segment2<Real> seg0(pNode00->vertex, pNode01->vertex);
+
+          for (size_t n1 = 0; n1 < pNode10->neighbours.size(); n1++)
+          {
+            uint32_t id11 = pNode10->neighbours[n1].id;
+
+            if (id11 == id00 || id11 == id01)
+              continue;
+
+            EdgePair edgePair(GetUndirectedEdgeID(id00, id01), GetUndirectedEdgeID(id10, id11));
+
+            if (pTestedEdgePairs->exists(edgePair))
+              continue;
+
+            pTestedEdgePairs->insert(edgePair);
+
+            Node<Real> *pNode11 = &pGraph->nodes[id11];
+            Segment2<Real> seg1(pNode10->vertex, pNode11->vertex);
+
+            FI2SegmentSegment<Real> query;
+            auto result = query(seg0, seg1);
+
+            if (result.code != QueryCode::Intersecting)
+              continue;
+
+            DoEdgeEdgeIntersection(pGraph, id00, id01, id10, id11, result.pointResult.point);
+            return true;
+          }
+        }
+
+        return false;
       }
 
       static void DoEdgeEdgeIntersection(Graph<Real> *pGraph, uint32_t id00, uint32_t id01, uint32_t id10, uint32_t id11, Vector2<Real> const &point)
@@ -609,6 +613,17 @@ namespace Dg
         pGraph->nodes.push_back(newNode);
       }
 
+      static void EraseNeighbour(Node<Real> *pNode, uint32_t neighbourID)
+      {
+        for (uint32_t i = 0; i < (uint32_t)pNode->neighbours.size();)
+        {
+          if (pNode->neighbours[i].id == neighbourID)
+            pNode->neighbours.erase_swap(i);
+          else
+            i++;
+        }
+      }
+
       static void DoPointEdgeIntersection(Graph<Real> *pGraph, uint32_t nodeID, uint32_t edgeID0, uint32_t edgeID1)
       {
         Node<Real>*pNode = &pGraph->nodes[nodeID];
@@ -622,7 +637,6 @@ namespace Dg
         {
           if (pEdge0->neighbours[i].id == edgeID1)
           {
-            pEdge0->neighbours[i].id = nodeID;
             flags01 = pEdge0->neighbours[i].flags;
             break;
           }
@@ -632,12 +646,19 @@ namespace Dg
         {
           if (pEdge1->neighbours[i].id == edgeID0)
           {
-            pEdge1->neighbours[i].id = nodeID;
             flags10 = pEdge1->neighbours[i].flags;
             break;
           }
         }
 
+        EraseNeighbour(pEdge0, edgeID1);
+        EraseNeighbour(pEdge0, nodeID);
+
+        EraseNeighbour(pEdge1, edgeID0);
+        EraseNeighbour(pEdge1, nodeID);
+
+        pEdge0->neighbours.push_back({ nodeID, flags01 });
+        pEdge1->neighbours.push_back({ nodeID, flags10 });
         pNode->neighbours.push_back({ edgeID0, flags10 });
         pNode->neighbours.push_back({ edgeID1, flags01 });
       }
