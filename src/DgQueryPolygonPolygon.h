@@ -470,13 +470,13 @@ namespace Dg
 
       QueryCode Execute(Graph<Real> *pGraph, Real epsilon = Constants<Real>::EPSILON)
       {
-        bool hasIntersections = false;
+        int hasIntersections = 0;
 
-        hasIntersections = hasIntersections || MergeNodes(pGraph, epsilon);
-        hasIntersections = hasIntersections || MergeNodeAndEdges(pGraph, epsilon);
-        hasIntersections = hasIntersections || FindIntersections(pGraph, epsilon);
+        hasIntersections += MergeNodes(pGraph, epsilon) ? 0 : 1;
+        hasIntersections += MergeNodeAndEdges(pGraph, epsilon) ? 0 : 1;
+        hasIntersections += FindIntersections(pGraph, epsilon) ? 0 : 1;
 
-        return hasIntersections ? QueryCode::Intersecting : QueryCode::NotIntersecting;
+        return hasIntersections > 0 ? QueryCode::Intersecting : QueryCode::NotIntersecting;
       }
 
     private:
