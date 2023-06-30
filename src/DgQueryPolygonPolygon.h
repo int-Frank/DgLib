@@ -449,32 +449,13 @@ namespace Dg
     {
     public:
 
-      //void PrintGraph(Graph<Real> const *pGraph)
-      //{
-      //  std::cout << "\nGraph\n";
-      //
-      //  for (size_t n = 0; n < pGraph->nodes.size(); n++)
-      //  {
-      //    Node<Real> const *pNode = &pGraph->nodes[n];
-      //
-      //    std::cout << n << ": [" << pNode->vertex.x() << ", " << pNode->vertex.y() << "] [";
-      //    for (size_t i = 0; i < pNode->neighbours.size(); i++)
-      //    {
-      //      std::cout << pNode->neighbours[i].id;
-      //      if (i + 1 != pNode->neighbours.size())
-      //        std::cout << ", ";
-      //    }
-      //    std::cout << "]\n";
-      //  }
-      //}
-
       QueryCode Execute(Graph<Real> *pGraph, Real epsilon = Constants<Real>::EPSILON)
       {
         int hasIntersections = 0;
 
-        hasIntersections += MergeNodes(pGraph, epsilon) ? 0 : 1;
-        hasIntersections += MergeNodeAndEdges(pGraph, epsilon) ? 0 : 1;
-        hasIntersections += FindIntersections(pGraph, epsilon) ? 0 : 1;
+        hasIntersections += MergeNodes(pGraph, epsilon) ? 1 : 0;
+        hasIntersections += MergeNodeAndEdges(pGraph, epsilon) ? 1 : 0;
+        hasIntersections += FindIntersections(pGraph, epsilon) ? 1 : 0;
 
         return hasIntersections > 0 ? QueryCode::Intersecting : QueryCode::NotIntersecting;
       }
@@ -555,55 +536,20 @@ namespace Dg
         Node<Real>*pNode10 = &pGraph->nodes[id10];
         Node<Real>*pNode11 = &pGraph->nodes[id11];
 
-        uint32_t flags00_01 = EF_None;
-        uint32_t flags01_00 = EF_None;
-        uint32_t flags10_11 = EF_None;
-        uint32_t flags11_10 = EF_None;
+        uint32_t flags00_01 = EraseNeighbour(pNode00, id01);
+        uint32_t flags01_00 = EraseNeighbour(pNode01, id00);
+        uint32_t flags10_11 = EraseNeighbour(pNode10, id11);
+        uint32_t flags11_10 = EraseNeighbour(pNode11, id10);
 
         uint32_t newID = (uint32_t)pGraph->nodes.size();
 
-        for (uint32_t i = 0; i < (uint32_t)pNode00->neighbours.size(); i++)
-        {
-          if (pNode00->neighbours[i].id == id01)
-          {
-            pNode00->neighbours[i].id = newID;
-            flags00_01 = pNode00->neighbours[i].flags;
-            break;
-          }
-        }
-
-        for (uint32_t i = 0; i < (uint32_t)pNode01->neighbours.size(); i++)
-        {
-          if (pNode01->neighbours[i].id == id00)
-          {
-            pNode01->neighbours[i].id = newID;
-            flags01_00 = pNode01->neighbours[i].flags;
-            break;
-          }
-        }
-
-        for (uint32_t i = 0; i < (uint32_t)pNode10->neighbours.size(); i++)
-        {
-          if (pNode10->neighbours[i].id == id11)
-          {
-            pNode10->neighbours[i].id = newID;
-            flags10_11 = pNode10->neighbours[i].flags;
-            break;
-          }
-        }
-
-        for (uint32_t i = 0; i < (uint32_t)pNode11->neighbours.size(); i++)
-        {
-          if (pNode11->neighbours[i].id == id10)
-          {
-            pNode11->neighbours[i].id = newID;
-            flags11_10 = pNode11->neighbours[i].flags;
-            break;
-          }
-        }
-
         Node<Real> newNode;
         newNode.vertex = point;
+
+        pNode00->neighbours.push_back({ newID, flags00_01 });
+        pNode01->neighbours.push_back({ newID, flags01_00 });
+        pNode10->neighbours.push_back({ newID, flags10_11 });
+        pNode11->neighbours.push_back({ newID, flags11_10 });
 
         newNode.neighbours.push_back({ id00, flags01_00 });
         newNode.neighbours.push_back({ id01, flags00_01 });
@@ -613,15 +559,22 @@ namespace Dg
         pGraph->nodes.push_back(newNode);
       }
 
-      static void EraseNeighbour(Node<Real> *pNode, uint32_t neighbourID)
+      static uint32_t EraseNeighbour(Node<Real> *pNode, uint32_t neighbourID)
       {
+        uint32_t flag = EF_None;
         for (uint32_t i = 0; i < (uint32_t)pNode->neighbours.size();)
         {
           if (pNode->neighbours[i].id == neighbourID)
+          {
+            flag = pNode->neighbours[i].flags;
             pNode->neighbours.erase_swap(i);
+          }
           else
+          {
             i++;
+          }
         }
+        return flag;
       }
 
       static void DoPointEdgeIntersection(Graph<Real> *pGraph, uint32_t nodeID, uint32_t edgeID0, uint32_t edgeID1)
@@ -630,31 +583,10 @@ namespace Dg
         Node<Real>*pEdge0 = &pGraph->nodes[edgeID0];
         Node<Real>*pEdge1 = &pGraph->nodes[edgeID1];
 
-        uint32_t flags01 = EF_None;
-        uint32_t flags10 = EF_None;
+        uint32_t flags01 = EraseNeighbour(pEdge0, edgeID1);
+        uint32_t flags10 = EraseNeighbour(pEdge1, edgeID0);
 
-        for (uint32_t i = 0; i < (uint32_t)pEdge0->neighbours.size(); i++)
-        {
-          if (pEdge0->neighbours[i].id == edgeID1)
-          {
-            flags01 = pEdge0->neighbours[i].flags;
-            break;
-          }
-        }
-
-        for (uint32_t i = 0; i < (uint32_t)pEdge1->neighbours.size(); i++)
-        {
-          if (pEdge1->neighbours[i].id == edgeID0)
-          {
-            flags10 = pEdge1->neighbours[i].flags;
-            break;
-          }
-        }
-
-        EraseNeighbour(pEdge0, edgeID1);
         EraseNeighbour(pEdge0, nodeID);
-
-        EraseNeighbour(pEdge1, edgeID0);
         EraseNeighbour(pEdge1, nodeID);
 
         pEdge0->neighbours.push_back({ nodeID, flags01 });
@@ -721,6 +653,10 @@ namespace Dg
       void EraseSwap(Graph<Real> *pGraph, uint32_t id)
       {
         pGraph->nodes.erase_swap(id);
+
+        if (id == pGraph->nodes.size())
+          return;
+
         uint32_t oldID = (uint32_t)pGraph->nodes.size();
         Node<Real> *pNode = &pGraph->nodes[id];
 
@@ -755,6 +691,7 @@ namespace Dg
               UpdateNeighbours(pGraph, j, i);
               EraseSwap(pGraph, j);
               hasIntersections = true;
+
             }
             else
             {
