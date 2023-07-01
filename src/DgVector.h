@@ -280,6 +280,45 @@ namespace Dg
 
     return result;
   }
+
+  //! Returns a value (1 <= x < -1) depending on the orientation of vector b to vector a:
+  //!
+  //!     1       : a and b are aligned
+  //! 1 > x > 0   : b is left of  a
+  //!     0       : a and b are in opposite directions
+  //! 0 > x > -1  : b is right of  a
+  //!
+  template<typename Real>
+  Real GetOrientation(Vector2<Real> a, Vector2<Real> b)
+  {
+    Real aLenSq = Dg::MagSq(a);
+    if (aLenSq == Real(0))
+      a = XAxis<Real, 2>();
+    else
+      a = a / sqrt(aLenSq);
+
+    Real bLenSq = Dg::MagSq(b);
+    if (bLenSq == Real(0))
+      b = XAxis<Real, 2>();
+    else
+      b = b / sqrt(bLenSq);
+
+    Real dot = Dot(a, b);
+    Real perp = PerpDot(a, b);
+    Real result;
+
+    if (perp > Real(0))
+      result = Real(0.5) + dot / Real(2);
+    else if (perp < Real(0))
+      result = Real(-0.5) - dot / Real(2);
+    else if (dot > 0) // a and b aligned
+      result = Real(1);
+    else // a and b in opposite directions
+      result = Real(0);
+
+    return result;
+  }
+
 }
 
 #endif

@@ -16,7 +16,7 @@ namespace Dg
   //!
   //! @class Matrix33
   //!
-  //! @brief 4 by 4 matrix calss.
+  //! @brief 4 by 4 matrix class.
   //!
   //! Originally retrieved From: Essential Mathematics for Games and Interactive Applications SE
   //! On Date: 2013
