@@ -148,7 +148,7 @@ namespace Dg
           Node<Real> const *pNode = &pGraph->nodes[i];
           for (uint32_t j = 0; j < (uint32_t)pNode->neighbours.size(); j++)
           {
-            uint64_t key = Graph_impl::GetDirectedEdgeID(i, pNode->neighbours[j].id);
+            uint64_t key = GetDirectedEdgeID(i, pNode->neighbours[j].id);
 
             if (processedEdges.exists(key))
               continue;
@@ -160,9 +160,9 @@ namespace Dg
 
     private:
 
-      void ExtractBoundary(Graph_t<Real> const *pGraph,
-                           typename FI2PolygonPolygon<Real>::Result *pResult,
-                           Dg::Set_AVL<uint64_t> *pProcessedEdges)
+      static void ExtractBoundary(Graph_t<Real> const *pGraph,
+                                  typename FI2PolygonPolygon<Real>::Result *pResult,
+                                  Dg::Set_AVL<uint64_t> *pProcessedEdges)
       {
         Vector2<Real> current = pGraph->nodes[0].vertex;
         uint32_t id = 0;
@@ -186,12 +186,12 @@ namespace Dg
         _ExtractPolygon(pGraph, id, &pNode->neighbours[neighbourIndex], pProcessedEdges, &pResult->boundary, &flags);
       }
 
-      void _ExtractPolygon(Graph_t<Real> const *pGraph,
-                          uint32_t currentID,
-                          Neighbour const *pNeighbour,
-                          Dg::Set_AVL<uint64_t> *pProcessedEdges,
-                          Dg::DynamicArray<uint32_t> *pPolygon,
-                          uint32_t *pFlags)
+      static void _ExtractPolygon(Graph_t<Real> const *pGraph,
+                                  uint32_t currentID,
+                                  Neighbour const *pNeighbour,
+                                  Dg::Set_AVL<uint64_t> *pProcessedEdges,
+                                  Dg::DynamicArray<uint32_t> *pPolygon,
+                                  uint32_t *pFlags)
       {
         uint32_t startID = currentID;
         *pFlags = 0;
@@ -207,7 +207,7 @@ namespace Dg
           *pFlags = *pFlags | pNeighbour->flags;
 
           // Register edge
-          uint64_t key = Graph_impl::GetDirectedEdgeID(currentID, nextID);
+          uint64_t key = GetDirectedEdgeID(currentID, nextID);
           pProcessedEdges->insert(key);
 
           // Move to next edge
@@ -219,11 +219,11 @@ namespace Dg
         } while (currentID != startID);
       }
 
-      void ExtractPolygon(Graph_t<Real> const *pGraph, 
-                          uint32_t currentID, 
-                          Neighbour const *pNeighbour,
-                          typename FI2PolygonPolygon<Real>::Result *pResult, 
-                          Dg::Set_AVL<uint64_t> *pProcessedEdges)
+      static void ExtractPolygon(Graph_t<Real> const *pGraph,
+                                 uint32_t currentID, 
+                                 Neighbour const *pNeighbour,
+                                 typename FI2PolygonPolygon<Real>::Result *pResult, 
+                                 Dg::Set_AVL<uint64_t> *pProcessedEdges)
       {
         uint32_t flags = 0;
         Dg::DynamicArray<uint32_t> polygon;
@@ -255,7 +255,7 @@ namespace Dg
       }
 
       // Returns the index of neighbour from pCurrent
-      uint32_t TurnLeft(Graph_t<Real> const *pGraph, uint32_t prevID, Node<Real> const *pCurrent, Vector2<Real> const &vPrevCurrent)
+      static uint32_t TurnLeft(Graph_t<Real> const *pGraph, uint32_t prevID, Node<Real> const *pCurrent, Vector2<Real> const &vPrevCurrent)
       {
         uint32_t neighbourIndex = 0;
         Real currentOrientation = Real(42); // Just pick a number higher than 2pi
@@ -308,7 +308,7 @@ namespace Dg
 
     private:
 
-      bool TryAddPolygon(Graph_t<Real> *pGraph, Polygon2<Real> const &polygon, EdgeFlag flag)
+      static bool TryAddPolygon(Graph_t<Real> *pGraph, Polygon2<Real> const &polygon, EdgeFlag flag)
       {
         Orientation winding = polygon.Winding();
         if (winding == Orientation::CW)
@@ -318,7 +318,7 @@ namespace Dg
         return false;
       }
 
-      bool TryAddCWPolygon(Graph_t<Real> *pGraph, Polygon2<Real> const &polygon, EdgeFlag flag)
+      static bool TryAddCWPolygon(Graph_t<Real> *pGraph, Polygon2<Real> const &polygon, EdgeFlag flag)
       {
         uint32_t count = (uint32_t)polygon.Size();
         uint32_t startIndex = (uint32_t)pGraph->nodes.size();
@@ -343,7 +343,7 @@ namespace Dg
         return true;
       }
 
-      bool TryAddCCWPolygon(Graph_t<Real> *pGraph, Polygon2<Real> const &polygon, EdgeFlag flag)
+      static bool TryAddCCWPolygon(Graph_t<Real> *pGraph, Polygon2<Real> const &polygon, EdgeFlag flag)
       {
         uint32_t count = (uint32_t)polygon.Size();
         uint32_t startIndex = (uint32_t)pGraph->nodes.size();

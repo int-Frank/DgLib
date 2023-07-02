@@ -15,23 +15,20 @@ namespace Dg
 {
   namespace Graph
   {
-    namespace Graph_impl
+    class EdgePair
     {
-      class EdgePair
-      {
-      public:
+    public:
 
-        EdgePair(uint64_t e0, uint64_t e1);
+      EdgePair(uint64_t e0, uint64_t e1);
 
-        uint64_t edge0;
-        uint64_t edge1;
-      };
+      uint64_t edge0;
+      uint64_t edge1;
+    };
 
-      bool EdgePairLess(EdgePair const &p0, EdgePair const &p1);
+    bool EdgePairLess(EdgePair const &p0, EdgePair const &p1);
 
-      uint64_t GetUndirectedEdgeID(uint32_t a, uint32_t b);
-      uint64_t GetDirectedEdgeID(uint32_t a, uint32_t b);
-    }
+    uint64_t GetUndirectedEdgeID(uint32_t a, uint32_t b);
+    uint64_t GetDirectedEdgeID(uint32_t a, uint32_t b);
 
     enum NodeIndex : uint32_t
     {
@@ -76,10 +73,10 @@ namespace Dg
 
     private:
 
-      bool FindIntersections(Graph_t<Real> *pGraph, Real epsilon)
+      static bool FindIntersections(Graph_t<Real> *pGraph, Real epsilon)
       {
         // TODO testedEdgePairs should be a hash set
-        Set_AVL<Graph_impl::EdgePair, Graph_impl::EdgePairLess> testedEdgePairs;
+        Set_AVL<EdgePair, EdgePairLess> testedEdgePairs;
         bool hasIntersections = false;
 
         for (uint32_t id00 = 0; id00 < (uint32_t)pGraph->nodes.size(); id00++)
@@ -97,7 +94,7 @@ namespace Dg
         return hasIntersections;
       }
 
-      bool ProcessNodePair(Graph_t<Real> *pGraph, uint32_t id00, uint32_t id10, Set_AVL<Graph_impl::EdgePair, Graph_impl::EdgePairLess> *pTestedEdgePairs)
+      static bool ProcessNodePair(Graph_t<Real> *pGraph, uint32_t id00, uint32_t id10, Set_AVL<EdgePair, EdgePairLess> *pTestedEdgePairs)
       {
         Node<Real> *pNode00 = &pGraph->nodes[id00];
         Node<Real> *pNode10 = &pGraph->nodes[id10];
@@ -119,7 +116,7 @@ namespace Dg
             if (id11 == id00 || id11 == id01)
               continue;
 
-            Graph_impl::EdgePair edgePair(Graph_impl::GetUndirectedEdgeID(id00, id01), Graph_impl::GetUndirectedEdgeID(id10, id11));
+            EdgePair edgePair(GetUndirectedEdgeID(id00, id01), GetUndirectedEdgeID(id10, id11));
 
             if (pTestedEdgePairs->exists(edgePair))
               continue;
@@ -209,7 +206,7 @@ namespace Dg
         pNode->neighbours.push_back({ edgeID1, flags01 });
       }
 
-      bool MergeNodeAndEdges(Graph_t<Real> *pGraph, Real epsilon)
+      static bool MergeNodeAndEdges(Graph_t<Real> *pGraph, Real epsilon)
       {
         bool hasIntersections = false;
         Dg::Set_AVL<uint64_t> testedEdges; // TODO Should be hash map
@@ -233,7 +230,7 @@ namespace Dg
               if (pointID == edgeID1)
                 continue;
 
-              uint64_t edgeID = Graph_impl::GetUndirectedEdgeID(edgeID0, edgeID1);
+              uint64_t edgeID = GetUndirectedEdgeID(edgeID0, edgeID1);
 
               if (testedEdges.exists(edgeID))
                 continue;
@@ -264,7 +261,7 @@ namespace Dg
         return hasIntersections;
       }
 
-      void EraseSwap(Graph_t<Real> *pGraph, uint32_t id)
+      static void EraseSwap(Graph_t<Real> *pGraph, uint32_t id)
       {
         pGraph->nodes.erase_swap(id);
 
@@ -289,7 +286,7 @@ namespace Dg
         }
       }
 
-      bool MergeNodes(Graph_t<Real> *pGraph, Real epsilon)
+      static bool MergeNodes(Graph_t<Real> *pGraph, Real epsilon)
       {
         bool hasIntersections = false;
         for (uint32_t i = 0; i < (uint32_t)pGraph->nodes.size(); i++)
@@ -305,7 +302,6 @@ namespace Dg
               UpdateNeighbours(pGraph, j, i);
               EraseSwap(pGraph, j);
               hasIntersections = true;
-
             }
             else
             {
@@ -344,7 +340,7 @@ namespace Dg
         }
       }
 
-      void UpdateNeighbours(Graph_t<Real> *pGraph, uint32_t oldID, uint32_t newID)
+      static void UpdateNeighbours(Graph_t<Real> *pGraph, uint32_t oldID, uint32_t newID)
       {
         Node<Real> *pOldNode = &pGraph->nodes[oldID];
         Node<Real> *pNewNode = &pGraph->nodes[newID];
